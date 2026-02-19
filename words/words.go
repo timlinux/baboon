@@ -1,8 +1,11 @@
 package words
 
+import "strings"
+
 // CommonWords contains the 1000 most common English words (British English)
+// All words are lowercase only
 var CommonWords = []string{
-	"the", "be", "to", "of", "and", "a", "in", "that", "have", "I",
+	"the", "be", "to", "of", "and", "a", "in", "that", "have", "it",
 	"it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
 	"this", "but", "his", "by", "from", "they", "we", "say", "her", "she",
 	"or", "an", "will", "my", "one", "all", "would", "there", "their", "what",
@@ -26,7 +29,7 @@ var CommonWords = []string{
 	"together", "thought", "father", "mother", "white", "seem", "began", "country", "family", "fact",
 	"earth", "part", "place", "life", "open", "read", "north", "south", "change", "question",
 	"tell", "turn", "move", "sea", "light", "self", "face", "number", "group", "idea",
-	"woman", "bring", "book", "problem", "better", "learn", "ask", "should", "Britain", "plant",
+	"woman", "bring", "book", "problem", "better", "learn", "ask", "should", "britain", "plant",
 	"above", "girl", "sometimes", "without", "stop", "four", "second", "later", "programme", "order",
 	"man", "men", "woman", "women", "money", "eye", "thing", "room", "feel", "since",
 	"area", "today", "already", "during", "minute", "morning", "within", "hear", "moment", "body",
@@ -45,7 +48,7 @@ var CommonWords = []string{
 	"happen", "provide", "friend", "several", "field", "role", "appear", "age", "street", "likely",
 	"police", "technology", "future", "inside", "paper", "clear", "special", "front", "rate", "value",
 	"language", "among", "stay", "six", "period", "policy", "computer", "million", "rather", "create",
-	"tax", "similar", "relationship", "personal", "single", "return", "experience", "form", "price", "British",
+	"tax", "similar", "relationship", "personal", "single", "return", "experience", "form", "price", "british",
 	"image", "accept", "doctor", "require", "type", "military", "agree", "actually", "theory", "step",
 	"choose", "foreign", "involve", "hospital", "usually", "cause", "student", "private", "news", "game",
 	"offer", "degree", "term", "material", "able", "low", "performance", "either", "cover", "behaviour",
@@ -105,10 +108,15 @@ var CommonWords = []string{
 }
 
 // GetRandomWords returns n random words from the common words list
+// All words are converted to lowercase and empty words are skipped
 func GetRandomWords(n int, rng func(int) int) []string {
-	result := make([]string, n)
-	for i := 0; i < n; i++ {
-		result[i] = CommonWords[rng(len(CommonWords))]
+	result := make([]string, 0, n)
+	for len(result) < n {
+		word := strings.ToLower(CommonWords[rng(len(CommonWords))])
+		// Skip empty words or words with only spaces
+		if len(strings.TrimSpace(word)) > 0 {
+			result = append(result, word)
+		}
 	}
 	return result
 }

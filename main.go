@@ -262,6 +262,11 @@ func (m model) renderTyping() string {
 
 	currentWord := m.words[m.currentWordIdx]
 
+	// Safety check: skip empty words (shouldn't happen but prevents lockup)
+	if len(currentWord) == 0 {
+		return "Loading..."
+	}
+
 	// Render word using custom block font
 	letterLines := font.RenderWord(currentWord)
 
