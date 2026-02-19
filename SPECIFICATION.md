@@ -60,6 +60,16 @@ Baboon is a cross-platform terminal-based typing practice application built with
 - WPM SHALL be calculated as: (correct characters / 5) / minutes elapsed
 - Accuracy SHALL be calculated as: (correct characters / total characters) * 100
 
+### FR-007: Live WPM Bar
+- The application SHALL display a gradient WPM bar at the bottom of the screen during typing
+- The bar SHALL update in real-time (every 100ms) to show current typing speed
+- The bar SHALL use a gradient colour scheme:
+  - Red (0-40 WPM) - needs improvement
+  - Yellow (40-60 WPM) - average
+  - Green (60+ WPM) - good speed
+- The bar SHALL scale from 0 to 120 WPM
+- The bar SHALL display the current WPM value numerically alongside the bar
+
 ### FR-005: Historical Statistics
 - The application SHALL persist best performance data between sessions
 - Historical data SHALL be stored in `~/.config/baboon/stats.json`
@@ -107,7 +117,7 @@ Baboon is a cross-platform terminal-based typing practice application built with
 ### BR-003: WPM Calculation
 - Standard word length is defined as 5 characters
 - Only correctly typed characters contribute to WPM
-- Time starts when the first word is displayed, not when typing begins
+- Time starts when the first correct character of the first word is typed (not when the word is displayed)
 
 ### BR-004: Historical Best
 - Best WPM and Best Accuracy are tracked independently

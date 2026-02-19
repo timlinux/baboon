@@ -16,6 +16,12 @@ import (
 
 const wordsPerRound = 30
 
+// WPM bar configuration
+const (
+	maxWPM   = 120.0 // Maximum WPM for the bar scale
+	barWidth = 50    // Width of the WPM bar in characters
+)
+
 // Game states
 type gameState int
 
@@ -23,6 +29,9 @@ const (
 	stateTyping gameState = iota
 	stateResults
 )
+
+// tickMsg is sent periodically to update the WPM display
+type tickMsg time.Time
 
 type model struct {
 	state          gameState
@@ -34,6 +43,7 @@ type model struct {
 	width          int
 	height         int
 	rng            *rand.Rand
+	timerStarted   bool
 }
 
 func initialModel() model {
@@ -41,23 +51,32 @@ func initialModel() model {
 	historical, _ := stats.LoadHistoricalStats()
 
 	m := model{
-		state:      stateTyping,
-		words:      words.GetRandomWords(wordsPerRound, rng.Intn),
-		historical: historical,
-		rng:        rng,
-		stats: &stats.Stats{
-			StartTime: time.Now(),
-		},
+		state:        stateTyping,
+		words:        words.GetRandomWords(wordsPerRound, rng.Intn),
+		historical:   historical,
+		rng:          rng,
+		timerStarted: false,
+		stats:        &stats.Stats{},
 	}
 	return m
 }
 
+func tickCmd() tea.Cmd {
+	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
+}
+
 func (m model) Init() tea.Cmd {
-	return nil
+	return tickCmd()
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tickMsg:
+		// Continue ticking to update WPM display
+		return m, tickCmd()
+
 	case tea.KeyMsg:
 		switch m.state {
 		case stateTyping:
@@ -104,11 +123,20 @@ func (m model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyRunes:
 		char := string(msg.Runes)
+		inputIdx := len(m.currentInput)
+
+		// Start timer on first correct character of first word
+		if !m.timerStarted && m.currentWordIdx == 0 && inputIdx == 0 {
+			if len(currentWord) > 0 && char == string(currentWord[0]) {
+				m.timerStarted = true
+				m.stats.StartTime = time.Now()
+			}
+		}
+
 		m.currentInput += char
 		m.stats.TotalCharacters++
 
 		// Check if character matches
-		inputIdx := len(m.currentInput) - 1
 		if inputIdx < len(currentWord) && m.currentInput[inputIdx] == currentWord[inputIdx] {
 			m.stats.CorrectChars++
 		} else {
@@ -130,9 +158,8 @@ func (m model) handleResultsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.words = words.GetRandomWords(wordsPerRound, m.rng.Intn)
 		m.currentWordIdx = 0
 		m.currentInput = ""
-		m.stats = &stats.Stats{
-			StartTime: time.Now(),
-		}
+		m.timerStarted = false
+		m.stats = &stats.Stats{}
 	}
 
 	return m, nil
@@ -146,6 +173,86 @@ func (m model) View() string {
 		return m.renderResults()
 	}
 	return ""
+}
+
+// calculateCurrentWPM calculates WPM based on current progress
+func (m model) calculateCurrentWPM() float64 {
+	if !m.timerStarted || m.stats.CorrectChars == 0 {
+		return 0
+	}
+
+	elapsed := time.Since(m.stats.StartTime).Minutes()
+	if elapsed <= 0 {
+		return 0
+	}
+
+	// WPM = (correct characters / 5) / minutes
+	return (float64(m.stats.CorrectChars) / 5.0) / elapsed
+}
+
+// renderWPMBar creates a beautiful gradient progress bar for WPM
+func (m model) renderWPMBar() string {
+	wpm := m.calculateCurrentWPM()
+
+	// Calculate fill percentage
+	fillPercent := wpm / maxWPM
+	if fillPercent > 1.0 {
+		fillPercent = 1.0
+	}
+	if fillPercent < 0 {
+		fillPercent = 0
+	}
+
+	filledWidth := int(float64(barWidth) * fillPercent)
+	emptyWidth := barWidth - filledWidth
+
+	// Gradient colours from red (slow) through yellow to green (fast)
+	// Using 256-colour palette for smooth gradient
+	gradientColours := []string{
+		"196", "202", "208", "214", "220", "226", // Red to yellow
+		"190", "154", "118", "82", "46", "47", // Yellow to green
+	}
+
+	var bar strings.Builder
+
+	// Build the filled portion with gradient
+	for i := 0; i < filledWidth; i++ {
+		// Calculate which colour to use based on position
+		colourIdx := int(float64(i) / float64(barWidth) * float64(len(gradientColours)-1))
+		if colourIdx >= len(gradientColours) {
+			colourIdx = len(gradientColours) - 1
+		}
+		colour := gradientColours[colourIdx]
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		bar.WriteString(style.Render("█"))
+	}
+
+	// Build the empty portion
+	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("236"))
+	for i := 0; i < emptyWidth; i++ {
+		bar.WriteString(emptyStyle.Render("░"))
+	}
+
+	// WPM label
+	wpmLabel := fmt.Sprintf(" %.0f WPM", wpm)
+	var labelStyle lipgloss.Style
+	if wpm >= 60 {
+		labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("46")).Bold(true) // Green
+	} else if wpm >= 40 {
+		labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("226")).Bold(true) // Yellow
+	} else {
+		labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Bold(true) // Red
+	}
+
+	// Scale markers
+	scaleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	scale := scaleStyle.Render("0                        60                       120")
+
+	return lipgloss.JoinVertical(
+		lipgloss.Center,
+		bar.String()+labelStyle.Render(wpmLabel),
+		scale,
+	)
 }
 
 func (m model) renderTyping() string {
@@ -202,10 +309,19 @@ func (m model) renderTyping() string {
 
 	// Instructions
 	helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
-	help := helpStyle.Render("Type the word, then press SPACE to continue | ESC to quit")
+	var helpText string
+	if !m.timerStarted {
+		helpText = "Type the first letter to start the timer | ESC to quit"
+	} else {
+		helpText = "Type the word, then press SPACE to continue | ESC to quit"
+	}
+	help := helpStyle.Render(helpText)
 
-	// Center everything
-	content := lipgloss.JoinVertical(
+	// WPM Bar
+	wpmBar := m.renderWPMBar()
+
+	// Center the main content
+	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
 		"",
 		progressStyle.Render(progress),
@@ -217,14 +333,41 @@ func (m model) renderTyping() string {
 		help,
 	)
 
-	// Center on screen
-	return lipgloss.Place(
-		m.width,
-		m.height,
-		lipgloss.Center,
-		lipgloss.Center,
-		content,
-	)
+	// Calculate vertical positioning
+	// Main content goes in center, WPM bar at bottom
+	contentHeight := strings.Count(mainContent, "\n") + 1
+	wpmBarHeight := strings.Count(wpmBar, "\n") + 1
+	topPadding := (m.height - contentHeight - wpmBarHeight - 4) / 2
+	if topPadding < 0 {
+		topPadding = 0
+	}
+
+	// Build full screen layout
+	var fullContent strings.Builder
+
+	// Top padding
+	for i := 0; i < topPadding; i++ {
+		fullContent.WriteString("\n")
+	}
+
+	// Center main content horizontally
+	centeredMain := lipgloss.PlaceHorizontal(m.width, lipgloss.Center, mainContent)
+	fullContent.WriteString(centeredMain)
+
+	// Spacer before WPM bar
+	fullContent.WriteString("\n\n")
+
+	// Bottom WPM bar (centered)
+	centeredBar := lipgloss.PlaceHorizontal(m.width, lipgloss.Center, wpmBar)
+	fullContent.WriteString(centeredBar)
+
+	// Fill remaining space
+	currentHeight := topPadding + contentHeight + 2 + wpmBarHeight
+	for i := currentHeight; i < m.height; i++ {
+		fullContent.WriteString("\n")
+	}
+
+	return fullContent.String()
 }
 
 func (m model) renderResults() string {
