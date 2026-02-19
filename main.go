@@ -371,6 +371,7 @@ func (m model) renderTyping() string {
 }
 
 // renderStatBar creates a gradient bar for a stat value
+// Returns a fixed-width string (barWidth + 2 for the star column)
 func renderStatBar(value, maxValue float64, width int, isNewBest bool) string {
 	fillPercent := value / maxValue
 	if fillPercent > 1.0 {
@@ -406,16 +407,19 @@ func renderStatBar(value, maxValue float64, width int, isNewBest bool) string {
 		bar.WriteString(emptyStyle.Render("░"))
 	}
 
-	// Add star for new best
+	// Fixed-width star column (2 chars: space + star or two spaces)
 	if isNewBest {
 		starStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("226")).Bold(true)
 		bar.WriteString(starStyle.Render(" *"))
+	} else {
+		bar.WriteString("  ")
 	}
 
 	return bar.String()
 }
 
 // renderTimeBar creates a bar for time (lower is better, so inverted)
+// Returns a fixed-width string (barWidth + 2 for the star column)
 func renderTimeBar(value, maxValue float64, width int, isNewBest bool) string {
 	// Invert the percentage since lower time is better
 	fillPercent := 1.0 - (value / maxValue)
@@ -452,33 +456,36 @@ func renderTimeBar(value, maxValue float64, width int, isNewBest bool) string {
 		bar.WriteString(emptyStyle.Render("░"))
 	}
 
+	// Fixed-width star column (2 chars: space + star or two spaces)
 	if isNewBest {
 		starStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("226")).Bold(true)
 		bar.WriteString(starStyle.Render(" *"))
+	} else {
+		bar.WriteString("  ")
 	}
 
 	return bar.String()
+}
+
+// formatStatRow creates a perfectly aligned row with label, value, and bar
+func formatStatRow(label string, value string, bar string, labelWidth int, valueWidth int) string {
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("7")).
+		Width(labelWidth).
+		Align(lipgloss.Right)
+
+	valueStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("15")).
+		Width(valueWidth).
+		Align(lipgloss.Right)
+
+	return labelStyle.Render(label) + " " + valueStyle.Render(value) + " " + bar
 }
 
 func (m model) renderResults() string {
 	titleStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("14")).
 		Bold(true)
-
-	labelStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("7")).
-		Width(18).
-		Align(lipgloss.Right)
-
-	valueStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("15")).
-		Width(10).
-		Align(lipgloss.Right)
-
-	sessionLabelStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("6")).
-		Width(18).
-		Align(lipgloss.Right)
 
 	helpStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("8"))
@@ -487,6 +494,19 @@ func (m model) renderResults() string {
 		Foreground(lipgloss.Color("226")).
 		Bold(true)
 
+	sessionLabelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("6")).
+		Width(18).
+		Align(lipgloss.Right)
+
+	sessionValueStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("15")).
+		Width(8).
+		Align(lipgloss.Right)
+
+	// Grid dimensions - must be consistent for perfect alignment
+	const labelWidth = 18
+	const valueWidth = 8
 	const barWidth = 30
 	const maxWPMDisplay = 120.0
 	const maxTimeDisplay = 180.0 // 3 minutes max for time bar
@@ -503,35 +523,53 @@ func (m model) renderResults() string {
 
 	// WPM section
 	statsLines = append(statsLines, "")
-	statsLines = append(statsLines,
-		labelStyle.Render("WPM this run:")+valueStyle.Render(fmt.Sprintf("%.1f", m.stats.WPM))+" "+renderStatBar(m.stats.WPM, maxWPMDisplay, barWidth, isNewBestWPM))
-	statsLines = append(statsLines,
-		labelStyle.Render("WPM best:")+valueStyle.Render(fmt.Sprintf("%.1f", m.historical.BestWPM))+" "+renderStatBar(m.historical.BestWPM, maxWPMDisplay, barWidth, false))
-	statsLines = append(statsLines,
-		labelStyle.Render("WPM average:")+valueStyle.Render(fmt.Sprintf("%.1f", m.historical.AverageWPM()))+" "+renderStatBar(m.historical.AverageWPM(), maxWPMDisplay, barWidth, false))
+	statsLines = append(statsLines, formatStatRow(
+		"WPM this run:", fmt.Sprintf("%.1f", m.stats.WPM),
+		renderStatBar(m.stats.WPM, maxWPMDisplay, barWidth, isNewBestWPM),
+		labelWidth, valueWidth))
+	statsLines = append(statsLines, formatStatRow(
+		"WPM best:", fmt.Sprintf("%.1f", m.historical.BestWPM),
+		renderStatBar(m.historical.BestWPM, maxWPMDisplay, barWidth, false),
+		labelWidth, valueWidth))
+	statsLines = append(statsLines, formatStatRow(
+		"WPM average:", fmt.Sprintf("%.1f", m.historical.AverageWPM()),
+		renderStatBar(m.historical.AverageWPM(), maxWPMDisplay, barWidth, false),
+		labelWidth, valueWidth))
 
 	// Time section
 	statsLines = append(statsLines, "")
-	statsLines = append(statsLines,
-		labelStyle.Render("Time this run:")+valueStyle.Render(fmt.Sprintf("%.1fs", m.stats.Duration.Seconds()))+" "+renderTimeBar(m.stats.Duration.Seconds(), maxTimeDisplay, barWidth, isNewBestTime))
-	statsLines = append(statsLines,
-		labelStyle.Render("Time best:")+valueStyle.Render(fmt.Sprintf("%.1fs", m.historical.BestTime))+" "+renderTimeBar(m.historical.BestTime, maxTimeDisplay, barWidth, false))
-	statsLines = append(statsLines,
-		labelStyle.Render("Time average:")+valueStyle.Render(fmt.Sprintf("%.1fs", m.historical.AverageTime()))+" "+renderTimeBar(m.historical.AverageTime(), maxTimeDisplay, barWidth, false))
+	statsLines = append(statsLines, formatStatRow(
+		"Time this run:", fmt.Sprintf("%.1fs", m.stats.Duration.Seconds()),
+		renderTimeBar(m.stats.Duration.Seconds(), maxTimeDisplay, barWidth, isNewBestTime),
+		labelWidth, valueWidth))
+	statsLines = append(statsLines, formatStatRow(
+		"Time best:", fmt.Sprintf("%.1fs", m.historical.BestTime),
+		renderTimeBar(m.historical.BestTime, maxTimeDisplay, barWidth, false),
+		labelWidth, valueWidth))
+	statsLines = append(statsLines, formatStatRow(
+		"Time average:", fmt.Sprintf("%.1fs", m.historical.AverageTime()),
+		renderTimeBar(m.historical.AverageTime(), maxTimeDisplay, barWidth, false),
+		labelWidth, valueWidth))
 
 	// Accuracy section
 	statsLines = append(statsLines, "")
-	statsLines = append(statsLines,
-		labelStyle.Render("Accuracy this run:")+valueStyle.Render(fmt.Sprintf("%.1f%%", m.stats.Accuracy))+" "+renderStatBar(m.stats.Accuracy, maxAccuracy, barWidth, isNewBestAccuracy))
-	statsLines = append(statsLines,
-		labelStyle.Render("Accuracy best:")+valueStyle.Render(fmt.Sprintf("%.1f%%", m.historical.BestAccuracy))+" "+renderStatBar(m.historical.BestAccuracy, maxAccuracy, barWidth, false))
-	statsLines = append(statsLines,
-		labelStyle.Render("Accuracy average:")+valueStyle.Render(fmt.Sprintf("%.1f%%", m.historical.AverageAccuracy()))+" "+renderStatBar(m.historical.AverageAccuracy(), maxAccuracy, barWidth, false))
+	statsLines = append(statsLines, formatStatRow(
+		"Accuracy this run:", fmt.Sprintf("%.1f%%", m.stats.Accuracy),
+		renderStatBar(m.stats.Accuracy, maxAccuracy, barWidth, isNewBestAccuracy),
+		labelWidth, valueWidth))
+	statsLines = append(statsLines, formatStatRow(
+		"Accuracy best:", fmt.Sprintf("%.1f%%", m.historical.BestAccuracy),
+		renderStatBar(m.historical.BestAccuracy, maxAccuracy, barWidth, false),
+		labelWidth, valueWidth))
+	statsLines = append(statsLines, formatStatRow(
+		"Accuracy average:", fmt.Sprintf("%.1f%%", m.historical.AverageAccuracy()),
+		renderStatBar(m.historical.AverageAccuracy(), maxAccuracy, barWidth, false),
+		labelWidth, valueWidth))
 
-	// Sessions
+	// Sessions - use same grid alignment
 	statsLines = append(statsLines, "")
 	statsLines = append(statsLines,
-		sessionLabelStyle.Render("Total sessions:")+valueStyle.Render(fmt.Sprintf("%d", m.historical.TotalSessions)))
+		sessionLabelStyle.Render("Total sessions:")+" "+sessionValueStyle.Render(fmt.Sprintf("%d", m.historical.TotalSessions)))
 
 	// Legend
 	statsLines = append(statsLines, "")
