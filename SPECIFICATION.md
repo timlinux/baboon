@@ -40,11 +40,16 @@ Baboon is a cross-platform terminal-based typing practice application built with
 - The word display SHALL show progress indicator: "Word X/30"
 - Letters SHALL change colour in-place as the user types (no separate input display line)
 - All words SHALL be lowercase only (the font only supports a-z)
+- The previous word SHALL be displayed in gray (colour 240) in the top left corner
+- The next word SHALL be displayed in gray (colour 240) in the top right corner
 
 ### FR-002: Block Letter Font
 - Each letter SHALL be 6 lines tall
-- Letters SHALL be constructed using solid block (█) and space characters
-- The font SHALL support lowercase letters a-z only
+- Letters SHALL be constructed using Unicode block elements for smooth edges:
+  - █ (full block) for solid areas
+  - ▀ (upper half block) for rounded tops
+  - ▄ (lower half block) for rounded bottoms
+- The font SHALL support lowercase letters a-z and punctuation: , . ; : ! ?
 - Unknown characters SHALL render as spaces
 - Letters SHALL have 1 character spacing between them
 
@@ -55,14 +60,33 @@ Baboon is a cross-platform terminal-based typing practice application built with
   - **Red (colour 9)**: Character does not match the expected character
   - **Gray (colour 8)**: Characters not yet typed
 - The backspace key SHALL remove the last typed character (undoing its colour)
-- The space key SHALL advance to the next word when at least one character has been typed
+- The space key SHALL only advance to the next word when ALL letters have been typed
+- If space is pressed before the word is complete, it SHALL be treated as an incorrect character (red)
 - Extra characters beyond word length SHALL count as incorrect (red)
 
 ### FR-004: Round Structure
-- Each round SHALL consist of exactly 30 words
-- Words SHALL be randomly selected from the dictionary with replacement
-- After completing 30 words, the application SHALL display the results screen
+- Each round SHALL consist of exactly 30 words totalling exactly 150 characters
+- Words SHALL be randomly selected using stratified selection to meet both constraints
+- Word selection algorithm SHALL:
+  - Calculate ideal word length based on remaining characters and words
+  - Allow variance of ±2 characters from ideal to maintain variety
+  - Ensure feasibility by checking remaining capacity
+  - Retry up to 100 times if constraints cannot be met
+- After completing all 30 words, the application SHALL display the results screen
 - The user SHALL be able to start a new round by pressing Enter on results screen
+
+### FR-015: Adaptive Word Selection
+- Word selection SHALL be weighted based on two factors:
+  1. **Frequency balancing**: Favour words with underrepresented letters
+  2. **Accuracy practice**: Favour words with letters the user frequently mistypes
+- Each word SHALL be scored using a combined algorithm:
+  - Frequency score = 1 - (letter_presented / max_letter_presented)
+  - Accuracy score = 1 - (letter_correct / letter_presented)
+  - Letter score = (frequency_score + accuracy_score) / 2
+  - Word score = average letter score across all letters in the word
+- Words with higher scores SHALL have higher selection probability
+- This adaptive selection helps users practice their weakest letters
+- Frequency balancing aims to achieve spread within 10% from highest to lowest
 
 ### FR-005: Timer Behaviour
 - The timer SHALL NOT start when the application launches
@@ -129,6 +153,84 @@ Baboon is a cross-platform terminal-based typing practice application built with
   - `total_time`: Sum of all session times for averaging (float64)
   - `total_sessions`: Count of completed sessions (int)
   - `last_session_date`: Timestamp of last session (RFC3339)
+  - `letter_accuracy`: Per-letter accuracy tracking (map of letter to stats)
+  - `letter_seek_time`: Per-letter seek time tracking (map of letter to timing stats)
+  - `bigram_seek_time`: Per-bigram (letter pair) seek time tracking (map of bigram to timing stats)
+
+### FR-013: Per-Letter Accuracy Tracking
+- When a round starts, all letters in all 30 words SHALL be recorded as "presented"
+- When a user types a correct letter, that letter SHALL be recorded as "correct"
+- Letter statistics SHALL be tracked per individual letter (a-z)
+- For each letter, the application SHALL track:
+  - `presented`: Number of times this letter was presented to the user
+  - `correct`: Number of times the user typed this letter correctly
+- Letter accuracy data SHALL persist across sessions (cumulative)
+- Letter accuracy SHALL be calculated as: (correct / presented) × 100
+
+### FR-016: Per-Letter Seek Time Tracking
+- The application SHALL track the time between keystrokes (seek time)
+- Seek time SHALL only be recorded for CORRECT keystrokes
+- Seek time SHALL be recorded against the EXPECTED letter (not the typed character)
+- The FIRST letter of each word SHALL be excluded from seek time tracking (includes word-reading time)
+- Seek times > 5000ms SHALL be filtered out (assumed user pauses)
+- For each letter, the application SHALL track:
+  - `total_time_ms`: Total seek time in milliseconds
+  - `count`: Number of measurements
+- Average seek time = total_time_ms / count
+- Seek time data SHALL persist across sessions (cumulative)
+
+### FR-017: Bigram (Letter Pair) Seek Time Tracking
+- The application SHALL track seek time for letter pairs (bigrams)
+- A bigram is formed from the previous correctly typed letter + current correctly typed letter
+- Bigrams SHALL only be recorded for consecutive correct keystrokes
+- Bigrams SHALL reset at word boundaries (first letter of new word has no preceding letter)
+- For each bigram (e.g., "th", "he", "in"), the application SHALL track:
+  - `total_time_ms`: Total seek time in milliseconds
+  - `count`: Number of measurements
+- Bigram data SHALL persist across sessions (cumulative)
+- Common slow bigrams indicate letter combinations the user struggles with
+
+### FR-014: Letter Statistics Display
+- The results screen SHALL display a letter statistics matrix:
+  1. **Header row**: 26 uppercase letters (A-Z) as column labels, white bold text
+  2. **Accuracy row**: Filled circles (●) coloured by typing accuracy
+  3. **Frequency row**: Filled circles (●) coloured by presentation count
+  4. **Seek time row**: Filled circles (●) coloured by average typing speed
+- Each circle SHALL be coloured on a red-to-green gradient
+- Letters in header row are spaced to align with circles below
+- Seek time is measured as milliseconds between keystrokes
+- Seek times > 5 seconds are filtered out (assumed pauses)
+- Gradient colours (accuracy/speed percentage → colour code):
+  - 95-100%: 46 (bright green)
+  - 90-94%: 82
+  - 85-89%: 118
+  - 80-84%: 154
+  - 75-79%: 190
+  - 70-74%: 226 (yellow)
+  - 65-69%: 220
+  - 60-64%: 214
+  - 50-59%: 208
+  - 40-49%: 202
+  - 0-39%: 196 (red)
+
+### FR-018: Results Screen Animation
+- Results screen elements SHALL animate in sequentially using spring physics
+- The harmonica library SHALL be used for smooth spring-based animations
+- Each stat row SHALL slide in from the right with staggered timing
+- Animation interval SHALL be 50ms per frame
+- Stagger delay SHALL be 3 frames between each row starting
+- Spring parameters: 60 FPS, frequency 6.0, damping 0.5
+- Total of 14 animated rows (WPM, Time, Accuracy stats + sessions + letter matrix)
+
+### FR-019: Punctuation Mode
+- The application SHALL support a `-p` command line flag for punctuation mode
+- When enabled, words SHALL be separated by random punctuation followed by space
+- Supported punctuation characters: , . ; : ! ?
+- Punctuation SHALL be appended to each word except the last word in the round
+- The user SHALL type the punctuation character before pressing space to advance
+- Letter accuracy tracking SHALL only count letters (a-z), not punctuation
+- Letter seek time tracking SHALL only measure letters (a-z), not punctuation
+- Punctuation mode persists for subsequent rounds until the application exits
 
 ### FR-011: Statistics Validation
 - On load, the application SHALL validate historical statistics for corruption
@@ -244,7 +346,22 @@ Location: `~/.config/baboon/stats.json`
   "total_accuracy": 1420.8,
   "total_time": 725.0,
   "total_sessions": 15,
-  "last_session_date": "2024-01-15T10:30:00Z"
+  "last_session_date": "2024-01-15T10:30:00Z",
+  "letter_accuracy": {
+    "a": {"presented": 100, "correct": 99},
+    "b": {"presented": 45, "correct": 43},
+    "c": {"presented": 62, "correct": 60}
+  },
+  "letter_seek_time": {
+    "a": {"total_time_ms": 15000, "count": 100},
+    "b": {"total_time_ms": 9000, "count": 45},
+    "c": {"total_time_ms": 12400, "count": 62}
+  },
+  "bigram_seek_time": {
+    "th": {"total_time_ms": 8500, "count": 50},
+    "he": {"total_time_ms": 7200, "count": 48},
+    "in": {"total_time_ms": 9100, "count": 35}
+  }
 }
 ```
 
@@ -265,6 +382,27 @@ Location: `~/.config/baboon/stats.json`
 | Gradient | 196→47 | Red through yellow to green |
 
 ## Version History
+
+### v0.2.0
+- Per-letter accuracy tracking (tracks how often each letter a-z is presented and typed correctly)
+- Letter statistics persist across sessions for cumulative tracking
+- Results screen displays 26-letter accuracy row with red-to-green gradient
+- Results screen displays 26-letter frequency row showing relative letter presentation counts
+- Results screen displays 26-letter seek time row showing typing speed per letter
+- Fixed 30 words with exactly 150 characters per round for consistent timing comparisons
+- Smooth font with Unicode half-block characters (▀, ▄) for rounded edges
+- Previous word displayed in top left, next word in top right during typing
+- Adaptive word selection: weights by both letter frequency AND accuracy
+- Words with low-accuracy letters are favoured to give more practice on weak letters
+- Letter seek time tracking: measures time between keystrokes for each letter
+- Improved seek time calculation:
+  - Only records for correct keystrokes (not errors)
+  - Records against expected letter (not what user typed)
+  - Excludes first letter of each word (avoids word-reading time)
+- Bigram (letter pair) seek time tracking: measures transition speed between letter pairs
+- Letter statistics display redesigned: header row with letters, filled circles (●) for data
+- Results screen animation: rows slide in sequentially using harmonica spring physics
+- Punctuation mode (-p flag): words separated by random punctuation (, . ; : ! ?)
 
 ### v0.1.0 (Initial Release)
 - Basic typing practice with 30-word rounds

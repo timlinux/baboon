@@ -9,27 +9,111 @@ import (
 
 // Stats represents typing statistics for a session
 type Stats struct {
-	WordsCompleted  int           `json:"words_completed"`
-	TotalCharacters int           `json:"total_characters"`
-	CorrectChars    int           `json:"correct_chars"`
-	IncorrectChars  int           `json:"incorrect_chars"`
-	StartTime       time.Time     `json:"start_time"`
-	EndTime         time.Time     `json:"end_time"`
-	Duration        time.Duration `json:"duration"`
-	WPM             float64       `json:"wpm"`
-	Accuracy        float64       `json:"accuracy"`
+	WordsCompleted  int                        `json:"words_completed"`
+	TotalCharacters int                        `json:"total_characters"`
+	CorrectChars    int                        `json:"correct_chars"`
+	IncorrectChars  int                        `json:"incorrect_chars"`
+	StartTime       time.Time                  `json:"start_time"`
+	EndTime         time.Time                  `json:"end_time"`
+	Duration        time.Duration              `json:"duration"`
+	WPM             float64                    `json:"wpm"`
+	Accuracy        float64                    `json:"accuracy"`
+	LetterAccuracy  map[string]LetterStats     `json:"-"` // Per-letter accuracy for this session
+	LetterSeekTime  map[string]LetterSeekStats `json:"-"` // Per-letter seek time for this session
+	BigramSeekTime  map[string]BigramSeekStats `json:"-"` // Per-bigram seek time for this session
+	LastKeyTime     time.Time                  `json:"-"` // Time of last keystroke for seek time calc
+	LastLetter      string                     `json:"-"` // Last letter typed (for bigram tracking)
+}
+
+// LetterStats tracks per-letter accuracy
+type LetterStats struct {
+	Presented int `json:"presented"` // Number of times this letter was presented
+	Correct   int `json:"correct"`   // Number of times typed correctly
+}
+
+// LetterSeekStats tracks per-letter seek time (time to find and press the key)
+type LetterSeekStats struct {
+	TotalTimeMs int64 `json:"total_time_ms"` // Total time in milliseconds
+	Count       int   `json:"count"`         // Number of measurements
+}
+
+// AverageMs returns the average seek time in milliseconds
+func (s LetterSeekStats) AverageMs() float64 {
+	if s.Count == 0 {
+		return 0
+	}
+	return float64(s.TotalTimeMs) / float64(s.Count)
+}
+
+// BigramSeekStats tracks seek time for letter pairs (e.g., "th", "he", "in")
+type BigramSeekStats struct {
+	TotalTimeMs int64 `json:"total_time_ms"` // Total time in milliseconds
+	Count       int   `json:"count"`         // Number of measurements
+}
+
+// AverageMs returns the average seek time in milliseconds for the bigram
+func (s BigramSeekStats) AverageMs() float64 {
+	if s.Count == 0 {
+		return 0
+	}
+	return float64(s.TotalTimeMs) / float64(s.Count)
 }
 
 // HistoricalStats stores best performance data
 type HistoricalStats struct {
-	BestWPM         float64   `json:"best_wpm"`
-	BestAccuracy    float64   `json:"best_accuracy"`
-	BestTime        float64   `json:"best_time"` // Best (fastest) time in seconds
-	TotalWPM        float64   `json:"total_wpm"`
-	TotalAccuracy   float64   `json:"total_accuracy"`
-	TotalTime       float64   `json:"total_time"` // Total time across all sessions
-	TotalSessions   int       `json:"total_sessions"`
-	LastSessionDate time.Time `json:"last_session_date"`
+	BestWPM         float64                    `json:"best_wpm"`
+	BestAccuracy    float64                    `json:"best_accuracy"`
+	BestTime        float64                    `json:"best_time"` // Best (fastest) time in seconds
+	TotalWPM        float64                    `json:"total_wpm"`
+	TotalAccuracy   float64                    `json:"total_accuracy"`
+	TotalTime       float64                    `json:"total_time"` // Total time across all sessions
+	TotalSessions   int                        `json:"total_sessions"`
+	LastSessionDate time.Time                  `json:"last_session_date"`
+	LetterAccuracy  map[string]LetterStats     `json:"letter_accuracy"`  // Per-letter accuracy tracking
+	LetterSeekTime  map[string]LetterSeekStats `json:"letter_seek_time"` // Per-letter seek time tracking
+	BigramSeekTime  map[string]BigramSeekStats `json:"bigram_seek_time"` // Per-bigram seek time tracking
+}
+
+// RecordLetterPresented records that a letter was presented to the user
+func (s *Stats) RecordLetterPresented(letter string) {
+	if s.LetterAccuracy == nil {
+		s.LetterAccuracy = make(map[string]LetterStats)
+	}
+	stats := s.LetterAccuracy[letter]
+	stats.Presented++
+	s.LetterAccuracy[letter] = stats
+}
+
+// RecordLetterCorrect records that a letter was typed correctly
+func (s *Stats) RecordLetterCorrect(letter string) {
+	if s.LetterAccuracy == nil {
+		s.LetterAccuracy = make(map[string]LetterStats)
+	}
+	stats := s.LetterAccuracy[letter]
+	stats.Correct++
+	s.LetterAccuracy[letter] = stats
+}
+
+// RecordLetterSeekTime records the time taken to type a letter
+func (s *Stats) RecordLetterSeekTime(letter string, durationMs int64) {
+	if s.LetterSeekTime == nil {
+		s.LetterSeekTime = make(map[string]LetterSeekStats)
+	}
+	stats := s.LetterSeekTime[letter]
+	stats.TotalTimeMs += durationMs
+	stats.Count++
+	s.LetterSeekTime[letter] = stats
+}
+
+// RecordBigramSeekTime records the time taken to type a letter pair (bigram)
+func (s *Stats) RecordBigramSeekTime(bigram string, durationMs int64) {
+	if s.BigramSeekTime == nil {
+		s.BigramSeekTime = make(map[string]BigramSeekStats)
+	}
+	stats := s.BigramSeekTime[bigram]
+	stats.TotalTimeMs += durationMs
+	stats.Count++
+	s.BigramSeekTime[bigram] = stats
 }
 
 // Calculate computes WPM and accuracy from raw stats
@@ -73,7 +157,11 @@ func LoadHistoricalStats() (*HistoricalStats, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &HistoricalStats{}, nil
+			return &HistoricalStats{
+				LetterAccuracy: make(map[string]LetterStats),
+				LetterSeekTime: make(map[string]LetterSeekStats),
+				BigramSeekTime: make(map[string]BigramSeekStats),
+			}, nil
 		}
 		return &HistoricalStats{}, err
 	}
@@ -81,6 +169,17 @@ func LoadHistoricalStats() (*HistoricalStats, error) {
 	var stats HistoricalStats
 	if err := json.Unmarshal(data, &stats); err != nil {
 		return &HistoricalStats{}, err
+	}
+
+	// Initialize maps if nil
+	if stats.LetterAccuracy == nil {
+		stats.LetterAccuracy = make(map[string]LetterStats)
+	}
+	if stats.LetterSeekTime == nil {
+		stats.LetterSeekTime = make(map[string]LetterSeekStats)
+	}
+	if stats.BigramSeekTime == nil {
+		stats.BigramSeekTime = make(map[string]BigramSeekStats)
 	}
 
 	// Validate and fix corrupted averages from older versions
@@ -163,6 +262,39 @@ func (h *HistoricalStats) UpdateHistorical(session *Stats) {
 	// Best time is the fastest (lowest) time
 	if h.BestTime == 0 || session.Duration.Seconds() < h.BestTime {
 		h.BestTime = session.Duration.Seconds()
+	}
+
+	// Merge session letter accuracy into historical
+	if h.LetterAccuracy == nil {
+		h.LetterAccuracy = make(map[string]LetterStats)
+	}
+	for letter, sessionStats := range session.LetterAccuracy {
+		histStats := h.LetterAccuracy[letter]
+		histStats.Presented += sessionStats.Presented
+		histStats.Correct += sessionStats.Correct
+		h.LetterAccuracy[letter] = histStats
+	}
+
+	// Merge session letter seek time into historical
+	if h.LetterSeekTime == nil {
+		h.LetterSeekTime = make(map[string]LetterSeekStats)
+	}
+	for letter, sessionStats := range session.LetterSeekTime {
+		histStats := h.LetterSeekTime[letter]
+		histStats.TotalTimeMs += sessionStats.TotalTimeMs
+		histStats.Count += sessionStats.Count
+		h.LetterSeekTime[letter] = histStats
+	}
+
+	// Merge session bigram seek time into historical
+	if h.BigramSeekTime == nil {
+		h.BigramSeekTime = make(map[string]BigramSeekStats)
+	}
+	for bigram, sessionStats := range session.BigramSeekTime {
+		histStats := h.BigramSeekTime[bigram]
+		histStats.TotalTimeMs += sessionStats.TotalTimeMs
+		histStats.Count += sessionStats.Count
+		h.BigramSeekTime[bigram] = histStats
 	}
 }
 
