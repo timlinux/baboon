@@ -83,7 +83,49 @@ func LoadHistoricalStats() (*HistoricalStats, error) {
 		return &HistoricalStats{}, err
 	}
 
+	// Validate and fix corrupted averages from older versions
+	stats.validateAndFix()
+
 	return &stats, nil
+}
+
+// validateAndFix checks for inconsistent data and resets if needed
+func (h *HistoricalStats) validateAndFix() {
+	if h.TotalSessions == 0 {
+		return
+	}
+
+	// Check if averages are inconsistent (e.g., average time < best time is impossible
+	// if we have more than 1 session, or totals are 0 when they shouldn't be)
+	needsReset := false
+
+	// If we have sessions but no totals tracked, data is from old version
+	if h.TotalSessions > 0 && h.TotalWPM == 0 && h.BestWPM > 0 {
+		needsReset = true
+	}
+	if h.TotalSessions > 0 && h.TotalTime == 0 && h.BestTime > 0 {
+		needsReset = true
+	}
+	if h.TotalSessions > 0 && h.TotalAccuracy == 0 && h.BestAccuracy > 0 {
+		needsReset = true
+	}
+
+	// If average is less than best (impossible), data is corrupted
+	if h.TotalSessions > 1 {
+		avgWPM := h.TotalWPM / float64(h.TotalSessions)
+		if avgWPM > 0 && avgWPM < h.BestWPM*0.5 {
+			// Average WPM less than half of best is suspicious
+			needsReset = true
+		}
+	}
+
+	if needsReset {
+		// Reset totals based on best values as estimates
+		// This gives a reasonable starting point
+		h.TotalWPM = h.BestWPM * float64(h.TotalSessions)
+		h.TotalAccuracy = h.BestAccuracy * float64(h.TotalSessions)
+		h.TotalTime = h.BestTime * float64(h.TotalSessions)
+	}
 }
 
 // SaveHistoricalStats saves historical stats to disk
