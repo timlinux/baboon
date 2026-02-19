@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(nix develop:*)",
+      "Bash(nix build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
