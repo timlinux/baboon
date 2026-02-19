@@ -9,21 +9,25 @@ import (
 
 // Stats represents typing statistics for a session
 type Stats struct {
-	WordsCompleted   int           `json:"words_completed"`
-	TotalCharacters  int           `json:"total_characters"`
-	CorrectChars     int           `json:"correct_chars"`
-	IncorrectChars   int           `json:"incorrect_chars"`
-	StartTime        time.Time     `json:"start_time"`
-	EndTime          time.Time     `json:"end_time"`
-	Duration         time.Duration `json:"duration"`
-	WPM              float64       `json:"wpm"`
-	Accuracy         float64       `json:"accuracy"`
+	WordsCompleted  int           `json:"words_completed"`
+	TotalCharacters int           `json:"total_characters"`
+	CorrectChars    int           `json:"correct_chars"`
+	IncorrectChars  int           `json:"incorrect_chars"`
+	StartTime       time.Time     `json:"start_time"`
+	EndTime         time.Time     `json:"end_time"`
+	Duration        time.Duration `json:"duration"`
+	WPM             float64       `json:"wpm"`
+	Accuracy        float64       `json:"accuracy"`
 }
 
 // HistoricalStats stores best performance data
 type HistoricalStats struct {
 	BestWPM         float64   `json:"best_wpm"`
 	BestAccuracy    float64   `json:"best_accuracy"`
+	BestTime        float64   `json:"best_time"` // Best (fastest) time in seconds
+	TotalWPM        float64   `json:"total_wpm"`
+	TotalAccuracy   float64   `json:"total_accuracy"`
+	TotalTime       float64   `json:"total_time"` // Total time across all sessions
 	TotalSessions   int       `json:"total_sessions"`
 	LastSessionDate time.Time `json:"last_session_date"`
 }
@@ -102,10 +106,44 @@ func (h *HistoricalStats) UpdateHistorical(session *Stats) {
 	h.TotalSessions++
 	h.LastSessionDate = time.Now()
 
+	// Update totals for averages
+	h.TotalWPM += session.WPM
+	h.TotalAccuracy += session.Accuracy
+	h.TotalTime += session.Duration.Seconds()
+
+	// Update bests
 	if session.WPM > h.BestWPM {
 		h.BestWPM = session.WPM
 	}
 	if session.Accuracy > h.BestAccuracy {
 		h.BestAccuracy = session.Accuracy
 	}
+	// Best time is the fastest (lowest) time
+	if h.BestTime == 0 || session.Duration.Seconds() < h.BestTime {
+		h.BestTime = session.Duration.Seconds()
+	}
+}
+
+// AverageWPM returns the average WPM across all sessions
+func (h *HistoricalStats) AverageWPM() float64 {
+	if h.TotalSessions == 0 {
+		return 0
+	}
+	return h.TotalWPM / float64(h.TotalSessions)
+}
+
+// AverageAccuracy returns the average accuracy across all sessions
+func (h *HistoricalStats) AverageAccuracy() float64 {
+	if h.TotalSessions == 0 {
+		return 0
+	}
+	return h.TotalAccuracy / float64(h.TotalSessions)
+}
+
+// AverageTime returns the average time across all sessions in seconds
+func (h *HistoricalStats) AverageTime() float64 {
+	if h.TotalSessions == 0 {
+		return 0
+	}
+	return h.TotalTime / float64(h.TotalSessions)
 }

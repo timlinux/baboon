@@ -370,77 +370,180 @@ func (m model) renderTyping() string {
 	return fullContent.String()
 }
 
+// renderStatBar creates a gradient bar for a stat value
+func renderStatBar(value, maxValue float64, width int, isNewBest bool) string {
+	fillPercent := value / maxValue
+	if fillPercent > 1.0 {
+		fillPercent = 1.0
+	}
+	if fillPercent < 0 {
+		fillPercent = 0
+	}
+
+	filledWidth := int(float64(width) * fillPercent)
+	emptyWidth := width - filledWidth
+
+	// Gradient colours
+	gradientColours := []string{
+		"196", "202", "208", "214", "220", "226",
+		"190", "154", "118", "82", "46", "47",
+	}
+
+	var bar strings.Builder
+
+	for i := 0; i < filledWidth; i++ {
+		colourIdx := int(float64(i) / float64(width) * float64(len(gradientColours)-1))
+		if colourIdx >= len(gradientColours) {
+			colourIdx = len(gradientColours) - 1
+		}
+		colour := gradientColours[colourIdx]
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		bar.WriteString(style.Render("█"))
+	}
+
+	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("236"))
+	for i := 0; i < emptyWidth; i++ {
+		bar.WriteString(emptyStyle.Render("░"))
+	}
+
+	// Add star for new best
+	if isNewBest {
+		starStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("226")).Bold(true)
+		bar.WriteString(starStyle.Render(" *"))
+	}
+
+	return bar.String()
+}
+
+// renderTimeBar creates a bar for time (lower is better, so inverted)
+func renderTimeBar(value, maxValue float64, width int, isNewBest bool) string {
+	// Invert the percentage since lower time is better
+	fillPercent := 1.0 - (value / maxValue)
+	if fillPercent > 1.0 {
+		fillPercent = 1.0
+	}
+	if fillPercent < 0 {
+		fillPercent = 0
+	}
+
+	filledWidth := int(float64(width) * fillPercent)
+	emptyWidth := width - filledWidth
+
+	// Gradient colours (inverted - green for fast, red for slow)
+	gradientColours := []string{
+		"196", "202", "208", "214", "220", "226",
+		"190", "154", "118", "82", "46", "47",
+	}
+
+	var bar strings.Builder
+
+	for i := 0; i < filledWidth; i++ {
+		colourIdx := int(float64(i) / float64(width) * float64(len(gradientColours)-1))
+		if colourIdx >= len(gradientColours) {
+			colourIdx = len(gradientColours) - 1
+		}
+		colour := gradientColours[colourIdx]
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		bar.WriteString(style.Render("█"))
+	}
+
+	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("236"))
+	for i := 0; i < emptyWidth; i++ {
+		bar.WriteString(emptyStyle.Render("░"))
+	}
+
+	if isNewBest {
+		starStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("226")).Bold(true)
+		bar.WriteString(starStyle.Render(" *"))
+	}
+
+	return bar.String()
+}
+
 func (m model) renderResults() string {
 	titleStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("14")).
-		Bold(true).
-		MarginBottom(1)
-
-	statLabelStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("7"))
-
-	statValueStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("10")).
 		Bold(true)
 
-	comparisonBetterStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("10"))
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("7")).
+		Width(18).
+		Align(lipgloss.Right)
 
-	comparisonWorseStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("9"))
+	valueStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("15")).
+		Width(10).
+		Align(lipgloss.Right)
+
+	sessionLabelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("6")).
+		Width(18).
+		Align(lipgloss.Right)
 
 	helpStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("6")).
-		MarginTop(2)
+		Foreground(lipgloss.Color("8"))
 
-	// Build stats display
+	newBestStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("226")).
+		Bold(true)
+
+	const barWidth = 30
+	const maxWPMDisplay = 120.0
+	const maxTimeDisplay = 180.0 // 3 minutes max for time bar
+	const maxAccuracy = 100.0
+
 	title := titleStyle.Render("Round Complete!")
 
-	wpmStr := fmt.Sprintf("%.1f", m.stats.WPM)
-	accuracyStr := fmt.Sprintf("%.1f%%", m.stats.Accuracy)
-	durationStr := fmt.Sprintf("%.1f seconds", m.stats.Duration.Seconds())
+	// Check for new bests
+	isNewBestWPM := m.stats.WPM >= m.historical.BestWPM
+	isNewBestTime := m.historical.TotalSessions == 1 || m.stats.Duration.Seconds() <= m.historical.BestTime
+	isNewBestAccuracy := m.stats.Accuracy >= m.historical.BestAccuracy
 
-	statsContent := []string{
-		statLabelStyle.Render("Words Per Minute: ") + statValueStyle.Render(wpmStr),
-		statLabelStyle.Render("Accuracy: ") + statValueStyle.Render(accuracyStr),
-		statLabelStyle.Render("Time: ") + statValueStyle.Render(durationStr),
-		statLabelStyle.Render("Characters Typed: ") + statValueStyle.Render(fmt.Sprintf("%d", m.stats.TotalCharacters)),
-		"",
-	}
+	var statsLines []string
 
-	// Historical comparison
-	if m.historical.TotalSessions > 1 {
-		statsContent = append(statsContent, statLabelStyle.Render("--- Historical Best ---"))
+	// WPM section
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines,
+		labelStyle.Render("WPM this run:")+valueStyle.Render(fmt.Sprintf("%.1f", m.stats.WPM))+" "+renderStatBar(m.stats.WPM, maxWPMDisplay, barWidth, isNewBestWPM))
+	statsLines = append(statsLines,
+		labelStyle.Render("WPM best:")+valueStyle.Render(fmt.Sprintf("%.1f", m.historical.BestWPM))+" "+renderStatBar(m.historical.BestWPM, maxWPMDisplay, barWidth, false))
+	statsLines = append(statsLines,
+		labelStyle.Render("WPM average:")+valueStyle.Render(fmt.Sprintf("%.1f", m.historical.AverageWPM()))+" "+renderStatBar(m.historical.AverageWPM(), maxWPMDisplay, barWidth, false))
 
-		wpmDiff := m.stats.WPM - m.historical.BestWPM
-		var wpmComparison string
-		if wpmDiff >= 0 {
-			wpmComparison = comparisonBetterStyle.Render(fmt.Sprintf(" (NEW BEST! +%.1f)", wpmDiff))
-		} else {
-			wpmComparison = comparisonWorseStyle.Render(fmt.Sprintf(" (%.1f from best)", wpmDiff))
-		}
-		statsContent = append(statsContent, statLabelStyle.Render("Best WPM: ")+statValueStyle.Render(fmt.Sprintf("%.1f", m.historical.BestWPM))+wpmComparison)
+	// Time section
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines,
+		labelStyle.Render("Time this run:")+valueStyle.Render(fmt.Sprintf("%.1fs", m.stats.Duration.Seconds()))+" "+renderTimeBar(m.stats.Duration.Seconds(), maxTimeDisplay, barWidth, isNewBestTime))
+	statsLines = append(statsLines,
+		labelStyle.Render("Time best:")+valueStyle.Render(fmt.Sprintf("%.1fs", m.historical.BestTime))+" "+renderTimeBar(m.historical.BestTime, maxTimeDisplay, barWidth, false))
+	statsLines = append(statsLines,
+		labelStyle.Render("Time average:")+valueStyle.Render(fmt.Sprintf("%.1fs", m.historical.AverageTime()))+" "+renderTimeBar(m.historical.AverageTime(), maxTimeDisplay, barWidth, false))
 
-		accDiff := m.stats.Accuracy - m.historical.BestAccuracy
-		var accComparison string
-		if accDiff >= 0 {
-			accComparison = comparisonBetterStyle.Render(fmt.Sprintf(" (NEW BEST! +%.1f%%)", accDiff))
-		} else {
-			accComparison = comparisonWorseStyle.Render(fmt.Sprintf(" (%.1f%% from best)", accDiff))
-		}
-		statsContent = append(statsContent, statLabelStyle.Render("Best Accuracy: ")+statValueStyle.Render(fmt.Sprintf("%.1f%%", m.historical.BestAccuracy))+accComparison)
+	// Accuracy section
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines,
+		labelStyle.Render("Accuracy this run:")+valueStyle.Render(fmt.Sprintf("%.1f%%", m.stats.Accuracy))+" "+renderStatBar(m.stats.Accuracy, maxAccuracy, barWidth, isNewBestAccuracy))
+	statsLines = append(statsLines,
+		labelStyle.Render("Accuracy best:")+valueStyle.Render(fmt.Sprintf("%.1f%%", m.historical.BestAccuracy))+" "+renderStatBar(m.historical.BestAccuracy, maxAccuracy, barWidth, false))
+	statsLines = append(statsLines,
+		labelStyle.Render("Accuracy average:")+valueStyle.Render(fmt.Sprintf("%.1f%%", m.historical.AverageAccuracy()))+" "+renderStatBar(m.historical.AverageAccuracy(), maxAccuracy, barWidth, false))
 
-		statsContent = append(statsContent, statLabelStyle.Render("Total Sessions: ")+statValueStyle.Render(fmt.Sprintf("%d", m.historical.TotalSessions)))
-	} else {
-		statsContent = append(statsContent, comparisonBetterStyle.Render("First session complete! Your scores are now the benchmark."))
-	}
+	// Sessions
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines,
+		sessionLabelStyle.Render("Total sessions:")+valueStyle.Render(fmt.Sprintf("%d", m.historical.TotalSessions)))
+
+	// Legend
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines, newBestStyle.Render("* = New personal best!"))
 
 	help := helpStyle.Render("Press ENTER for a new round | ESC to quit")
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
 		title,
-		strings.Join(statsContent, "\n"),
+		strings.Join(statsLines, "\n"),
+		"",
 		help,
 	)
 

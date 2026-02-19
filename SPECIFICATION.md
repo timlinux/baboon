@@ -52,11 +52,13 @@ Baboon is a cross-platform terminal-based typing practice application built with
 - The user SHALL be able to start a new round by pressing Enter
 
 ### FR-004: Statistics Display
-- At the end of each round, the application SHALL display:
-  - Words Per Minute (WPM)
-  - Accuracy percentage
-  - Total time elapsed
-  - Total characters typed
+- At the end of each round, the application SHALL display paired gradient bars comparing:
+  - WPM: this run, best, and average
+  - Time: this run, best (fastest), and average
+  - Accuracy: this run, best, and average
+  - Total sessions count
+- Each stat SHALL show a gradient bar (red→yellow→green) indicating performance level
+- New personal bests SHALL be marked with a star (*) indicator
 - WPM SHALL be calculated as: (correct characters / 5) / minutes elapsed
 - Accuracy SHALL be calculated as: (correct characters / total characters) * 100
 
@@ -76,11 +78,12 @@ Baboon is a cross-platform terminal-based typing practice application built with
 - The application SHALL track:
   - Best WPM achieved
   - Best accuracy achieved
+  - Best (fastest) time achieved
+  - Total WPM, accuracy, and time for average calculations
   - Total number of sessions completed
   - Date of last session
-- After each round, the application SHALL compare current performance to historical best:
-  - Display "NEW BEST!" in green when a new record is achieved
-  - Display difference from best in red when below the record
+- After each round, the application SHALL compare current performance to historical best
+- New personal bests SHALL be indicated with a star (*) marker on the bar
 
 ### FR-006: Navigation
 - ESC or Ctrl+C SHALL exit the application at any time
@@ -153,6 +156,10 @@ baboon/
 {
   "best_wpm": 65.5,
   "best_accuracy": 98.2,
+  "best_time": 45.3,
+  "total_wpm": 850.5,
+  "total_accuracy": 1420.8,
+  "total_time": 725.0,
   "total_sessions": 15,
   "last_session_date": "2024-01-15T10:30:00Z"
 }
