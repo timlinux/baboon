@@ -30,9 +30,10 @@ Baboon is a cross-platform terminal-based typing practice application built with
 
 ### FR-001: Word Display
 - The application SHALL display words from a dictionary of the 1000 most common English words
-- Each word SHALL be rendered in an oversized ASCII art font (FIGlet "banner" style)
+- Each word SHALL be rendered in large block characters using Unicode block elements (█)
 - Words SHALL be displayed centered on the terminal screen
 - The word display SHALL show progress (current word number / total words)
+- Letters SHALL change color in-place as the user types (no separate input display)
 
 ### FR-002: Typing Input
 - The application SHALL accept keyboard input character by character
@@ -85,13 +86,12 @@ Baboon is a cross-platform terminal-based typing practice application built with
 ### TR-002: Terminal Interface
 - The application SHALL use the Bubble Tea framework for the TUI
 - The application SHALL use lipgloss for styling
-- The application SHALL use go-figure for ASCII art rendering
+- The application SHALL use custom block font rendering with Unicode block characters
 - The application SHALL use the alternate screen buffer (fullscreen mode)
 
 ### TR-003: Dependencies
 - github.com/charmbracelet/bubbletea - TUI framework
 - github.com/charmbracelet/lipgloss - Styling
-- github.com/common-nighthawk/go-figure - ASCII art generation
 
 ## Business Rules
 
@@ -122,6 +122,8 @@ baboon/
 ├── go.mod              # Go module definition
 ├── go.sum              # Go module checksums
 ├── main.go             # Application entry point and TUI logic
+├── font/
+│   └── font.go         # Custom block letter font definitions
 ├── words/
 │   └── words.go        # Dictionary of 1000 common words
 ├── stats/

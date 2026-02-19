@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/common-nighthawk/go-figure"
+	"github.com/timlinux/baboon/font"
 	"github.com/timlinux/baboon/stats"
 	"github.com/timlinux/baboon/words"
 )
@@ -25,15 +25,15 @@ const (
 )
 
 type model struct {
-	state           gameState
-	words           []string
-	currentWordIdx  int
-	currentInput    string
-	stats           *stats.Stats
-	historical      *stats.HistoricalStats
-	width           int
-	height          int
-	rng             *rand.Rand
+	state          gameState
+	words          []string
+	currentWordIdx int
+	currentInput   string
+	stats          *stats.Stats
+	historical     *stats.HistoricalStats
+	width          int
+	height         int
+	rng            *rand.Rand
 }
 
 func initialModel() model {
@@ -155,61 +155,54 @@ func (m model) renderTyping() string {
 
 	currentWord := m.words[m.currentWordIdx]
 
-	// Create ASCII art version of the word using FIGlet-style font
-	fig := figure.NewFigure(currentWord, "banner", true)
-	asciiArt := fig.String()
+	// Render word using custom block font
+	letterLines := font.RenderWord(currentWord)
 
-	// Color each character based on input
-	lines := strings.Split(asciiArt, "\n")
-	coloredLines := make([]string, len(lines))
+	// Define styles
+	greenStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("10")) // Green - correct
+	redStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("9"))    // Red - incorrect
+	grayStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("8"))   // Gray - not yet typed
 
-	// Get character width (approximate by dividing line length by word length)
-	if len(lines) > 0 && len(currentWord) > 0 {
-		lineLen := len(lines[0])
-		charWidth := lineLen / len(currentWord)
-		if charWidth < 1 {
-			charWidth = 1
-		}
+	// Build colored output for each line
+	coloredLines := make([]string, font.LetterHeight)
 
-		for lineIdx, line := range lines {
-			var coloredLine strings.Builder
-			for charIdx := 0; charIdx < len(currentWord) && charIdx*charWidth < len(line); charIdx++ {
-				start := charIdx * charWidth
-				end := start + charWidth
-				if end > len(line) {
-					end = len(line)
-				}
-				segment := line[start:end]
+	for lineIdx := 0; lineIdx < font.LetterHeight; lineIdx++ {
+		var lineBuilder strings.Builder
 
-				var style lipgloss.Style
-				if charIdx < len(m.currentInput) {
-					if m.currentInput[charIdx] == currentWord[charIdx] {
-						style = lipgloss.NewStyle().Foreground(lipgloss.Color("10")) // Green
-					} else {
-						style = lipgloss.NewStyle().Foreground(lipgloss.Color("9")) // Red
-					}
+		for charIdx, letterLine := range letterLines[lineIdx] {
+			var style lipgloss.Style
+
+			if charIdx < len(m.currentInput) {
+				// Character has been typed
+				if charIdx < len(currentWord) && m.currentInput[charIdx] == currentWord[charIdx] {
+					style = greenStyle
 				} else {
-					style = lipgloss.NewStyle().Foreground(lipgloss.Color("7")) // Gray/default
+					style = redStyle
 				}
-				coloredLine.WriteString(style.Render(segment))
+			} else {
+				// Character not yet typed
+				style = grayStyle
 			}
-			coloredLines[lineIdx] = coloredLine.String()
+
+			lineBuilder.WriteString(style.Render(letterLine))
+			// Add spacing between letters
+			if charIdx < len(letterLines[lineIdx])-1 {
+				lineBuilder.WriteString(style.Render(" "))
+			}
 		}
+
+		coloredLines[lineIdx] = lineBuilder.String()
 	}
 
-	coloredAscii := strings.Join(coloredLines, "\n")
+	coloredWord := strings.Join(coloredLines, "\n")
 
 	// Progress indicator
 	progress := fmt.Sprintf("Word %d/%d", m.currentWordIdx+1, len(m.words))
 	progressStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("6")).Bold(true)
 
-	// Input display
-	inputStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true)
-	inputDisplay := inputStyle.Render("Type: " + m.currentInput + "_")
-
 	// Instructions
 	helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
-	help := helpStyle.Render("Press SPACE after typing the word | ESC to quit")
+	help := helpStyle.Render("Type the word, then press SPACE to continue | ESC to quit")
 
 	// Center everything
 	content := lipgloss.JoinVertical(
@@ -217,9 +210,9 @@ func (m model) renderTyping() string {
 		"",
 		progressStyle.Render(progress),
 		"",
-		coloredAscii,
 		"",
-		inputDisplay,
+		coloredWord,
+		"",
 		"",
 		help,
 	)
