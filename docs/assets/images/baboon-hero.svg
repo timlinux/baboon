@@ -154,19 +154,22 @@
   <ellipse cx="140" cy="280" rx="4" ry="3" fill="#0D0A08"/>
   <ellipse cx="160" cy="280" rx="4" ry="3" fill="#0D0A08"/>
 
-  <!-- Eyes - deep-set under brow ridge, looking at screen -->
+  <!-- Smugly half-lidded eyes - "I'm faster than you humans" look -->
   <ellipse cx="120" cy="198" rx="12" ry="10" fill="#1A1512"/>
   <ellipse cx="180" cy="198" rx="12" ry="10" fill="#1A1512"/>
-  <ellipse cx="120" cy="198" rx="9" ry="8" fill="#FFF8E7"/>
-  <ellipse cx="180" cy="198" rx="9" ry="8" fill="#FFF8E7"/>
-  <circle cx="124" cy="198" r="5" fill="#4A3728"/>
-  <circle cx="184" cy="198" r="5" fill="#4A3728"/>
-  <circle cx="125" cy="196" r="2" fill="white"/>
-  <circle cx="185" cy="196" r="2" fill="white"/>
+  <ellipse cx="120" cy="200" rx="9" ry="6" fill="#FFF8E7"/>
+  <ellipse cx="180" cy="200" rx="9" ry="6" fill="#FFF8E7"/>
+  <circle cx="124" cy="200" r="5" fill="#4A3728"/>
+  <circle cx="184" cy="200" r="5" fill="#4A3728"/>
+  <circle cx="125" cy="198" r="2" fill="white"/>
+  <circle cx="185" cy="198" r="2" fill="white"/>
+  <!-- Half-closed superior lids -->
+  <path d="M108 194 Q120 188, 132 194" fill="#3D3833" stroke="none"/>
+  <path d="M168 194 Q180 188, 192 194" fill="#3D3833" stroke="none"/>
 
-  <!-- Thick brow furrow (concentrated expression) -->
-  <path d="M100 182 Q120 175, 132 185" fill="none" stroke="#3D3833" stroke-width="5" stroke-linecap="round"/>
-  <path d="M168 185 Q180 175, 200 182" fill="none" stroke="#3D3833" stroke-width="5" stroke-linecap="round"/>
+  <!-- Raised eyebrows - smug superiority over slow humans -->
+  <path d="M100 188 Q120 182, 132 188" fill="none" stroke="#3D3833" stroke-width="4" stroke-linecap="round"/>
+  <path d="M168 188 Q180 182, 200 188" fill="none" stroke="#3D3833" stroke-width="4" stroke-linecap="round"/>
 
   <!-- Ears - smaller, rounded, set back - typical Chacma -->
   <ellipse cx="90" cy="180" rx="14" ry="20" fill="url(#chacmaFur)"/>
@@ -174,8 +177,12 @@
   <ellipse cx="210" cy="180" rx="14" ry="20" fill="url(#chacmaFur)"/>
   <ellipse cx="210" cy="180" rx="8" ry="12" fill="#2D2520"/>
 
-  <!-- Mouth line -->
-  <path d="M135 285 Q150 290, 165 285" fill="none" stroke="#0D0A08" stroke-width="2" stroke-linecap="round"/>
+  <!-- Smug self-satisfied smirk - better than dumbass humans -->
+  <path d="M130 282 Q150 295, 170 282" fill="none" stroke="#0D0A08" stroke-width="3" stroke-linecap="round"/>
+  <!-- Knowing upturn at corner -->
+  <path d="M170 282 Q175 278, 178 273" fill="none" stroke="#0D0A08" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Slight cheek bulge from smirking -->
+  <ellipse cx="178" cy="268" rx="6" ry="4" fill="#2D2520" opacity="0.3"/>
 
   <!-- Left arm reaching to keyboard - dark fur -->
   <path d="M95 280 Q130 310, 280 345" fill="none" stroke="url(#chacmaFur)" stroke-width="30" stroke-linecap="round"/>

@@ -83,21 +83,24 @@
   <ellipse cx="93" cy="109" rx="3" ry="2" fill="#0D0A08"/>
   <ellipse cx="107" cy="109" rx="3" ry="2" fill="#0D0A08"/>
 
-  <!-- Deep-set eyes under brow ridge -->
+  <!-- Smugly half-lidded eyes - superior expression -->
   <g>
     <ellipse cx="78" cy="58" rx="9" ry="8" fill="#1A1512"/>
     <ellipse cx="122" cy="58" rx="9" ry="8" fill="#1A1512"/>
-    <ellipse cx="78" cy="58" rx="7" ry="6" fill="#FFF8E7"/>
-    <ellipse cx="122" cy="58" rx="7" ry="6" fill="#FFF8E7"/>
-    <circle cx="80" cy="58" r="4" fill="#4A3728"/>
-    <circle cx="124" cy="58" r="4" fill="#4A3728"/>
-    <circle cx="81" cy="57" r="1.5" fill="white"/>
-    <circle cx="125" cy="57" r="1.5" fill="white"/>
+    <ellipse cx="78" cy="59" rx="7" ry="5" fill="#FFF8E7"/>
+    <ellipse cx="122" cy="59" rx="7" ry="5" fill="#FFF8E7"/>
+    <circle cx="80" cy="59" r="4" fill="#4A3728"/>
+    <circle cx="124" cy="59" r="4" fill="#4A3728"/>
+    <circle cx="81" cy="58" r="1.5" fill="white"/>
+    <circle cx="125" cy="58" r="1.5" fill="white"/>
+    <!-- Half-closed lids - smug look -->
+    <path d="M69 55 Q78 52, 87 55" fill="#3D3833" stroke="none"/>
+    <path d="M113 55 Q122 52, 131 55" fill="#3D3833" stroke="none"/>
   </g>
 
-  <!-- Thick brow expression -->
-  <path d="M65 48 Q78 44, 88 50" fill="none" stroke="#3D3833" stroke-width="4" stroke-linecap="round"/>
-  <path d="M112 50 Q122 44, 135 48" fill="none" stroke="#3D3833" stroke-width="4" stroke-linecap="round"/>
+  <!-- Smug raised eyebrows - pleased with himself -->
+  <path d="M65 52 Q78 48, 88 52" fill="none" stroke="#3D3833" stroke-width="3" stroke-linecap="round"/>
+  <path d="M112 52 Q122 48, 135 52" fill="none" stroke="#3D3833" stroke-width="3" stroke-linecap="round"/>
 
   <!-- Ears - smaller, set back on head like Chacma -->
   <ellipse cx="55" cy="48" rx="10" ry="14" fill="url(#chacmaFur)"/>
@@ -105,8 +108,10 @@
   <ellipse cx="145" cy="48" rx="10" ry="14" fill="url(#chacmaFur)"/>
   <ellipse cx="145" cy="48" rx="5" ry="8" fill="#2D2520"/>
 
-  <!-- Mouth line -->
-  <path d="M88 112 Q100 116, 112 112" fill="none" stroke="#0D0A08" stroke-width="2" stroke-linecap="round"/>
+  <!-- Smug self-satisfied smirk -->
+  <path d="M85 110 Q100 118, 115 110" fill="none" stroke="#0D0A08" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Slight upturn at corner - knowing smile -->
+  <path d="M115 110 Q118 108, 120 106" fill="none" stroke="#0D0A08" stroke-width="2" stroke-linecap="round"/>
 
   <!-- Arms reaching to keyboard - darker fur -->
   <ellipse cx="58" cy="130" rx="12" ry="20" fill="url(#chacmaFur)"/>
