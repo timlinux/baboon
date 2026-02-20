@@ -6,26 +6,54 @@
 
 **Baboon** is a cross-platform typing practice application that helps you become a keyboard warrior! Built with Go and featuring both a gorgeous terminal interface and a modern web UI, Baboon makes improving your typing skills actually fun.
 
-<div class="feature-grid">
-  <div class="feature-card">
-    <div class="feature-icon">:material-keyboard:</div>
-    <h3>Beautiful Interfaces</h3>
-    <p>Choose between a stunning Terminal UI with Unicode block letters or a sleek Web UI with physics-based animations.</p>
+<div class="feature-grid" markdown>
+  <div class="feature-card" markdown>
+<span class="feature-icon">
+
+:material-keyboard:
+
+</span>
+
+### Beautiful Interfaces
+
+Choose between a stunning Terminal UI with Unicode block letters or a sleek Web UI with physics-based animations.
+
   </div>
-  <div class="feature-card">
-    <div class="feature-icon">:material-brain:</div>
-    <h3>Adaptive Learning</h3>
-    <p>Baboon learns your weak spots and prioritises words with letters you frequently mistype.</p>
+  <div class="feature-card" markdown>
+<span class="feature-icon">
+
+:material-brain:
+
+</span>
+
+### Adaptive Learning
+
+Baboon learns your weak spots and prioritises words with letters you frequently mistype.
+
   </div>
-  <div class="feature-card">
-    <div class="feature-icon">:material-chart-line:</div>
-    <h3>Deep Statistics</h3>
-    <p>Track per-letter accuracy, finger performance, hand balance, and see where you need to improve.</p>
+  <div class="feature-card" markdown>
+<span class="feature-icon">
+
+:material-chart-line:
+
+</span>
+
+### Deep Statistics
+
+Track per-letter accuracy, finger performance, hand balance, and see where you need to improve.
+
   </div>
-  <div class="feature-card">
-    <div class="feature-icon">:material-lightning-bolt:</div>
-    <h3>Real-time Feedback</h3>
-    <p>Instant colour feedback as you type - green for correct, red for mistakes. No guessing!</p>
+  <div class="feature-card" markdown>
+<span class="feature-icon">
+
+:material-lightning-bolt:
+
+</span>
+
+### Real-time Feedback
+
+Instant colour feedback as you type - green for correct, red for mistakes. No guessing!
+
   </div>
 </div>
 
@@ -80,21 +108,31 @@ My typing speed went from 45 WPM to 75 WPM in just two weeks of daily practice w
 
 ## Ready to Start?
 
-<div class="feature-grid">
-  <div class="feature-card">
-    <h3>:material-download: Download</h3>
-    <p>Grab a pre-built binary for your platform from our releases page.</p>
-    <a href="getting-started/installation/">Installation Guide →</a>
+<div class="feature-grid" markdown>
+  <div class="feature-card" markdown>
+
+### :material-download: Download
+
+Grab a pre-built binary for your platform from our releases page.
+
+[Installation Guide →](getting-started/installation/)
+
   </div>
-  <div class="feature-card">
-    <h3>:material-play-circle: Try Now</h3>
-    <p>Jump straight in with our quick start guide.</p>
-    <a href="getting-started/quick-start/">Quick Start →</a>
+  <div class="feature-card" markdown>
+
+### :material-play-circle: Try Now
+
+Jump straight in with our quick start guide.
+
+[Quick Start →](getting-started/quick-start/)
+
   </div>
 </div>
 
 ---
 
-<p style="text-align: center; color: #666;">
-  Made with :material-heart: for typists everywhere
+<p style="text-align: center; color: #666;" markdown>
+
+Made with :material-heart: for typists everywhere
+
 </p>

@@ -82,7 +82,23 @@
 
 .feature-card .feature-icon {
   font-size: 2.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.feature-card .feature-icon p {
+  margin: 0;
+  line-height: 1;
+}
+
+.feature-card .feature-icon .twemoji,
+.feature-card .feature-icon svg {
+  width: 3rem;
+  height: 3rem;
+}
+
+.feature-card h3 {
+  margin-top: 0.5rem !important;
 }
 
 /* Keyboard key styling */
