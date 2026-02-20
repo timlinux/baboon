@@ -33,6 +33,10 @@ type Model struct {
 	renderer *Renderer
 	animator *Animator
 
+	// Carousel animation for typing screen
+	carouselAnimator *CarouselAnimator
+	lastWordIdx      int // Track word changes to trigger animations
+
 	// Local timing state (to avoid network latency affecting measurements)
 	timerStarted bool
 	startTime    time.Time
@@ -43,9 +47,11 @@ type Model struct {
 // NewModel creates a new Model with the given backend API
 func NewModel(api backend.GameAPI) Model {
 	return Model{
-		api:      api,
-		state:    StateTyping,
-		renderer: NewRenderer(80, 24), // Default size, will be updated
+		api:              api,
+		state:            StateTyping,
+		renderer:         NewRenderer(80, 24), // Default size, will be updated
+		carouselAnimator: NewCarouselAnimator(),
+		lastWordIdx:      0,
 	}
 }
 
@@ -61,10 +67,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tickCmd()
 
 	case animTickMsg:
+		// Handle results screen animations
 		if m.state == StateResults && m.animator != nil {
 			m.animator.Update()
 			// Stop animation loop once all animations are complete
 			if !m.animator.IsComplete() {
+				return m, animTickCmd()
+			}
+		}
+		// Handle typing screen carousel animations
+		if m.state == StateTyping && m.carouselAnimator != nil && m.carouselAnimator.IsAnimating {
+			m.carouselAnimator.Update()
+			if m.carouselAnimator.IsAnimating {
 				return m, animTickCmd()
 			}
 		}
@@ -100,7 +114,7 @@ func (m Model) View() string {
 			}
 		}
 		gameState.TimerStarted = m.timerStarted
-		return m.renderer.RenderTypingScreen(gameState)
+		return m.renderer.RenderTypingScreenAnimated(gameState, m.carouselAnimator)
 	case StateResults:
 		return m.renderer.RenderResultsScreen(
 			m.api.GetSessionStats(),
@@ -141,6 +155,10 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			// Reset timing state
 			m.timerStarted = false
 			m.correctChars = 0
+			return m, animTickCmd()
+		} else if result.Advanced {
+			// Trigger carousel animation when moving to next word
+			m.carouselAnimator.TriggerTransition()
 			return m, animTickCmd()
 		}
 
@@ -185,6 +203,8 @@ func (m Model) handleResultsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.api.StartRound()
 		m.state = StateTyping
 		m.animator = nil
+		// Reset carousel animator for new round
+		m.carouselAnimator = NewCarouselAnimator()
 		// Reset timing state for new round
 		m.timerStarted = false
 		m.startTime = time.Time{}

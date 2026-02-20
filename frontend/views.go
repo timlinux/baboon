@@ -32,8 +32,8 @@ func (r *Renderer) SetSize(width, height int) {
 	r.height = height
 }
 
-// RenderTypingScreen renders the main typing interface with carousel effect
-func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
+// RenderTypingScreenAnimated renders the main typing interface with smooth carousel animations
+func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel *CarouselAnimator) string {
 	if state.CurrentWordIdx >= len(state.Words) {
 		return ""
 	}
@@ -81,23 +81,40 @@ func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
 	// Progress indicator
 	progress := fmt.Sprintf("Word %d/%d", state.WordNumber, state.TotalWords)
 
-	// Carousel style: Previous word above (dimmed, smaller font representation)
+	// Get animation values (default to fully visible if no animator)
+	prevOpacity := 0.5
+	currentOffset := 0
+	nextOpacity := 0.6
+	if carousel != nil {
+		prevOpacity = carousel.GetPrevOpacity()
+		currentOffset = carousel.GetCurrentOffset()
+		nextOpacity = carousel.GetNextOpacity()
+	}
+
+	// Carousel style: Previous word above (animated opacity via colour intensity)
 	prevWordDisplay := ""
 	if state.PreviousWord != "" {
-		// Render previous word in dimmed style with decorative brackets
+		// Map opacity to greyscale colour (232-255 range in 256-colour palette)
+		// Lower opacity = darker colour
+		greyLevel := 232 + int(prevOpacity*23) // 232 (darkest) to 255 (lightest)
+		if greyLevel > 255 {
+			greyLevel = 255
+		}
 		prevStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("240")).
+			Foreground(lipgloss.Color(fmt.Sprintf("%d", greyLevel))).
 			Italic(true)
 		prevWordDisplay = prevStyle.Render("· · · " + state.PreviousWord + " · · ·")
 	}
 
-	// Carousel style: Next word below (dimmed, smaller font representation)
+	// Carousel style: Next word below (animated opacity)
 	nextWordDisplay := ""
 	if state.NextWord != "" {
-		// Render next word in dimmed style with decorative brackets
+		greyLevel := 232 + int(nextOpacity*23)
+		if greyLevel > 255 {
+			greyLevel = 255
+		}
 		nextStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("245")).
-			Bold(false)
+			Foreground(lipgloss.Color(fmt.Sprintf("%d", greyLevel)))
 		nextWordDisplay = nextStyle.Render("▼  " + state.NextWord + "  ▼")
 	}
 
@@ -121,8 +138,16 @@ func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
 	carouselElements = append(carouselElements, r.styles.Progress.Render(progress))
 	carouselElements = append(carouselElements, "")
 
-	// Previous word (above current, dimmed) - the word that scrolled up
+	// Previous word (above current, animated)
 	if prevWordDisplay != "" {
+		// Add vertical offset lines for animation (previous scrolls up)
+		prevOffset := 0
+		if carousel != nil {
+			prevOffset = carousel.GetPrevOffset()
+		}
+		for i := 0; i < prevOffset; i++ {
+			carouselElements = append(carouselElements, "")
+		}
 		carouselElements = append(carouselElements, prevWordDisplay)
 		carouselElements = append(carouselElements, "")
 	}
@@ -130,6 +155,11 @@ func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
 	// Decorative separator before main word
 	separatorStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("238"))
 	carouselElements = append(carouselElements, separatorStyle.Render("─────────────────────────────────"))
+
+	// Add offset lines for current word animation (slides up from below)
+	for i := 0; i < currentOffset; i++ {
+		carouselElements = append(carouselElements, "")
+	}
 	carouselElements = append(carouselElements, "")
 
 	// Current word (large block letters) - the main focus
@@ -139,8 +169,15 @@ func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
 	carouselElements = append(carouselElements, "")
 	carouselElements = append(carouselElements, separatorStyle.Render("─────────────────────────────────"))
 
-	// Next word (below current, dimmed) - coming up next
+	// Next word (below current, animated)
 	if nextWordDisplay != "" {
+		nextOffset := 0
+		if carousel != nil {
+			nextOffset = carousel.GetNextOffset()
+		}
+		for i := 0; i < nextOffset; i++ {
+			carouselElements = append(carouselElements, "")
+		}
 		carouselElements = append(carouselElements, "")
 		carouselElements = append(carouselElements, nextWordDisplay)
 	}
