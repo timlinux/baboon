@@ -15,7 +15,7 @@
         packages = {
           default = pkgs.buildGoModule {
             pname = "baboon";
-            version = "0.1.0";
+            version = "1.0.0";
             src = ./.;
             vendorHash = "sha256-uwBJAqN4sIepiiJf9lCDumLqfKJEowQO2tOiSWD3Fig=";
 
