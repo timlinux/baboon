@@ -51,8 +51,12 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
 - The word display SHALL show progress indicator: "Word X/30"
 - Letters SHALL change colour in-place as the user types (no separate input display line)
 - All words SHALL be lowercase only (the font only supports a-z)
-- The previous word SHALL be displayed in gray (colour 240) in the top left corner
-- The next word SHALL be displayed in gray (colour 240) in the top right corner
+- Words SHALL be displayed in a carousel layout:
+  - The previous word SHALL be displayed ABOVE the current word in dimmed text
+  - The next word SHALL be displayed BELOW the current word in dimmed text
+  - When advancing to the next word, smooth carousel animation SHALL scroll words upward
+- Console: Previous word uses greyscale colour (240), next word uses greyscale (245), with decorative markers
+- Web: Previous/next words displayed at 50% scale with blur effects
 
 ### FR-002: Block Letter Font
 - Each letter SHALL be 6 lines tall
@@ -845,6 +849,42 @@ The web frontend uses Kartoza's brand colour scheme derived from their wallpaper
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.1.0
+- Beautiful carousel animation for word transitions
+  - **Console (TUI)**: Smooth harmonica spring-based animations
+    - Previous word fades in with animated greyscale opacity as it scrolls up
+    - Current word slides up from below with spring physics
+    - Next word fades in from below with staggered timing
+    - Animation triggered on space key when advancing to next word
+  - **Web**: Framer Motion spring animations
+    - Previous word floats above at 50% scale with blur and fade
+    - Current word displays large block letters with spring transitions
+    - Next word floats below at 50% scale with blur
+    - Decorative glow effect behind current word
+- Fixed accuracy statistics exceeding 100%
+  - Bug: When backspacing and retyping a character, "Correct" was counted multiple times while "Presented" was only counted once at round start
+  - Fix: Track which character positions have been recorded as correct using a position map
+  - Accuracy stats (letter, finger, hand, row) only recorded on first correct keystroke per position
+  - Timing stats still recorded for all keystrokes (useful data regardless of retypes)
+- Updated FR-001 to describe carousel word display layout
+
+### v1.0.0
+- First stable release
+- Beautiful README with screenshots and badges
+- GitHub Actions CI/CD workflows:
+  - Test workflow: runs on push/PR, executes go test and go vet
+  - Build workflow: cross-platform build verification (Linux, macOS, Windows)
+  - Release workflow: automated builds on tag push with all package formats
+- Pre-built binaries for multiple platforms:
+  - Linux AMD64 and ARM64
+  - macOS Intel and Apple Silicon
+  - Windows AMD64
+  - DEB package for Debian/Ubuntu
+  - RPM package for Fedora/RHEL
+  - Flatpak package
+- macOS unsigned binary instructions in README
+- Nix flake integration for system configurations
 
 ### v0.9.1
 - Kartoza brand colour scheme applied to web frontend
