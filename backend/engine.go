@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -24,6 +25,11 @@ type Engine struct {
 
 	// lastLetter is tracked here for bigram/SFB detection (not timing related)
 	lastLetter string
+
+	// recordedCorrect tracks which character positions have been recorded as correct
+	// to prevent double-counting when user backspaces and retypes
+	// Key format: "wordIdx:charIdx"
+	recordedCorrect map[string]bool
 }
 
 // NewEngine creates a new game engine with the given configuration.
@@ -65,6 +71,9 @@ func (e *Engine) StartRound() {
 		ErrorSubstitution: make(map[string]map[string]int),
 		SeekTimes:         make([]int64, 0),
 	}
+
+	// Reset tracking for correct character positions
+	e.recordedCorrect = make(map[string]bool)
 
 	// Record all letters as presented (before adding punctuation)
 	for _, word := range e.words {
@@ -138,15 +147,39 @@ func (e *Engine) ProcessKeystrokeWithTiming(char string, seekTimeMs int64) Keyst
 		// Only record letter stats for actual letters (a-z), not punctuation
 		isLetter := expectedChar >= 'a' && expectedChar <= 'z'
 		if isLetter {
-			e.session.RecordLetterCorrect(expectedLetter)
+			// Create a unique key for this character position
+			posKey := fmt.Sprintf("%d:%d", e.wordIdx, inputIdx)
+
+			// Only record accuracy stats if this position hasn't been recorded yet
+			// This prevents double-counting when user backspaces and retypes
+			alreadyRecorded := e.recordedCorrect[posKey]
+			if !alreadyRecorded {
+				e.recordedCorrect[posKey] = true
+				e.session.RecordLetterCorrect(expectedLetter)
+
+				finger := stats.GetFinger(rune(expectedChar))
+				hand := stats.GetHand(rune(expectedChar))
+				row := stats.GetRow(rune(expectedChar))
+
+				// Record finger, hand, row correct counts (without timing for accuracy)
+				if finger >= 0 {
+					e.session.RecordFingerCorrect(finger, 0)
+				}
+				if hand >= 0 {
+					e.session.RecordHandCorrect(hand, 0)
+				}
+				if row >= 0 {
+					e.session.RecordRowCorrect(row, 0)
+				}
+			}
 
 			finger := stats.GetFinger(rune(expectedChar))
 			hand := stats.GetHand(rune(expectedChar))
 			row := stats.GetRow(rune(expectedChar))
 
-			// Record seek time only for correct keystrokes
+			// Record seek time for ALL correct keystrokes (even retypes)
+			// This is separate from accuracy - timing is always useful data
 			// Exclude first letter of each word (inputIdx > 0)
-			// Use frontend-provided seek time
 			if e.started && inputIdx > 0 && seekTimeMs > 0 && seekTimeMs < 5000 {
 				e.session.RecordLetterSeekTime(expectedLetter, seekTimeMs)
 				e.session.RecordSeekTime(seekTimeMs)
@@ -169,26 +202,24 @@ func (e *Engine) ProcessKeystrokeWithTiming(char string, seekTimeMs int64) Keyst
 					}
 				}
 
-				// Record finger, hand, row stats with timing
+				// Record timing stats (separate from accuracy)
 				if finger >= 0 {
-					e.session.RecordFingerCorrect(finger, seekTimeMs)
+					stat := e.session.FingerStats[finger]
+					stat.TotalTimeMs += seekTimeMs
+					stat.Count++
+					e.session.FingerStats[finger] = stat
 				}
 				if hand >= 0 {
-					e.session.RecordHandCorrect(hand, seekTimeMs)
+					stat := e.session.HandStats[hand]
+					stat.TotalTimeMs += seekTimeMs
+					stat.Count++
+					e.session.HandStats[hand] = stat
 				}
 				if row >= 0 {
-					e.session.RecordRowCorrect(row, seekTimeMs)
-				}
-			} else {
-				// Record finger, hand, row stats without timing (first char of word)
-				if finger >= 0 {
-					e.session.RecordFingerCorrect(finger, 0)
-				}
-				if hand >= 0 {
-					e.session.RecordHandCorrect(hand, 0)
-				}
-				if row >= 0 {
-					e.session.RecordRowCorrect(row, 0)
+					stat := e.session.RowStats[row]
+					stat.TotalTimeMs += seekTimeMs
+					stat.Count++
+					e.session.RowStats[row] = stat
 				}
 			}
 
