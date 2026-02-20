@@ -105,6 +105,34 @@ Download the latest release for your platform from the [Releases](https://github
 | macOS | `baboon-darwin-amd64`, `baboon-darwin-arm64` |
 | Windows | `baboon-windows-amd64.exe` |
 
+### macOS: Running Unsigned Binaries
+
+The macOS binaries are not signed with an Apple Developer certificate. When you first try to run the binary, macOS will block it with a security warning. To allow it to run:
+
+**Option 1: Remove quarantine attribute (recommended)**
+```bash
+# After downloading, remove the quarantine flag
+xattr -d com.apple.quarantine baboon-darwin-amd64
+
+# Make it executable and run
+chmod +x baboon-darwin-amd64
+./baboon-darwin-amd64
+```
+
+**Option 2: Allow via System Settings**
+1. Try to run the binary - it will be blocked
+2. Open **System Settings** → **Privacy & Security**
+3. Scroll down to find the blocked app message
+4. Click **"Allow Anyway"**
+5. Run the binary again and click **"Open"** when prompted
+
+**Option 3: Right-click to open**
+1. Right-click (or Control-click) the binary in Finder
+2. Select **"Open"** from the context menu
+3. Click **"Open"** in the dialog that appears
+
+> **Note**: These steps are only needed once per binary. After allowing the app, it will run normally.
+
 ### Using Nix Flakes
 
 ```bash
