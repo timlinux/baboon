@@ -17,7 +17,7 @@
             pname = "baboon";
             version = "1.1.0";
             src = ./.;
-            vendorHash = "sha256-uwBJAqN4sIepiiJf9lCDumLqfKJEowQO2tOiSWD3Fig=";
+            vendorHash = null;
 
             meta = with pkgs.lib; {
               description = "A terminal typing practice app with ASCII art";
