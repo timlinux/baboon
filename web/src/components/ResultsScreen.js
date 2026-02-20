@@ -5,9 +5,9 @@ import {
   HStack,
   Text,
   Button,
-  Container,
   Flex,
-  SimpleGrid,
+  Grid,
+  GridItem,
   Badge,
   Tooltip,
 } from '@chakra-ui/react';
@@ -16,34 +16,32 @@ import { motion } from 'framer-motion';
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
 
-// Animated stat card with physics
-function StatCard({ label, value, unit, comparison, isBest, delay = 0, color = 'cyan' }) {
+// Hero stat - big number with comparison inline
+function HeroStat({ label, value, unit, best, avg, isBest, delay = 0, color = 'cyan' }) {
   const colors = {
     cyan: { bg: 'rgba(0, 204, 255, 0.1)', border: 'accent.cyan', text: 'accent.cyan' },
     green: { bg: 'rgba(0, 255, 136, 0.1)', border: 'accent.green', text: 'accent.green' },
     purple: { bg: 'rgba(170, 102, 255, 0.1)', border: 'accent.purple', text: 'accent.purple' },
-    yellow: { bg: 'rgba(255, 204, 0, 0.1)', border: 'accent.yellow', text: 'accent.yellow' },
-    orange: { bg: 'rgba(255, 136, 68, 0.1)', border: 'accent.orange', text: 'accent.orange' },
   };
-
   const c = colors[color] || colors.cyan;
 
   return (
     <MotionBox
-      initial={{ opacity: 0, y: 30, scale: 0.9 }}
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay, type: 'spring', bounce: 0.4 }}
-      whileHover={{ scale: 1.02, y: -5 }}
+      whileHover={{ scale: 1.02 }}
+      flex={1}
     >
       <Box
         bg={c.bg}
         borderRadius="2xl"
-        p={6}
+        p={4}
         border="2px solid"
         borderColor={isBest ? 'accent.yellow' : c.border}
+        boxShadow={isBest ? '0 0 20px rgba(255, 204, 0, 0.3)' : 'none'}
         position="relative"
-        overflow="hidden"
-        boxShadow={isBest ? '0 0 30px rgba(255, 204, 0, 0.3)' : 'none'}
+        textAlign="center"
       >
         {isBest && (
           <Badge
@@ -56,224 +54,148 @@ function StatCard({ label, value, unit, comparison, isBest, delay = 0, color = '
             NEW BEST
           </Badge>
         )}
-        <VStack spacing={1} align="start">
-          <Text color="gray.400" fontSize="sm" fontWeight="500">
-            {label}
+        <Text color="gray.400" fontSize="xs" fontWeight="500" mb={1}>
+          {label}
+        </Text>
+        <HStack justify="center" align="baseline" spacing={1}>
+          <Text fontSize={{ base: '3xl', md: '4xl' }} fontWeight="800" color={c.text}>
+            {typeof value === 'number' ? value.toFixed(1) : value}
           </Text>
-          <HStack align="baseline" spacing={1}>
-            <Text fontSize="4xl" fontWeight="800" color={c.text}>
-              {typeof value === 'number' ? value.toFixed(1) : value}
-            </Text>
-            {unit && (
-              <Text color="gray.500" fontSize="lg">
-                {unit}
-              </Text>
-            )}
-          </HStack>
-          {comparison && (
-            <Text color="gray.500" fontSize="xs">
-              {comparison}
-            </Text>
-          )}
-        </VStack>
+          <Text color="gray.500" fontSize="md">{unit}</Text>
+        </HStack>
+        <HStack justify="center" spacing={3} mt={1}>
+          <Text color="gray.500" fontSize="xs">
+            Best: <Text as="span" color="accent.green">{best.toFixed(1)}</Text>
+          </Text>
+          <Text color="gray.500" fontSize="xs">
+            Avg: <Text as="span" color="accent.purple">{avg.toFixed(1)}</Text>
+          </Text>
+        </HStack>
       </Box>
     </MotionBox>
   );
 }
 
-// Progress bar for comparing values
-function ComparisonBar({ current, best, average, label, inverted = false, delay = 0 }) {
-  const maxVal = Math.max(current, best, average, 1);
-  const scale = inverted ? (v) => ((maxVal - v) / maxVal) * 100 : (v) => (v / maxVal) * 100;
+// Compact letter heatmap - keyboard-style layout
+function LetterHeatmap({ letterAccuracy, letterSeekTime, delay = 0 }) {
+  const rows = [
+    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+    ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+  ];
 
-  return (
-    <MotionBox
-      initial={{ opacity: 0, x: -30 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay, type: 'spring' }}
-    >
-      <VStack align="stretch" spacing={2}>
-        <Text color="gray.400" fontSize="sm">{label}</Text>
+  const getColor = (letter, type) => {
+    if (type === 'accuracy') {
+      const stats = letterAccuracy?.[letter];
+      if (!stats || stats.presented === 0) return 'gray.700';
+      const acc = (stats.correct / stats.presented) * 100;
+      if (acc >= 95) return '#00ff88';
+      if (acc >= 85) return '#88ff00';
+      if (acc >= 75) return '#ffcc00';
+      if (acc >= 60) return '#ff8844';
+      return '#ff4466';
+    } else {
+      const stats = letterSeekTime?.[letter];
+      if (!stats || stats.count === 0) return 'gray.700';
+      const avg = stats.total_time_ms / stats.count;
+      if (avg <= 150) return '#00ff88';
+      if (avg <= 200) return '#88ff00';
+      if (avg <= 250) return '#ffcc00';
+      if (avg <= 350) return '#ff8844';
+      return '#ff4466';
+    }
+  };
 
-        <HStack spacing={4}>
-          <Text color="gray.500" fontSize="xs" w="50px">This run</Text>
-          <Box flex={1} h="8px" bg="bg.tertiary" borderRadius="full" overflow="hidden">
-            <MotionBox
-              h="100%"
-              bg="accent.cyan"
-              borderRadius="full"
-              initial={{ width: 0 }}
-              animate={{ width: `${scale(current)}%` }}
-              transition={{ delay: delay + 0.2, type: 'spring' }}
-            />
-          </Box>
-          <Text color="white" fontSize="sm" fontWeight="bold" w="60px" textAlign="right">
-            {current.toFixed(1)}
-          </Text>
-        </HStack>
+  const getTooltip = (letter, type) => {
+    if (type === 'accuracy') {
+      const stats = letterAccuracy?.[letter];
+      if (!stats || stats.presented === 0) return `${letter.toUpperCase()}: N/A`;
+      return `${letter.toUpperCase()}: ${((stats.correct / stats.presented) * 100).toFixed(0)}%`;
+    } else {
+      const stats = letterSeekTime?.[letter];
+      if (!stats || stats.count === 0) return `${letter.toUpperCase()}: N/A`;
+      return `${letter.toUpperCase()}: ${(stats.total_time_ms / stats.count).toFixed(0)}ms`;
+    }
+  };
 
-        <HStack spacing={4}>
-          <Text color="gray.500" fontSize="xs" w="50px">Best</Text>
-          <Box flex={1} h="8px" bg="bg.tertiary" borderRadius="full" overflow="hidden">
-            <MotionBox
-              h="100%"
-              bg="accent.green"
-              borderRadius="full"
-              initial={{ width: 0 }}
-              animate={{ width: `${scale(best)}%` }}
-              transition={{ delay: delay + 0.3, type: 'spring' }}
-            />
-          </Box>
-          <Text color="accent.green" fontSize="sm" fontWeight="bold" w="60px" textAlign="right">
-            {best.toFixed(1)}
-          </Text>
-        </HStack>
-
-        <HStack spacing={4}>
-          <Text color="gray.500" fontSize="xs" w="50px">Average</Text>
-          <Box flex={1} h="8px" bg="bg.tertiary" borderRadius="full" overflow="hidden">
-            <MotionBox
-              h="100%"
-              bg="accent.purple"
-              borderRadius="full"
-              initial={{ width: 0 }}
-              animate={{ width: `${scale(average)}%` }}
-              transition={{ delay: delay + 0.4, type: 'spring' }}
-            />
-          </Box>
-          <Text color="accent.purple" fontSize="sm" fontWeight="bold" w="60px" textAlign="right">
-            {average.toFixed(1)}
-          </Text>
-        </HStack>
-      </VStack>
-    </MotionBox>
+  const KeyboardRow = ({ letters, type, rowDelay }) => (
+    <HStack spacing={1} justify="center">
+      {letters.map((letter, i) => (
+        <MotionBox
+          key={letter}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: rowDelay + i * 0.02 }}
+        >
+          <Tooltip label={getTooltip(letter, type)} placement="top" hasArrow>
+            <Flex
+              w={{ base: '22px', md: '26px' }}
+              h={{ base: '22px', md: '26px' }}
+              align="center"
+              justify="center"
+              bg={getColor(letter, type)}
+              borderRadius="md"
+              opacity={
+                (type === 'accuracy' ? letterAccuracy?.[letter]?.presented : letterSeekTime?.[letter]?.count) > 0
+                  ? 1
+                  : 0.3
+              }
+            >
+              <Text fontSize="xs" fontWeight="bold" color="gray.900">
+                {letter.toUpperCase()}
+              </Text>
+            </Flex>
+          </Tooltip>
+        </MotionBox>
+      ))}
+    </HStack>
   );
-}
-
-// Letter statistics grid
-function LetterStatsGrid({ letterAccuracy, letterSeekTime, delay = 0 }) {
-  const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-
-  const getAccuracyColor = (letter) => {
-    const stats = letterAccuracy?.[letter];
-    if (!stats || stats.presented === 0) return 'gray.600';
-    const acc = (stats.correct / stats.presented) * 100;
-    if (acc >= 95) return '#00ff88';
-    if (acc >= 85) return '#88ff00';
-    if (acc >= 75) return '#ffcc00';
-    if (acc >= 60) return '#ff8844';
-    return '#ff4466';
-  };
-
-  const getSeekColor = (letter) => {
-    const stats = letterSeekTime?.[letter];
-    if (!stats || stats.count === 0) return 'gray.600';
-    const avg = stats.total_time_ms / stats.count;
-    if (avg <= 150) return '#00ff88';
-    if (avg <= 200) return '#88ff00';
-    if (avg <= 250) return '#ffcc00';
-    if (avg <= 350) return '#ff8844';
-    return '#ff4466';
-  };
 
   return (
     <MotionBox
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ delay }}
     >
-      <VStack spacing={4} align="stretch">
-        <Text color="gray.400" fontSize="sm" fontWeight="500">Letter Statistics</Text>
-
-        {/* Letter headers */}
-        <Flex justify="center" gap={1} flexWrap="wrap">
-          {letters.map((letter) => (
-            <Text
-              key={letter}
-              fontSize="xs"
-              fontWeight="bold"
-              color="gray.500"
-              w="20px"
-              textAlign="center"
-              textTransform="uppercase"
-            >
-              {letter}
-            </Text>
+      <HStack spacing={6} align="start">
+        {/* Accuracy keyboard */}
+        <VStack spacing={1}>
+          <Text color="gray.400" fontSize="xs" fontWeight="500" mb={1}>Accuracy</Text>
+          {rows.map((row, idx) => (
+            <Box key={idx} pl={idx === 1 ? 2 : idx === 2 ? 4 : 0}>
+              <KeyboardRow letters={row} type="accuracy" rowDelay={delay + idx * 0.1} />
+            </Box>
           ))}
-        </Flex>
-
-        {/* Accuracy row */}
-        <VStack spacing={1}>
-          <Text color="gray.500" fontSize="xs">Accuracy</Text>
-          <Flex justify="center" gap={1} flexWrap="wrap">
-            {letters.map((letter, i) => (
-              <MotionBox
-                key={letter}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: delay + i * 0.02 }}
-              >
-                <Tooltip
-                  label={`${letter.toUpperCase()}: ${
-                    letterAccuracy?.[letter]
-                      ? `${((letterAccuracy[letter].correct / letterAccuracy[letter].presented) * 100).toFixed(0)}%`
-                      : 'N/A'
-                  }`}
-                >
-                  <Box
-                    w="20px"
-                    h="20px"
-                    borderRadius="full"
-                    bg={getAccuracyColor(letter)}
-                    opacity={letterAccuracy?.[letter]?.presented > 0 ? 1 : 0.3}
-                  />
-                </Tooltip>
-              </MotionBox>
-            ))}
-          </Flex>
         </VStack>
 
-        {/* Seek time row */}
+        {/* Speed keyboard */}
         <VStack spacing={1}>
-          <Text color="gray.500" fontSize="xs">Speed</Text>
-          <Flex justify="center" gap={1} flexWrap="wrap">
-            {letters.map((letter, i) => (
-              <MotionBox
-                key={letter}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: delay + 0.5 + i * 0.02 }}
-              >
-                <Tooltip
-                  label={`${letter.toUpperCase()}: ${
-                    letterSeekTime?.[letter]
-                      ? `${(letterSeekTime[letter].total_time_ms / letterSeekTime[letter].count).toFixed(0)}ms`
-                      : 'N/A'
-                  }`}
-                >
-                  <Box
-                    w="20px"
-                    h="20px"
-                    borderRadius="md"
-                    bg={getSeekColor(letter)}
-                    opacity={letterSeekTime?.[letter]?.count > 0 ? 1 : 0.3}
-                  />
-                </Tooltip>
-              </MotionBox>
-            ))}
-          </Flex>
+          <Text color="gray.400" fontSize="xs" fontWeight="500" mb={1}>Speed</Text>
+          {rows.map((row, idx) => (
+            <Box key={idx} pl={idx === 1 ? 2 : idx === 2 ? 4 : 0}>
+              <KeyboardRow letters={row} type="speed" rowDelay={delay + 0.3 + idx * 0.1} />
+            </Box>
+          ))}
         </VStack>
-      </VStack>
+      </HStack>
     </MotionBox>
   );
 }
 
-// Finger statistics display
-function FingerStats({ fingerStats, delay = 0 }) {
-  const fingerLabels = ['LP', 'LR', 'LM', 'LI', '', '', 'RI', 'RM', 'RR', 'RP'];
-  const fingerIndices = [0, 1, 2, 3, 6, 7, 8, 9];
+// Compact finger stats - inline display
+function CompactFingerStats({ fingerStats, delay = 0 }) {
+  const fingers = [
+    { id: 0, label: 'LP' },
+    { id: 1, label: 'LR' },
+    { id: 2, label: 'LM' },
+    { id: 3, label: 'LI' },
+    { id: 6, label: 'RI' },
+    { id: 7, label: 'RM' },
+    { id: 8, label: 'RR' },
+    { id: 9, label: 'RP' },
+  ];
 
-  const getAccuracyColor = (finger) => {
+  const getColor = (finger) => {
     const stats = fingerStats?.[finger];
     if (!stats || stats.presented === 0) return 'gray.600';
     const acc = (stats.correct / stats.presented) * 100;
@@ -285,42 +207,41 @@ function FingerStats({ fingerStats, delay = 0 }) {
 
   return (
     <MotionBox
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
     >
-      <VStack spacing={3}>
-        <Text color="gray.400" fontSize="sm" fontWeight="500">Finger Accuracy</Text>
-        <HStack spacing={2}>
-          {fingerIndices.map((finger, i) => {
-            const stats = fingerStats?.[finger];
+      <VStack align="stretch" spacing={2}>
+        <Text color="gray.400" fontSize="xs" fontWeight="500">Finger Accuracy</Text>
+        <HStack spacing={1} justify="center">
+          {fingers.map((f, i) => {
+            const stats = fingerStats?.[f.id];
             const acc = stats && stats.presented > 0
               ? ((stats.correct / stats.presented) * 100).toFixed(0)
               : '-';
             return (
               <MotionBox
-                key={finger}
+                key={f.id}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ delay: delay + i * 0.05, type: 'spring' }}
+                transition={{ delay: delay + i * 0.03, type: 'spring' }}
               >
-                <VStack spacing={1}>
-                  <Text fontSize="xs" color="gray.500">{fingerLabels[finger]}</Text>
-                  <Box
-                    w="40px"
-                    h="40px"
-                    borderRadius="xl"
+                <VStack spacing={0}>
+                  <Text fontSize="2xs" color="gray.500">{f.label}</Text>
+                  <Flex
+                    w="28px"
+                    h="28px"
+                    align="center"
+                    justify="center"
                     bg="bg.tertiary"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
+                    borderRadius="lg"
                     border="2px solid"
-                    borderColor={getAccuracyColor(finger)}
+                    borderColor={getColor(f.id)}
                   >
-                    <Text fontSize="sm" fontWeight="bold" color={getAccuracyColor(finger)}>
+                    <Text fontSize="xs" fontWeight="bold" color={getColor(f.id)}>
                       {acc}
                     </Text>
-                  </Box>
+                  </Flex>
                 </VStack>
               </MotionBox>
             );
@@ -331,10 +252,10 @@ function FingerStats({ fingerStats, delay = 0 }) {
   );
 }
 
-// Hand balance display
-function HandBalance({ handStats, handAlternations, sameHandRuns, delay = 0 }) {
-  const leftStats = handStats?.[0] || { presented: 0, correct: 0 };
-  const rightStats = handStats?.[1] || { presented: 0, correct: 0 };
+// Compact hand balance
+function CompactHandBalance({ handStats, handAlternations, sameHandRuns, delay = 0 }) {
+  const leftStats = handStats?.[0] || { presented: 0 };
+  const rightStats = handStats?.[1] || { presented: 0 };
   const total = leftStats.presented + rightStats.presented;
   const leftPct = total > 0 ? (leftStats.presented / total) * 100 : 50;
   const rightPct = 100 - leftPct;
@@ -346,52 +267,50 @@ function HandBalance({ handStats, handAlternations, sameHandRuns, delay = 0 }) {
 
   return (
     <MotionBox
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
     >
-      <VStack spacing={3}>
-        <Text color="gray.400" fontSize="sm" fontWeight="500">Hand Balance</Text>
-
-        <HStack spacing={4} w="100%">
-          <Text color="accent.purple" fontWeight="bold">L {leftPct.toFixed(0)}%</Text>
-          <Box flex={1} h="12px" bg="bg.tertiary" borderRadius="full" overflow="hidden">
+      <VStack align="stretch" spacing={2}>
+        <Text color="gray.400" fontSize="xs" fontWeight="500">Hand Balance</Text>
+        <HStack spacing={2}>
+          <Text color="accent.purple" fontSize="sm" fontWeight="bold" w="40px">
+            L {leftPct.toFixed(0)}%
+          </Text>
+          <Box flex={1} h="10px" bg="bg.tertiary" borderRadius="full" overflow="hidden">
             <Flex h="100%">
               <MotionBox
                 h="100%"
                 bg="accent.purple"
                 initial={{ width: 0 }}
                 animate={{ width: `${leftPct}%` }}
-                transition={{ delay: delay + 0.2, type: 'spring' }}
+                transition={{ delay: delay + 0.1, type: 'spring' }}
               />
               <MotionBox
                 h="100%"
                 bg="accent.cyan"
                 initial={{ width: 0 }}
                 animate={{ width: `${rightPct}%` }}
-                transition={{ delay: delay + 0.3, type: 'spring' }}
+                transition={{ delay: delay + 0.2, type: 'spring' }}
               />
             </Flex>
           </Box>
-          <Text color="accent.cyan" fontWeight="bold">R {rightPct.toFixed(0)}%</Text>
+          <Text color="accent.cyan" fontSize="sm" fontWeight="bold" w="40px" textAlign="right">
+            R {rightPct.toFixed(0)}%
+          </Text>
         </HStack>
-
-        <HStack spacing={6}>
-          <VStack spacing={0}>
-            <Text color="gray.500" fontSize="xs">Alternation Rate</Text>
-            <Text color="accent.green" fontSize="lg" fontWeight="bold">
-              {alternationRate.toFixed(0)}%
-            </Text>
-          </VStack>
+        <HStack justify="center">
+          <Text color="gray.500" fontSize="xs">
+            Alternation: <Text as="span" color="accent.green" fontWeight="bold">{alternationRate.toFixed(0)}%</Text>
+          </Text>
         </HStack>
       </VStack>
     </MotionBox>
   );
 }
 
-// Common errors display
-function CommonErrors({ errorSubstitution, delay = 0 }) {
-  // Flatten and sort errors
+// Compact common errors
+function CompactErrors({ errorSubstitution, delay = 0 }) {
   const errors = [];
   if (errorSubstitution) {
     Object.entries(errorSubstitution).forEach(([expected, typed]) => {
@@ -401,57 +320,44 @@ function CommonErrors({ errorSubstitution, delay = 0 }) {
     });
   }
   errors.sort((a, b) => b.count - a.count);
-  const topErrors = errors.slice(0, 5);
-
-  if (topErrors.length === 0) {
-    return (
-      <MotionBox
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay }}
-      >
-        <VStack spacing={2}>
-          <Text color="gray.400" fontSize="sm" fontWeight="500">Common Errors</Text>
-          <Text color="gray.600" fontSize="sm">No errors recorded</Text>
-        </VStack>
-      </MotionBox>
-    );
-  }
+  const topErrors = errors.slice(0, 4);
 
   return (
     <MotionBox
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
     >
-      <VStack spacing={3}>
-        <Text color="gray.400" fontSize="sm" fontWeight="500">Common Errors</Text>
-        <HStack spacing={2} flexWrap="wrap" justify="center">
-          {topErrors.map((error, i) => (
-            <MotionBox
-              key={`${error.expected}-${error.typed}`}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: delay + i * 0.1, type: 'spring' }}
-            >
-              <Box
-                px={3}
-                py={2}
-                bg="rgba(255, 68, 102, 0.1)"
-                borderRadius="lg"
-                border="1px solid"
-                borderColor="accent.red"
+      <VStack align="stretch" spacing={2}>
+        <Text color="gray.400" fontSize="xs" fontWeight="500">Common Errors</Text>
+        {topErrors.length === 0 ? (
+          <Text color="gray.600" fontSize="xs" textAlign="center">No errors</Text>
+        ) : (
+          <HStack spacing={1} flexWrap="wrap" justify="center">
+            {topErrors.map((error, i) => (
+              <MotionBox
+                key={`${error.expected}-${error.typed}`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: delay + i * 0.05, type: 'spring' }}
               >
-                <Text fontSize="sm" color="accent.red">
-                  {error.expected}→{error.typed}
-                  <Text as="span" color="gray.500" ml={1}>
-                    ({error.count})
+                <Box
+                  px={2}
+                  py={1}
+                  bg="rgba(255, 68, 102, 0.15)"
+                  borderRadius="md"
+                  border="1px solid"
+                  borderColor="accent.red"
+                >
+                  <Text fontSize="xs" color="accent.red" fontWeight="500">
+                    {error.expected}→{error.typed}
+                    <Text as="span" color="gray.500" ml={1}>({error.count})</Text>
                   </Text>
-                </Text>
-              </Box>
-            </MotionBox>
-          ))}
-        </HStack>
+                </Box>
+              </MotionBox>
+            ))}
+          </HStack>
+        )}
       </VStack>
     </MotionBox>
   );
@@ -466,7 +372,7 @@ function ResultsScreen({
 }) {
   const wpm = sessionStats?.wpm || 0;
   const accuracy = sessionStats?.accuracy || 0;
-  const duration = sessionStats?.duration ? sessionStats.duration / 1e9 : 0; // nanoseconds to seconds
+  const duration = sessionStats?.duration ? sessionStats.duration / 1e9 : 0;
 
   const bestWpm = historicalStats?.best_wpm || 0;
   const bestAccuracy = historicalStats?.best_accuracy || 0;
@@ -487,195 +393,156 @@ function ResultsScreen({
   const isNewBestTime = (bestTime === 0 || duration <= bestTime) && historicalStats?.total_sessions > 0;
 
   return (
-    <Box minH="100vh" py={8} px={4} overflowY="auto">
-      <Container maxW="container.xl">
-        <VStack spacing={8}>
-          {/* Header */}
-          <MotionBox
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', bounce: 0.4 }}
+    <Flex minH="100vh" direction="column" p={4}>
+      {/* Header */}
+      <MotionBox
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', bounce: 0.4 }}
+        textAlign="center"
+        py={2}
+      >
+        <Text
+          fontSize={{ base: '3xl', md: '5xl' }}
+          fontWeight="800"
+          bgGradient="linear(to-r, accent.cyan, accent.green)"
+          bgClip="text"
+        >
+          Round Complete!
+        </Text>
+        <Text color="gray.500" fontSize="sm">
+          Session #{historicalStats?.total_sessions || 1}
+        </Text>
+      </MotionBox>
+
+      {/* Hero Stats Row */}
+      <HStack spacing={4} py={4} px={{ base: 0, md: 8 }}>
+        <HeroStat
+          label="Words Per Minute"
+          value={wpm}
+          unit="WPM"
+          best={bestWpm}
+          avg={avgWpm}
+          isBest={isNewBestWpm}
+          color="cyan"
+          delay={0.1}
+        />
+        <HeroStat
+          label="Accuracy"
+          value={accuracy}
+          unit="%"
+          best={bestAccuracy}
+          avg={avgAccuracy}
+          isBest={isNewBestAccuracy}
+          color="green"
+          delay={0.15}
+        />
+        <HeroStat
+          label="Time"
+          value={duration}
+          unit="s"
+          best={bestTime}
+          avg={avgTime}
+          isBest={isNewBestTime}
+          color="purple"
+          delay={0.2}
+        />
+      </HStack>
+
+      {/* Main Content - Two Column Grid */}
+      <Grid
+        templateColumns={{ base: '1fr', lg: '1fr 1fr' }}
+        gap={4}
+        flex={1}
+        px={{ base: 0, md: 8 }}
+      >
+        {/* Left Column - Letter Heatmaps */}
+        <GridItem>
+          <Box
+            bg="bg.card"
+            borderRadius="2xl"
+            p={4}
+            border="1px solid"
+            borderColor="whiteAlpha.100"
+            h="100%"
           >
-            <Text
-              fontSize={{ base: '4xl', md: '6xl' }}
-              fontWeight="800"
-              bgGradient="linear(to-r, accent.cyan, accent.green)"
-              bgClip="text"
-              textAlign="center"
-            >
-              Round Complete!
+            <Text color="gray.300" fontSize="sm" fontWeight="600" mb={3}>
+              Letter Performance
             </Text>
-          </MotionBox>
-
-          {/* Main stats cards */}
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} w="100%">
-            <StatCard
-              label="Words Per Minute"
-              value={wpm}
-              unit="WPM"
-              comparison={`Best: ${bestWpm.toFixed(1)} | Avg: ${avgWpm.toFixed(1)}`}
-              isBest={isNewBestWpm}
-              color="cyan"
-              delay={0.1}
-            />
-            <StatCard
-              label="Accuracy"
-              value={accuracy}
-              unit="%"
-              comparison={`Best: ${bestAccuracy.toFixed(1)}% | Avg: ${avgAccuracy.toFixed(1)}%`}
-              isBest={isNewBestAccuracy}
-              color="green"
-              delay={0.2}
-            />
-            <StatCard
-              label="Time"
-              value={duration}
-              unit="s"
-              comparison={`Best: ${bestTime.toFixed(1)}s | Avg: ${avgTime.toFixed(1)}s`}
-              isBest={isNewBestTime}
-              color="purple"
-              delay={0.3}
-            />
-          </SimpleGrid>
-
-          {/* Comparison bars */}
-          <Box
-            w="100%"
-            bg="bg.card"
-            borderRadius="3xl"
-            p={8}
-            border="1px solid"
-            borderColor="whiteAlpha.100"
-          >
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8}>
-              <ComparisonBar
-                label="WPM Comparison"
-                current={wpm}
-                best={bestWpm}
-                average={avgWpm}
-                delay={0.4}
-              />
-              <ComparisonBar
-                label="Accuracy Comparison"
-                current={accuracy}
-                best={bestAccuracy}
-                average={avgAccuracy}
-                delay={0.5}
-              />
-              <ComparisonBar
-                label="Time Comparison"
-                current={duration}
-                best={bestTime}
-                average={avgTime}
-                inverted
-                delay={0.6}
-              />
-            </SimpleGrid>
-          </Box>
-
-          {/* Letter statistics */}
-          <Box
-            w="100%"
-            bg="bg.card"
-            borderRadius="3xl"
-            p={8}
-            border="1px solid"
-            borderColor="whiteAlpha.100"
-          >
-            <LetterStatsGrid
+            <LetterHeatmap
               letterAccuracy={historicalStats?.letter_accuracy}
               letterSeekTime={historicalStats?.letter_seek_time}
-              delay={0.7}
+              delay={0.3}
             />
           </Box>
+        </GridItem>
 
-          {/* Typing theory stats */}
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} w="100%">
-            <Box
-              bg="bg.card"
-              borderRadius="3xl"
-              p={6}
-              border="1px solid"
-              borderColor="whiteAlpha.100"
-            >
-              <FingerStats fingerStats={historicalStats?.finger_stats} delay={0.8} />
-            </Box>
-
-            <Box
-              bg="bg.card"
-              borderRadius="3xl"
-              p={6}
-              border="1px solid"
-              borderColor="whiteAlpha.100"
-            >
-              <HandBalance
+        {/* Right Column - Typing Analysis */}
+        <GridItem>
+          <Box
+            bg="bg.card"
+            borderRadius="2xl"
+            p={4}
+            border="1px solid"
+            borderColor="whiteAlpha.100"
+            h="100%"
+          >
+            <Text color="gray.300" fontSize="sm" fontWeight="600" mb={3}>
+              Typing Analysis
+            </Text>
+            <VStack spacing={4} align="stretch">
+              <CompactFingerStats
+                fingerStats={historicalStats?.finger_stats}
+                delay={0.4}
+              />
+              <CompactHandBalance
                 handStats={historicalStats?.hand_stats}
                 handAlternations={historicalStats?.hand_alternations}
                 sameHandRuns={historicalStats?.same_hand_runs}
-                delay={0.9}
+                delay={0.5}
               />
-            </Box>
-
-            <Box
-              bg="bg.card"
-              borderRadius="3xl"
-              p={6}
-              border="1px solid"
-              borderColor="whiteAlpha.100"
-            >
-              <CommonErrors
+              <CompactErrors
                 errorSubstitution={historicalStats?.error_substitution}
-                delay={1.0}
+                delay={0.6}
               />
-            </Box>
-          </SimpleGrid>
+            </VStack>
+          </Box>
+        </GridItem>
+      </Grid>
 
-          {/* Session count */}
-          <MotionBox
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.1 }}
+      {/* Action Buttons - Fixed at bottom */}
+      <MotionFlex
+        gap={4}
+        justify="center"
+        py={4}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7, type: 'spring' }}
+      >
+        <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            size="lg"
+            variant="glow"
+            onClick={onNewRound}
+            isLoading={isLoading}
+            px={8}
           >
-            <Text color="gray.500" fontSize="lg">
-              Total Sessions: <Text as="span" color="accent.cyan" fontWeight="bold">
-                {historicalStats?.total_sessions || 0}
-              </Text>
-            </Text>
-          </MotionBox>
+            New Round
+          </Button>
+        </MotionBox>
 
-          {/* Action buttons */}
-          <MotionFlex
-            gap={4}
-            flexWrap="wrap"
-            justify="center"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, type: 'spring' }}
+        <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            size="lg"
+            variant="ghost"
+            onClick={onBackToMenu}
+            px={8}
           >
-            <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                size="chunky"
-                variant="glow"
-                onClick={onNewRound}
-                isLoading={isLoading}
-              >
-                New Round
-              </Button>
-            </MotionBox>
-
-            <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                size="chunky"
-                variant="ghost"
-                onClick={onBackToMenu}
-              >
-                Back to Menu
-              </Button>
-            </MotionBox>
-          </MotionFlex>
-        </VStack>
-      </Container>
-    </Box>
+            Back to Menu
+          </Button>
+        </MotionBox>
+      </MotionFlex>
+    </Flex>
   );
 }
 
