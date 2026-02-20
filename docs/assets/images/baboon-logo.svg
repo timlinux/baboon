@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="furGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5A2B"/>
+      <stop offset="100%" style="stop-color:#5C3D2E"/>
+    </linearGradient>
+    <linearGradient id="faceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#DEB887"/>
+      <stop offset="100%" style="stop-color:#C4A57B"/>
+    </linearGradient>
+    <linearGradient id="keyboardGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A4A4A"/>
+      <stop offset="100%" style="stop-color:#2D2D2D"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#1a2833" stroke="#D4922A" stroke-width="3"/>
+
+  <!-- Keyboard at bottom -->
+  <rect x="30" y="140" width="140" height="35" rx="5" fill="url(#keyboardGradient)" stroke="#666" stroke-width="1"/>
+
+  <!-- Keyboard keys row 1 -->
+  <g fill="#555" filter="url(#glow)">
+    <rect x="35" y="145" width="12" height="10" rx="2" fill="#4CAF50"/>
+    <rect x="49" y="145" width="12" height="10" rx="2"/>
+    <rect x="63" y="145" width="12" height="10" rx="2"/>
+    <rect x="77" y="145" width="12" height="10" rx="2"/>
+    <rect x="91" y="145" width="12" height="10" rx="2"/>
+    <rect x="105" y="145" width="12" height="10" rx="2"/>
+    <rect x="119" y="145" width="12" height="10" rx="2"/>
+    <rect x="133" y="145" width="12" height="10" rx="2"/>
+    <rect x="147" y="145" width="12" height="10" rx="2" fill="#D4922A"/>
+  </g>
+
+  <!-- Keyboard keys row 2 -->
+  <g fill="#555">
+    <rect x="38" y="157" width="12" height="10" rx="2"/>
+    <rect x="52" y="157" width="12" height="10" rx="2"/>
+    <rect x="66" y="157" width="12" height="10" rx="2"/>
+    <rect x="80" y="157" width="12" height="10" rx="2"/>
+    <rect x="94" y="157" width="12" height="10" rx="2"/>
+    <rect x="108" y="157" width="12" height="10" rx="2"/>
+    <rect x="122" y="157" width="12" height="10" rx="2"/>
+    <rect x="136" y="157" width="12" height="10" rx="2"/>
+  </g>
+
+  <!-- Baboon body -->
+  <ellipse cx="100" cy="125" rx="45" ry="30" fill="url(#furGradient)"/>
+
+  <!-- Baboon head -->
+  <ellipse cx="100" cy="70" rx="40" ry="35" fill="url(#furGradient)"/>
+
+  <!-- Baboon face/snout -->
+  <ellipse cx="100" cy="80" rx="22" ry="20" fill="url(#faceGradient)"/>
+
+  <!-- Muzzle/nose bridge -->
+  <ellipse cx="100" cy="88" rx="12" ry="10" fill="#C4A57B"/>
+
+  <!-- Nose -->
+  <ellipse cx="100" cy="92" rx="6" ry="4" fill="#333"/>
+
+  <!-- Nostrils -->
+  <circle cx="96" cy="93" r="2" fill="#222"/>
+  <circle cx="104" cy="93" r="2" fill="#222"/>
+
+  <!-- Eyes -->
+  <g>
+    <ellipse cx="82" cy="68" rx="10" ry="9" fill="white"/>
+    <ellipse cx="118" cy="68" rx="10" ry="9" fill="white"/>
+    <circle cx="84" cy="68" r="5" fill="#333"/>
+    <circle cx="120" cy="68" r="5" fill="#333"/>
+    <circle cx="86" cy="66" r="2" fill="white"/>
+    <circle cx="122" cy="66" r="2" fill="white"/>
+  </g>
+
+  <!-- Eyebrows (focused expression) -->
+  <path d="M73 58 Q82 55, 92 58" fill="none" stroke="#5C3D2E" stroke-width="3" stroke-linecap="round"/>
+  <path d="M108 58 Q118 55, 127 58" fill="none" stroke="#5C3D2E" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Ears -->
+  <ellipse cx="55" cy="55" rx="12" ry="15" fill="url(#furGradient)"/>
+  <ellipse cx="55" cy="55" rx="7" ry="10" fill="#DEB887"/>
+  <ellipse cx="145" cy="55" rx="12" ry="15" fill="url(#furGradient)"/>
+  <ellipse cx="145" cy="55" rx="7" ry="10" fill="#DEB887"/>
+
+  <!-- Mouth (slight smile while concentrating) -->
+  <path d="M90 100 Q100 105, 110 100" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Arms reaching to keyboard -->
+  <ellipse cx="58" cy="130" rx="12" ry="20" fill="url(#furGradient)"/>
+  <ellipse cx="142" cy="130" rx="12" ry="20" fill="url(#furGradient)"/>
+
+  <!-- Hands on keyboard -->
+  <ellipse cx="55" cy="148" rx="10" ry="6" fill="url(#faceGradient)"/>
+  <ellipse cx="145" cy="148" rx="10" ry="6" fill="url(#faceGradient)"/>
+
+  <!-- Fingers on keys -->
+  <g fill="#DEB887">
+    <circle cx="48" cy="150" r="3"/>
+    <circle cx="55" cy="151" r="3"/>
+    <circle cx="62" cy="150" r="3"/>
+    <circle cx="138" cy="150" r="3"/>
+    <circle cx="145" cy="151" r="3"/>
+    <circle cx="152" cy="150" r="3"/>
+  </g>
+
+  <!-- Typing sparkle effects -->
+  <g fill="#D4922A" opacity="0.9">
+    <polygon points="35,135 37,130 39,135 37,137" transform="rotate(15, 37, 133)"/>
+    <polygon points="155,135 157,130 159,135 157,137" transform="rotate(-15, 157, 133)"/>
+  </g>
+
+  <!-- Speed lines -->
+  <g stroke="#4A90A4" stroke-width="1.5" opacity="0.6" stroke-linecap="round">
+    <line x1="20" y1="80" x2="30" y2="80"/>
+    <line x1="18" y1="90" x2="28" y2="90"/>
+    <line x1="20" y1="100" x2="30" y2="100"/>
+    <line x1="170" y1="80" x2="180" y2="80"/>
+    <line x1="172" y1="90" x2="182" y2="90"/>
+    <line x1="170" y1="100" x2="180" y2="100"/>
+  </g>
+</svg>

@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a2833"/>
+      <stop offset="50%" style="stop-color:#243442"/>
+      <stop offset="100%" style="stop-color:#1a2833"/>
+    </linearGradient>
+    <linearGradient id="heroFurGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5A2B"/>
+      <stop offset="100%" style="stop-color:#5C3D2E"/>
+    </linearGradient>
+    <linearGradient id="heroFaceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#DEB887"/>
+      <stop offset="100%" style="stop-color:#C4A57B"/>
+    </linearGradient>
+    <linearGradient id="deskGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5C4033"/>
+      <stop offset="100%" style="stop-color:#3E2723"/>
+    </linearGradient>
+    <linearGradient id="heroKeyboardGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A4A4A"/>
+      <stop offset="100%" style="stop-color:#2D2D2D"/>
+    </linearGradient>
+    <linearGradient id="screenGlow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90A4" stop-opacity="0.3"/>
+      <stop offset="100%" style="stop-color:#1a2833" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="heroGlow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="textGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#bgGradient)"/>
+
+  <!-- Screen glow effect -->
+  <ellipse cx="400" cy="100" rx="300" ry="150" fill="url(#screenGlow)"/>
+
+  <!-- Desk surface -->
+  <path d="M0 320 Q200 300, 400 310 Q600 320, 800 300 L800 400 L0 400 Z" fill="url(#deskGradient)"/>
+
+  <!-- Monitor stand -->
+  <rect x="370" y="240" width="60" height="40" fill="#333"/>
+  <ellipse cx="400" cy="285" rx="50" ry="8" fill="#2a2a2a"/>
+
+  <!-- Monitor -->
+  <rect x="250" y="80" width="300" height="170" rx="8" fill="#1a1a1a" stroke="#333" stroke-width="3"/>
+  <rect x="260" y="90" width="280" height="145" rx="4" fill="#0d1117"/>
+
+  <!-- Terminal screen content -->
+  <g font-family="monospace" font-size="12" fill="#4CAF50">
+    <text x="275" y="115">$ baboon</text>
+    <text x="275" y="135" fill="#D4922A">Starting typing practice...</text>
+  </g>
+
+  <!-- Block letters on screen -->
+  <g fill="#4CAF50" filter="url(#heroGlow)">
+    <!-- T -->
+    <rect x="280" y="155" width="25" height="5"/>
+    <rect x="288" y="155" width="8" height="30"/>
+    <!-- Y -->
+    <rect x="315" y="155" width="5" height="12"/>
+    <rect x="330" y="155" width="5" height="12"/>
+    <rect x="317" y="165" width="16" height="5"/>
+    <rect x="322" y="168" width="6" height="17"/>
+    <!-- P -->
+    <rect x="345" y="155" width="5" height="30"/>
+    <rect x="345" y="155" width="18" height="5"/>
+    <rect x="358" y="155" width="5" height="15"/>
+    <rect x="345" y="165" width="18" height="5"/>
+    <!-- E -->
+    <rect x="375" y="155" width="5" height="30"/>
+    <rect x="375" y="155" width="18" height="5"/>
+    <rect x="375" y="167" width="14" height="4"/>
+    <rect x="375" y="180" width="18" height="5"/>
+  </g>
+
+  <!-- WPM Bar on screen -->
+  <rect x="270" y="200" width="260" height="15" rx="3" fill="#1f2937"/>
+  <rect x="272" y="202" width="180" height="11" rx="2" fill="#D4922A"/>
+  <text x="460" y="212" font-family="monospace" font-size="10" fill="#D4922A">75 WPM</text>
+
+  <!-- Keyboard on desk -->
+  <rect x="280" y="320" width="240" height="55" rx="6" fill="url(#heroKeyboardGradient)" stroke="#555" stroke-width="2"/>
+
+  <!-- Keyboard keys -->
+  <g fill="#555">
+    <!-- Row 1 -->
+    <rect x="290" y="328" width="16" height="12" rx="2"/>
+    <rect x="310" y="328" width="16" height="12" rx="2"/>
+    <rect x="330" y="328" width="16" height="12" rx="2" fill="#4CAF50"/>
+    <rect x="350" y="328" width="16" height="12" rx="2"/>
+    <rect x="370" y="328" width="16" height="12" rx="2"/>
+    <rect x="390" y="328" width="16" height="12" rx="2"/>
+    <rect x="410" y="328" width="16" height="12" rx="2"/>
+    <rect x="430" y="328" width="16" height="12" rx="2"/>
+    <rect x="450" y="328" width="16" height="12" rx="2"/>
+    <rect x="470" y="328" width="16" height="12" rx="2"/>
+    <rect x="490" y="328" width="16" height="12" rx="2" fill="#D4922A"/>
+    <!-- Row 2 -->
+    <rect x="295" y="344" width="16" height="12" rx="2"/>
+    <rect x="315" y="344" width="16" height="12" rx="2"/>
+    <rect x="335" y="344" width="16" height="12" rx="2"/>
+    <rect x="355" y="344" width="16" height="12" rx="2"/>
+    <rect x="375" y="344" width="16" height="12" rx="2"/>
+    <rect x="395" y="344" width="16" height="12" rx="2"/>
+    <rect x="415" y="344" width="16" height="12" rx="2"/>
+    <rect x="435" y="344" width="16" height="12" rx="2"/>
+    <rect x="455" y="344" width="16" height="12" rx="2"/>
+    <rect x="475" y="344" width="16" height="12" rx="2"/>
+    <!-- Row 3 - Space bar -->
+    <rect x="330" y="360" width="140" height="10" rx="2"/>
+  </g>
+
+  <!-- Baboon sitting at desk -->
+  <!-- Body -->
+  <ellipse cx="150" cy="310" rx="70" ry="50" fill="url(#heroFurGradient)"/>
+
+  <!-- Head -->
+  <ellipse cx="150" cy="230" rx="55" ry="50" fill="url(#heroFurGradient)"/>
+
+  <!-- Face/snout -->
+  <ellipse cx="150" cy="245" rx="32" ry="28" fill="url(#heroFaceGradient)"/>
+
+  <!-- Muzzle -->
+  <ellipse cx="150" cy="258" rx="18" ry="14" fill="#C4A57B"/>
+
+  <!-- Nose -->
+  <ellipse cx="150" cy="264" rx="8" ry="5" fill="#333"/>
+  <circle cx="145" cy="265" r="2.5" fill="#222"/>
+  <circle cx="155" cy="265" r="2.5" fill="#222"/>
+
+  <!-- Eyes (focused on screen) -->
+  <ellipse cx="125" cy="225" rx="14" ry="13" fill="white"/>
+  <ellipse cx="175" cy="225" rx="14" ry="13" fill="white"/>
+  <circle cx="130" cy="225" r="7" fill="#333"/>
+  <circle cx="180" cy="225" r="7" fill="#333"/>
+  <circle cx="132" cy="223" r="2.5" fill="white"/>
+  <circle cx="182" cy="223" r="2.5" fill="white"/>
+
+  <!-- Eyebrows (concentrated) -->
+  <path d="M105 208 Q125 202, 140 210" fill="none" stroke="#5C3D2E" stroke-width="4" stroke-linecap="round"/>
+  <path d="M160 210 Q175 202, 195 208" fill="none" stroke="#5C3D2E" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Ears -->
+  <ellipse cx="85" cy="195" rx="16" ry="22" fill="url(#heroFurGradient)"/>
+  <ellipse cx="85" cy="195" rx="10" ry="14" fill="#DEB887"/>
+  <ellipse cx="215" cy="195" rx="16" ry="22" fill="url(#heroFurGradient)"/>
+  <ellipse cx="215" cy="195" rx="10" ry="14" fill="#DEB887"/>
+
+  <!-- Slight smile -->
+  <path d="M135 275 Q150 282, 165 275" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Left arm reaching to keyboard -->
+  <path d="M95 280 Q130 310, 280 345" fill="none" stroke="url(#heroFurGradient)" stroke-width="30" stroke-linecap="round"/>
+  <ellipse cx="280" cy="345" rx="18" ry="12" fill="url(#heroFaceGradient)"/>
+
+  <!-- Right arm reaching to keyboard -->
+  <path d="M205 280 Q230 310, 380 345" fill="none" stroke="url(#heroFurGradient)" stroke-width="30" stroke-linecap="round"/>
+  <ellipse cx="380" cy="345" rx="18" ry="12" fill="url(#heroFaceGradient)"/>
+
+  <!-- Fingers typing -->
+  <g fill="#DEB887">
+    <circle cx="270" cy="348" r="5"/>
+    <circle cx="280" cy="350" r="5"/>
+    <circle cx="290" cy="348" r="5"/>
+    <circle cx="370" cy="348" r="5"/>
+    <circle cx="380" cy="350" r="5"/>
+    <circle cx="390" cy="348" r="5"/>
+  </g>
+
+  <!-- Typing effect sparkles -->
+  <g filter="url(#textGlow)">
+    <polygon points="260,330 263,322 266,330 263,333" fill="#D4922A" opacity="0.9"/>
+    <polygon points="400,325 403,317 406,325 403,328" fill="#4CAF50" opacity="0.9"/>
+    <polygon points="340,320 343,312 346,320 343,323" fill="#4A90A4" opacity="0.8"/>
+  </g>
+
+  <!-- Speed lines near hands -->
+  <g stroke="#4A90A4" stroke-width="2" opacity="0.5" stroke-linecap="round">
+    <line x1="250" y1="340" x2="235" y2="335"/>
+    <line x1="250" y1="350" x2="235" y2="350"/>
+    <line x1="250" y1="360" x2="235" y2="365"/>
+    <line x1="410" y1="340" x2="425" y2="335"/>
+    <line x1="410" y1="350" x2="425" y2="350"/>
+    <line x1="410" y1="360" x2="425" y2="365"/>
+  </g>
+
+  <!-- Coffee mug on desk -->
+  <rect x="580" y="310" width="35" height="40" rx="3" fill="#8B4513"/>
+  <ellipse cx="597" cy="310" rx="17" ry="5" fill="#5C3317"/>
+  <ellipse cx="597" cy="312" rx="13" ry="3" fill="#3E2723"/>
+  <path d="M615 320 Q635 325, 630 340 Q625 355, 615 350" fill="none" stroke="#8B4513" stroke-width="5"/>
+
+  <!-- Steam from coffee -->
+  <g stroke="#9CA3AF" stroke-width="2" fill="none" opacity="0.4">
+    <path d="M590 300 Q585 290, 590 280"/>
+    <path d="M600 300 Q605 290, 600 280"/>
+  </g>
+
+  <!-- Plant decoration -->
+  <g transform="translate(680, 280)">
+    <rect x="-15" y="20" width="30" height="35" rx="3" fill="#5C4033"/>
+    <ellipse cx="0" cy="20" rx="15" ry="5" fill="#4A3728"/>
+    <path d="M0 15 Q-20 -10, -5 -25" fill="none" stroke="#4CAF50" stroke-width="4"/>
+    <path d="M0 15 Q20 -5, 15 -30" fill="none" stroke="#4CAF50" stroke-width="4"/>
+    <path d="M0 15 Q5 -20, -10 -40" fill="none" stroke="#4CAF50" stroke-width="4"/>
+    <ellipse cx="-5" cy="-25" rx="10" ry="8" fill="#4CAF50"/>
+    <ellipse cx="15" cy="-30" rx="10" ry="8" fill="#4CAF50"/>
+    <ellipse cx="-10" cy="-40" rx="10" ry="8" fill="#4CAF50"/>
+  </g>
+
+  <!-- Decorative text -->
+  <text x="550" y="150" font-family="Inter, sans-serif" font-size="36" font-weight="bold" fill="#D4922A" filter="url(#textGlow)">
+    Type like a
+  </text>
+  <text x="550" y="195" font-family="Inter, sans-serif" font-size="42" font-weight="bold" fill="#4A90A4" filter="url(#textGlow)">
+    PRO!
+  </text>
+</svg>

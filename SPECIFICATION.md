@@ -1033,6 +1033,16 @@ The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the pr
 - Results screen animation: rows slide in sequentially using harmonica spring physics
 - Punctuation mode (-p flag): words separated by random punctuation (, . ; : ! ?)
 
+### v1.3.0
+- MkDocs documentation site with Material theme
+  - Comprehensive user documentation
+  - Developer guides and API reference
+  - Beautiful baboon mascot typing at keyboard
+  - GitHub Pages deployment via GitHub Actions
+  - Dark/light theme support
+  - Full-text search
+  - Responsive mobile design
+
 ### v0.1.0 (Initial Release)
 - Basic typing practice with 30-word rounds
 - Block letter word display with real-time colour feedback
