@@ -131,9 +131,9 @@ All statistics are saved to `~/.config/baboon/stats.json`:
 
 | Platform | Support |
 |----------|---------|
-| :fontawesome-brands-linux: Linux | AMD64, ARM64 |
-| :fontawesome-brands-apple: macOS | Intel, Apple Silicon |
-| :fontawesome-brands-windows: Windows | AMD64 |
+| :material-linux: Linux | AMD64, ARM64 |
+| :material-apple: macOS | Intel, Apple Silicon |
+| :material-microsoft-windows: Windows | AMD64 |
 
 ### Package Formats
 

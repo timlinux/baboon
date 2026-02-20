@@ -8,11 +8,11 @@ The easiest way to get started is to download a pre-built binary from our [GitHu
 
 | Platform | File | Architecture |
 |----------|------|--------------|
-| :fontawesome-brands-linux: Linux | `baboon-linux-amd64` | x86_64 |
-| :fontawesome-brands-linux: Linux | `baboon-linux-arm64` | ARM64 |
-| :fontawesome-brands-apple: macOS | `baboon-darwin-amd64` | Intel |
-| :fontawesome-brands-apple: macOS | `baboon-darwin-arm64` | Apple Silicon |
-| :fontawesome-brands-windows: Windows | `baboon-windows-amd64.exe` | x86_64 |
+| :material-linux: Linux | `baboon-linux-amd64` | x86_64 |
+| :material-linux: Linux | `baboon-linux-arm64` | ARM64 |
+| :material-apple: macOS | `baboon-darwin-amd64` | Intel |
+| :material-apple: macOS | `baboon-darwin-arm64` | Apple Silicon |
+| :material-microsoft-windows: Windows | `baboon-windows-amd64.exe` | x86_64 |
 
 ### Linux Packages
 

@@ -8,22 +8,22 @@
 
 <div class="feature-grid">
   <div class="feature-card">
-    <div class="feature-icon">:fontawesome-solid-keyboard:</div>
+    <div class="feature-icon">:material-keyboard:</div>
     <h3>Beautiful Interfaces</h3>
     <p>Choose between a stunning Terminal UI with Unicode block letters or a sleek Web UI with physics-based animations.</p>
   </div>
   <div class="feature-card">
-    <div class="feature-icon">:fontawesome-solid-brain:</div>
+    <div class="feature-icon">:material-brain:</div>
     <h3>Adaptive Learning</h3>
     <p>Baboon learns your weak spots and prioritises words with letters you frequently mistype.</p>
   </div>
   <div class="feature-card">
-    <div class="feature-icon">:fontawesome-solid-chart-line:</div>
+    <div class="feature-icon">:material-chart-line:</div>
     <h3>Deep Statistics</h3>
     <p>Track per-letter accuracy, finger performance, hand balance, and see where you need to improve.</p>
   </div>
   <div class="feature-card">
-    <div class="feature-icon">:fontawesome-solid-bolt:</div>
+    <div class="feature-icon">:material-lightning-bolt:</div>
     <h3>Real-time Feedback</h3>
     <p>Instant colour feedback as you type - green for correct, red for mistakes. No guessing!</p>
   </div>
@@ -96,5 +96,5 @@ My typing speed went from 45 WPM to 75 WPM in just two weeks of daily practice w
 ---
 
 <p style="text-align: center; color: #666;">
-  Made with :fontawesome-solid-heart:{ .heart } for typists everywhere
+  Made with :material-heart: for typists everywhere
 </p>
