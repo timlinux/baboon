@@ -1,4 +1,4 @@
-.PHONY: all build clean test run server client install help
+.PHONY: all build clean test run server client install help web-install web-dev web-build web-start
 
 # Default target
 all: build
@@ -72,6 +72,23 @@ status:
 frontend: build
 	./scripts/launch-frontend.sh
 
+# Web frontend targets
+web-install:
+	cd web && npm install
+
+web-dev: web-install
+	cd web && npm start
+
+web-build: web-install
+	cd web && npm run build
+
+web-start: build
+	@echo "Starting backend in background..."
+	./baboon -server &
+	@sleep 2
+	@echo "Starting web frontend..."
+	cd web && npm start
+
 # Help
 help:
 	@echo "Baboon - Terminal typing practice"
@@ -93,6 +110,12 @@ help:
 	@echo "  make stop-backend  - Stop backend"
 	@echo "  make status        - Check backend status"
 	@echo "  make frontend      - Launch frontend client"
+	@echo ""
+	@echo "Web frontend:"
+	@echo "  make web-install - Install web dependencies"
+	@echo "  make web-dev     - Start web dev server"
+	@echo "  make web-build   - Build web for production"
+	@echo "  make web-start   - Start backend + web frontend"
 	@echo ""
 	@echo "Development:"
 	@echo "  make test        - Run tests"

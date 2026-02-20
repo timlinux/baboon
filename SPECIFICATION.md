@@ -2,7 +2,13 @@
 
 ## Overview
 
-Baboon is a cross-platform terminal-based typing practice application built with Go and Bubble Tea. It helps users improve their typing speed and accuracy by presenting common English words in large block letter format. Words are displayed using Unicode block characters (█) and change colour in real-time as the user types.
+Baboon is a cross-platform typing practice application built with Go. It helps users improve their typing speed and accuracy by presenting common English words in large block letter format. The application features two frontends:
+
+1. **Terminal UI (TUI)**: Built with Bubble Tea and Lipgloss, displaying words using Unicode block characters (█) that change colour in real-time as the user types.
+
+2. **Web UI**: Built with React and Chakra UI, featuring physics-based animations with Framer Motion, large chunky block letters, and a beautiful dark theme.
+
+Both frontends communicate with the same Go backend via REST API, ensuring 100% feature parity.
 
 ## User Stories
 
@@ -30,6 +36,11 @@ Baboon is a cross-platform terminal-based typing practice application built with
 **As a** user during a typing session
 **I want to** see my current WPM as I type
 **So that** I can adjust my pace accordingly
+
+### US-006: Access via Web Browser
+**As a** user who prefers a web-based interface
+**I want to** practice typing through a beautiful web application
+**So that** I can use any device with a modern browser
 
 ## Functional Requirements
 
@@ -419,13 +430,46 @@ type GameAPI interface {
 ```
 
 ### Frontend Package (`frontend/`)
-The frontend handles all rendering, user input, and visual presentation. It communicates with the backend exclusively through the `GameAPI` interface.
+The TUI frontend handles all rendering, user input, and visual presentation. It communicates with the backend exclusively through the `GameAPI` interface.
 
 **Key Components:**
 - `model.go` - Bubble Tea model (Init, Update, View)
 - `views.go` - All rendering functions (typing screen, results screen)
 - `styles.go` - Lipgloss styles and colour definitions
 - `animations.go` - Spring-based animation logic
+
+### Web Frontend (`web/`)
+The web frontend is a React application that provides the same functionality as the TUI but with a beautiful, modern web interface.
+
+**Technology Stack:**
+- **React 18**: Modern React with hooks for state management
+- **Chakra UI 2.x**: Component library with dark theme support
+- **Framer Motion**: Physics-based animations with spring dynamics
+- **Custom Theme**: Dark theme with cyan/purple/green accents
+
+**Key Components:**
+- `App.js` - Main application component with state management and screen routing
+- `api.js` - REST API client for backend communication
+- `theme.js` - Custom Chakra UI theme with dark mode and chunky button styles
+- `components/WelcomeScreen.js` - Landing page with animated logo and game options
+- `components/TypingScreen.js` - Main typing interface with BlockLetter physics and live WPM bar
+- `components/ResultsScreen.js` - Statistics display with all typing theory metrics
+
+**Features:**
+- Large chunky block letters with spring-based physics animations
+- Real-time colour feedback (green for correct, red for incorrect)
+- Live WPM bar with gradient colouring during typing
+- Animated transitions between screens
+- Letter statistics grid with accuracy and speed indicators
+- Finger accuracy display and hand balance statistics
+- Common error pattern display
+- Responsive design for various screen sizes
+
+**Physics Animations:**
+- Letters bounce and scale on correct/incorrect keystrokes using Framer Motion springs
+- Stat cards slide in with staggered spring animations
+- Progress bars animate smoothly with spring dynamics
+- UI elements have hover/tap scaling effects
 
 ### Data Flow
 1. User input → Frontend Model → REST Client → HTTP → REST Server → Game Engine
@@ -589,6 +633,21 @@ baboon/
 │   ├── stop-backend.sh    # Stop backend server
 │   ├── status-backend.sh  # Check backend status and health
 │   └── launch-frontend.sh # Launch frontend client
+├── web/                   # React web frontend
+│   ├── package.json       # NPM dependencies
+│   ├── package-lock.json  # NPM lockfile
+│   ├── public/
+│   │   └── index.html     # HTML template with fonts
+│   └── src/
+│       ├── index.js       # React entry point
+│       ├── App.js         # Main application component
+│       ├── api.js         # REST API client
+│       ├── theme.js       # Chakra UI custom theme
+│       └── components/
+│           ├── WelcomeScreen.js   # Landing screen
+│           ├── TypingScreen.js    # Typing practice screen
+│           └── ResultsScreen.js   # Statistics display
+├── Makefile            # Build and run targets
 ├── SPECIFICATION.md    # This file
 ├── README.md           # User documentation
 ├── LICENSE             # MIT license
@@ -621,6 +680,14 @@ baboon -client -p           # With punctuation mode
 baboon -client -port 9000   # Connect to custom port
 ```
 Connects to an already-running backend server. Multiple clients can connect simultaneously, each with their own session.
+
+### Web Frontend Mode
+```bash
+make web-start              # Start backend + web frontend
+make web-dev                # Start web dev server only (needs backend running)
+make web-build              # Build for production
+```
+Starts the React web frontend on port 3000. The frontend proxies API requests to the backend on port 8787.
 
 ## Management Scripts
 
@@ -733,6 +800,28 @@ Location: `~/.config/baboon/stats.json`
 | Gradient | 196→47 | Red through yellow to green |
 
 ## Version History
+
+### v0.9.0
+- React web frontend with 100% feature parity to TUI
+  - Built with React 18, Chakra UI 2.x, and Framer Motion
+  - Physics-based animations using Framer Motion spring dynamics
+  - Large chunky block letters with bounce effects on keystrokes
+  - Dark theme with cyan/purple/green accent colours
+  - Custom theme with chunky button styles ("glow" and "chunky" variants)
+- Web frontend components:
+  - WelcomeScreen: Animated logo, connection status, game options
+  - TypingScreen: Block letters with physics, live WPM bar, progress indicator
+  - ResultsScreen: Full statistics display with animated stat cards
+- Letter statistics grid with colour-coded accuracy and speed indicators
+- Finger accuracy display and hand balance statistics
+- Common error pattern tracking and display
+- Responsive design for various screen sizes
+- Makefile targets for web development:
+  - `make web-install` - Install NPM dependencies
+  - `make web-dev` - Start development server
+  - `make web-build` - Build for production
+  - `make web-start` - Start backend + web frontend together
+- Proxy configuration for development (port 3000 → 8787)
 
 ### v0.8.0
 - Management scripts for backend server lifecycle

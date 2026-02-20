@@ -12,8 +12,7 @@ baboon
 # Output of go coverage
 *.out
 
-# Dependency directories
-vendor/
+# Dependency directories (vendor is tracked for nix builds)
 
 # IDE
 .idea/
@@ -28,3 +27,7 @@ result-*
 # Logs
 *.log
 PROMPT.log
+
+# Web frontend
+web/node_modules/
+web/build/
