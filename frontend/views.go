@@ -1,0 +1,775 @@
+package frontend
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/timlinux/baboon/backend"
+	"github.com/timlinux/baboon/font"
+	"github.com/timlinux/baboon/stats"
+)
+
+// Renderer handles all view rendering for the application
+type Renderer struct {
+	styles Styles
+	width  int
+	height int
+}
+
+// NewRenderer creates a new renderer with the given dimensions
+func NewRenderer(width, height int) *Renderer {
+	return &Renderer{
+		styles: NewStyles(),
+		width:  width,
+		height: height,
+	}
+}
+
+// SetSize updates the renderer dimensions
+func (r *Renderer) SetSize(width, height int) {
+	r.width = width
+	r.height = height
+}
+
+// RenderTypingScreen renders the main typing interface
+func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
+	if state.CurrentWordIdx >= len(state.Words) {
+		return ""
+	}
+
+	currentWord := state.CurrentWord
+	if len(currentWord) == 0 {
+		return "Loading..."
+	}
+
+	// Render word using custom block font
+	letterLines := font.RenderWord(currentWord)
+
+	// Build colored output for each line
+	coloredLines := make([]string, font.LetterHeight)
+
+	for lineIdx := 0; lineIdx < font.LetterHeight; lineIdx++ {
+		var lineBuilder strings.Builder
+
+		for charIdx, letterLine := range letterLines[lineIdx] {
+			var style lipgloss.Style
+
+			if charIdx < len(state.CurrentInput) {
+				// Character has been typed
+				if charIdx < len(currentWord) && state.CurrentInput[charIdx] == currentWord[charIdx] {
+					style = r.styles.Correct
+				} else {
+					style = r.styles.Incorrect
+				}
+			} else {
+				// Character not yet typed
+				style = r.styles.Untyped
+			}
+
+			lineBuilder.WriteString(style.Render(letterLine))
+			if charIdx < len(letterLines[lineIdx])-1 {
+				lineBuilder.WriteString(style.Render(" "))
+			}
+		}
+
+		coloredLines[lineIdx] = lineBuilder.String()
+	}
+
+	coloredWord := strings.Join(coloredLines, "\n")
+
+	// Progress indicator
+	progress := fmt.Sprintf("Word %d/%d", state.WordNumber, state.TotalWords)
+
+	// Previous word (top left) and Next word (top right)
+	prevLabel := r.styles.PrevNext.Render(state.PreviousWord)
+	nextLabel := r.styles.PrevNext.Render(state.NextWord)
+
+	// Instructions
+	var helpText string
+	if !state.TimerStarted {
+		helpText = "Type the first letter to start the timer | ESC to quit"
+	} else {
+		helpText = "Type the word, then press SPACE to continue | ESC to quit"
+	}
+	help := r.styles.Help.Render(helpText)
+
+	// WPM Bar
+	wpmBar := r.renderWPMBar(state.LiveWPM)
+
+	// Center the main content
+	mainContent := lipgloss.JoinVertical(
+		lipgloss.Center,
+		"",
+		r.styles.Progress.Render(progress),
+		"",
+		"",
+		coloredWord,
+		"",
+		"",
+		help,
+	)
+
+	// Calculate vertical positioning
+	contentHeight := strings.Count(mainContent, "\n") + 1
+	wpmBarHeight := strings.Count(wpmBar, "\n") + 1
+	topPadding := (r.height - contentHeight - wpmBarHeight - 6) / 2
+	if topPadding < 0 {
+		topPadding = 0
+	}
+
+	// Build full screen layout
+	var fullContent strings.Builder
+
+	// Top bar with previous and next words
+	topBarWidth := r.width - 4
+	if topBarWidth < 20 {
+		topBarWidth = 20
+	}
+	spaceBetween := topBarWidth - len(state.PreviousWord) - len(state.NextWord)
+	if spaceBetween < 1 {
+		spaceBetween = 1
+	}
+	topBar := "  " + prevLabel + strings.Repeat(" ", spaceBetween) + nextLabel + "  "
+	fullContent.WriteString(topBar)
+	fullContent.WriteString("\n")
+
+	// Top padding
+	for i := 0; i < topPadding; i++ {
+		fullContent.WriteString("\n")
+	}
+
+	// Center main content horizontally
+	centeredMain := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, mainContent)
+	fullContent.WriteString(centeredMain)
+
+	// Spacer before WPM bar
+	fullContent.WriteString("\n\n")
+
+	// Bottom WPM bar (centered)
+	centeredBar := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, wpmBar)
+	fullContent.WriteString(centeredBar)
+
+	// Fill remaining space
+	currentHeight := topPadding + contentHeight + 2 + wpmBarHeight + 2
+	for i := currentHeight; i < r.height; i++ {
+		fullContent.WriteString("\n")
+	}
+
+	return fullContent.String()
+}
+
+// renderWPMBar creates a beautiful gradient progress bar for WPM
+func (r *Renderer) renderWPMBar(wpm float64) string {
+	const maxWPM = 120.0
+	const barWidth = 50
+
+	fillPercent := wpm / maxWPM
+	if fillPercent > 1.0 {
+		fillPercent = 1.0
+	}
+	if fillPercent < 0 {
+		fillPercent = 0
+	}
+
+	filledWidth := int(float64(barWidth) * fillPercent)
+	emptyWidth := barWidth - filledWidth
+
+	var bar strings.Builder
+
+	// Build the filled portion with gradient
+	for i := 0; i < filledWidth; i++ {
+		colourIdx := int(float64(i) / float64(barWidth) * float64(len(GradientColours)-1))
+		if colourIdx >= len(GradientColours) {
+			colourIdx = len(GradientColours) - 1
+		}
+		colour := GradientColours[colourIdx]
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		bar.WriteString(style.Render("█"))
+	}
+
+	// Build the empty portion
+	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourEmptyBar))
+	for i := 0; i < emptyWidth; i++ {
+		bar.WriteString(emptyStyle.Render("░"))
+	}
+
+	// WPM label
+	wpmLabel := fmt.Sprintf(" %.0f WPM", wpm)
+	var labelStyle lipgloss.Style
+	if wpm >= 60 {
+		labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("46")).Bold(true)
+	} else if wpm >= 40 {
+		labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("226")).Bold(true)
+	} else {
+		labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Bold(true)
+	}
+
+	// Scale markers
+	scaleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	scale := scaleStyle.Render("0                        60                       120")
+
+	return lipgloss.JoinVertical(
+		lipgloss.Center,
+		bar.String()+labelStyle.Render(wpmLabel),
+		scale,
+	)
+}
+
+// RenderResultsScreen renders the results screen with animations
+func (r *Renderer) RenderResultsScreen(
+	session *stats.Stats,
+	historical *stats.HistoricalStats,
+	animator *Animator,
+) string {
+	const labelWidth = 18
+	const valueWidth = 8
+	const barWidth = 30
+	const maxWPMDisplay = 120.0
+	const maxTimeDisplay = 180.0
+	const maxAccuracy = 100.0
+
+	title := r.styles.Title.Render("Round Complete!")
+
+	// Check for new bests
+	isNewBestWPM := session.WPM >= historical.BestWPM
+	isNewBestTime := historical.TotalSessions == 1 || session.Duration.Seconds() <= historical.BestTime
+	isNewBestAccuracy := session.Accuracy >= historical.BestAccuracy
+
+	// Build animated rows
+	animIdx := 0
+	var statsLines []string
+
+	// WPM section
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"WPM this run:", fmt.Sprintf("%.1f", session.WPM),
+		r.renderStatBar(session.WPM, maxWPMDisplay, barWidth, isNewBestWPM),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"WPM best:", fmt.Sprintf("%.1f", historical.BestWPM),
+		r.renderStatBar(historical.BestWPM, maxWPMDisplay, barWidth, false),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"WPM average:", fmt.Sprintf("%.1f", historical.AverageWPM()),
+		r.renderStatBar(historical.AverageWPM(), maxWPMDisplay, barWidth, false),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+
+	// Time section
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"Time this run:", fmt.Sprintf("%.1fs", session.Duration.Seconds()),
+		r.renderTimeBar(session.Duration.Seconds(), maxTimeDisplay, barWidth, isNewBestTime),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"Time best:", fmt.Sprintf("%.1fs", historical.BestTime),
+		r.renderTimeBar(historical.BestTime, maxTimeDisplay, barWidth, false),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"Time average:", fmt.Sprintf("%.1fs", historical.AverageTime()),
+		r.renderTimeBar(historical.AverageTime(), maxTimeDisplay, barWidth, false),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+
+	// Accuracy section
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"Accuracy this run:", fmt.Sprintf("%.1f%%", session.Accuracy),
+		r.renderStatBar(session.Accuracy, maxAccuracy, barWidth, isNewBestAccuracy),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"Accuracy best:", fmt.Sprintf("%.1f%%", historical.BestAccuracy),
+		r.renderStatBar(historical.BestAccuracy, maxAccuracy, barWidth, false),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
+		"Accuracy average:", fmt.Sprintf("%.1f%%", historical.AverageAccuracy()),
+		r.renderStatBar(historical.AverageAccuracy(), maxAccuracy, barWidth, false),
+		labelWidth, valueWidth), animIdx))
+	animIdx++
+
+	// Sessions
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines, animator.ApplyAnimation(
+		r.styles.SessionLabel.Render("Total sessions:")+" "+r.styles.SessionValue.Render(fmt.Sprintf("%d", historical.TotalSessions)),
+		animIdx))
+	animIdx++
+
+	// Typing theory stats
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines, animator.ApplyAnimation(r.renderFingerRow(historical, labelWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.renderRowAccuracyRow(historical, labelWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.renderHandStats(historical, labelWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.renderRhythmStats(session, historical, labelWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.renderSFBStats(session, historical, labelWidth), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(r.renderTopErrors(historical, labelWidth), animIdx))
+	animIdx++
+
+	// Letter statistics matrix
+	statsLines = append(statsLines, "")
+	statsLines = append(statsLines, animator.ApplyAnimation(
+		r.styles.LetterLabel.Render("")+" "+r.renderLetterHeaderRow(), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(
+		r.styles.LetterLabel.Render("Accuracy:")+" "+r.renderLetterAccuracyRow(historical), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(
+		r.styles.LetterLabel.Render("Frequency:")+" "+r.renderLetterFrequencyRow(historical), animIdx))
+	animIdx++
+	statsLines = append(statsLines, animator.ApplyAnimation(
+		r.styles.LetterLabel.Render("Seek time:")+" "+r.renderLetterSeekTimeRow(historical), animIdx))
+
+	// Legend (only show if user achieved a personal best)
+	if isNewBestWPM || isNewBestTime || isNewBestAccuracy {
+		statsLines = append(statsLines, "")
+		statsLines = append(statsLines, r.styles.NewBest.Render("* = New personal best!"))
+	}
+
+	help := r.styles.Help.Render("Press ENTER for a new round | ESC to quit")
+
+	content := lipgloss.JoinVertical(
+		lipgloss.Center,
+		title,
+		strings.Join(statsLines, "\n"),
+		"",
+		help,
+	)
+
+	return lipgloss.Place(
+		r.width,
+		r.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		content,
+	)
+}
+
+// formatStatRow creates a perfectly aligned row with label, value, and bar
+func (r *Renderer) formatStatRow(label string, value string, bar string, labelWidth int, valueWidth int) string {
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ColourLabel)).
+		Width(labelWidth).
+		Align(lipgloss.Right)
+
+	valueStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ColourValue)).
+		Width(valueWidth).
+		Align(lipgloss.Right)
+
+	return labelStyle.Render(label) + " " + valueStyle.Render(value) + " " + bar
+}
+
+// renderStatBar creates a gradient bar for a stat value
+func (r *Renderer) renderStatBar(value, maxValue float64, width int, isNewBest bool) string {
+	fillPercent := value / maxValue
+	if fillPercent > 1.0 {
+		fillPercent = 1.0
+	}
+	if fillPercent < 0 {
+		fillPercent = 0
+	}
+
+	filledWidth := int(float64(width) * fillPercent)
+	emptyWidth := width - filledWidth
+
+	var bar strings.Builder
+
+	for i := 0; i < filledWidth; i++ {
+		colourIdx := int(float64(i) / float64(width) * float64(len(GradientColours)-1))
+		if colourIdx >= len(GradientColours) {
+			colourIdx = len(GradientColours) - 1
+		}
+		colour := GradientColours[colourIdx]
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		bar.WriteString(style.Render("█"))
+	}
+
+	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourEmptyBar))
+	for i := 0; i < emptyWidth; i++ {
+		bar.WriteString(emptyStyle.Render("░"))
+	}
+
+	if isNewBest {
+		starStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourNewBest)).Bold(true)
+		bar.WriteString(starStyle.Render(" *"))
+	} else {
+		bar.WriteString("  ")
+	}
+
+	return bar.String()
+}
+
+// renderTimeBar creates a bar for time (lower is better, so inverted)
+func (r *Renderer) renderTimeBar(value, maxValue float64, width int, isNewBest bool) string {
+	fillPercent := 1.0 - (value / maxValue)
+	if fillPercent > 1.0 {
+		fillPercent = 1.0
+	}
+	if fillPercent < 0 {
+		fillPercent = 0
+	}
+
+	filledWidth := int(float64(width) * fillPercent)
+	emptyWidth := width - filledWidth
+
+	var bar strings.Builder
+
+	for i := 0; i < filledWidth; i++ {
+		colourIdx := int(float64(i) / float64(width) * float64(len(GradientColours)-1))
+		if colourIdx >= len(GradientColours) {
+			colourIdx = len(GradientColours) - 1
+		}
+		colour := GradientColours[colourIdx]
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		bar.WriteString(style.Render("█"))
+	}
+
+	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourEmptyBar))
+	for i := 0; i < emptyWidth; i++ {
+		bar.WriteString(emptyStyle.Render("░"))
+	}
+
+	if isNewBest {
+		starStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourNewBest)).Bold(true)
+		bar.WriteString(starStyle.Render(" *"))
+	} else {
+		bar.WriteString("  ")
+	}
+
+	return bar.String()
+}
+
+// renderLetterHeaderRow renders a row of 26 letters as column headers
+func (r *Renderer) renderLetterHeaderRow() string {
+	var row strings.Builder
+	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	for i, letter := range letters {
+		row.WriteString(r.styles.LetterHeader.Render(string(letter)))
+		if i < len(letters)-1 {
+			row.WriteString(" ")
+		}
+	}
+
+	return row.String()
+}
+
+// renderLetterAccuracyRow renders a row of 26 filled circles coloured by accuracy
+func (r *Renderer) renderLetterAccuracyRow(historical *stats.HistoricalStats) string {
+	var row strings.Builder
+	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	for i, letter := range letters {
+		lowerLetter := string(letter + 32)
+		letterStats := historical.LetterAccuracy[lowerLetter]
+
+		var accuracy float64
+		if letterStats.Presented > 0 {
+			accuracy = (float64(letterStats.Correct) / float64(letterStats.Presented)) * 100
+		}
+
+		colour := GetAccuracyColour(accuracy)
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+
+		row.WriteString(style.Render("●"))
+		if i < len(letters)-1 {
+			row.WriteString(" ")
+		}
+	}
+
+	return row.String()
+}
+
+// renderLetterFrequencyRow renders a row of 26 filled circles coloured by frequency
+func (r *Renderer) renderLetterFrequencyRow(historical *stats.HistoricalStats) string {
+	var row strings.Builder
+	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	var maxPresented int
+	for _, letter := range letters {
+		lowerLetter := string(letter + 32)
+		if count := historical.LetterAccuracy[lowerLetter].Presented; count > maxPresented {
+			maxPresented = count
+		}
+	}
+
+	for i, letter := range letters {
+		lowerLetter := string(letter + 32)
+		letterStats := historical.LetterAccuracy[lowerLetter]
+
+		var frequency float64
+		if maxPresented > 0 {
+			frequency = float64(letterStats.Presented) / float64(maxPresented)
+		}
+
+		colour := GetFrequencyColour(frequency)
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+
+		row.WriteString(style.Render("●"))
+		if i < len(letters)-1 {
+			row.WriteString(" ")
+		}
+	}
+
+	return row.String()
+}
+
+// renderLetterSeekTimeRow renders a row of 26 filled circles coloured by seek time
+func (r *Renderer) renderLetterSeekTimeRow(historical *stats.HistoricalStats) string {
+	var row strings.Builder
+	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	var maxSeekTime float64
+	for _, letter := range letters {
+		lowerLetter := string(letter + 32)
+		if seekStats, exists := historical.LetterSeekTime[lowerLetter]; exists {
+			avgTime := seekStats.AverageMs()
+			if avgTime > maxSeekTime {
+				maxSeekTime = avgTime
+			}
+		}
+	}
+
+	for i, letter := range letters {
+		lowerLetter := string(letter + 32)
+		seekStats := historical.LetterSeekTime[lowerLetter]
+		avgTime := seekStats.AverageMs()
+
+		colour := GetSeekTimeColour(avgTime, maxSeekTime)
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+
+		row.WriteString(style.Render("●"))
+		if i < len(letters)-1 {
+			row.WriteString(" ")
+		}
+	}
+
+	return row.String()
+}
+
+// renderFingerRow renders finger accuracy
+func (r *Renderer) renderFingerRow(historical *stats.HistoricalStats, labelWidth int) string {
+	var row strings.Builder
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ColourLabel)).
+		Width(labelWidth).
+		Align(lipgloss.Right)
+
+	row.WriteString(labelStyle.Render("Finger accuracy:"))
+	row.WriteString(" ")
+
+	fingers := []int{0, 1, 2, 3, 6, 7, 8, 9}
+	fingerLabels := []string{"LP", "LR", "LM", "LI", "RI", "RM", "RR", "RP"}
+	labelStyleSmall := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourHelp))
+
+	for i, finger := range fingers {
+		stat := historical.FingerStats[finger]
+		accuracy := stat.Accuracy()
+		colour := GetAccuracyColour(accuracy)
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		row.WriteString(labelStyleSmall.Render(fingerLabels[i]))
+		row.WriteString(style.Render("●"))
+		if i < len(fingers)-1 {
+			row.WriteString(" ")
+		}
+	}
+
+	return row.String()
+}
+
+// renderRowAccuracyRow renders keyboard row accuracy
+func (r *Renderer) renderRowAccuracyRow(historical *stats.HistoricalStats, labelWidth int) string {
+	var row strings.Builder
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ColourLabel)).
+		Width(labelWidth).
+		Align(lipgloss.Right)
+
+	row.WriteString(labelStyle.Render("Row accuracy:"))
+	row.WriteString(" ")
+
+	rows := []int{0, 1, 2}
+	rowLabels := []string{"Top", "Home", "Bot"}
+	labelStyleSmall := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourHelp))
+
+	for i, rowIdx := range rows {
+		stat := historical.RowStats[rowIdx]
+		accuracy := stat.Accuracy()
+		colour := GetAccuracyColour(accuracy)
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		row.WriteString(labelStyleSmall.Render(rowLabels[i]))
+		row.WriteString(style.Render("●"))
+		if i < len(rows)-1 {
+			row.WriteString(" ")
+		}
+	}
+
+	return row.String()
+}
+
+// renderHandStats renders hand balance and alternation stats
+func (r *Renderer) renderHandStats(historical *stats.HistoricalStats, labelWidth int) string {
+	var row strings.Builder
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ColourLabel)).
+		Width(labelWidth).
+		Align(lipgloss.Right)
+	valueStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourValue))
+
+	row.WriteString(labelStyle.Render("Hand balance:"))
+	row.WriteString(" ")
+
+	leftStat := historical.HandStats[0]
+	rightStat := historical.HandStats[1]
+	total := leftStat.Correct + rightStat.Correct
+	if total > 0 {
+		leftPct := float64(leftStat.Correct) / float64(total) * 100
+		rightPct := float64(rightStat.Correct) / float64(total) * 100
+		row.WriteString(valueStyle.Render(fmt.Sprintf("L:%.0f%% R:%.0f%%", leftPct, rightPct)))
+	} else {
+		row.WriteString(valueStyle.Render("N/A"))
+	}
+
+	totalTransitions := historical.HandAlternations + historical.SameHandRuns
+	if totalTransitions > 0 {
+		altRate := float64(historical.HandAlternations) / float64(totalTransitions) * 100
+		colour := GetAccuracyColour(altRate)
+		altStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+		row.WriteString(valueStyle.Render("  Alt:"))
+		row.WriteString(altStyle.Render(fmt.Sprintf("%.0f%%", altRate)))
+	}
+
+	return row.String()
+}
+
+// renderRhythmStats renders typing rhythm consistency
+func (r *Renderer) renderRhythmStats(session *stats.Stats, historical *stats.HistoricalStats, labelWidth int) string {
+	var row strings.Builder
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ColourLabel)).
+		Width(labelWidth).
+		Align(lipgloss.Right)
+	valueStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourValue))
+
+	row.WriteString(labelStyle.Render("Rhythm:"))
+	row.WriteString(" ")
+
+	sessionStdDev := session.CalculateRhythmStdDev()
+	histStdDev := historical.RhythmStats.StdDev()
+
+	maxStdDev := 200.0
+	consistency := 100.0 - (sessionStdDev/maxStdDev)*100
+	if consistency < 0 {
+		consistency = 0
+	}
+	colour := GetAccuracyColour(consistency)
+	style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+
+	row.WriteString(valueStyle.Render("StdDev: "))
+	row.WriteString(style.Render(fmt.Sprintf("%.0fms", sessionStdDev)))
+	row.WriteString(valueStyle.Render(fmt.Sprintf(" (avg: %.0fms)", histStdDev)))
+
+	return row.String()
+}
+
+// renderSFBStats renders same-finger bigram statistics
+func (r *Renderer) renderSFBStats(session *stats.Stats, historical *stats.HistoricalStats, labelWidth int) string {
+	var row strings.Builder
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ColourLabel)).
+		Width(labelWidth).
+		Align(lipgloss.Right)
+	valueStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourValue))
+
+	row.WriteString(labelStyle.Render("Same-finger:"))
+	row.WriteString(" ")
+
+	sfbCount := session.SFBCount
+	var sfbAvg float64
+	if sfbCount > 0 {
+		sfbAvg = float64(session.SFBTotalTime) / float64(sfbCount)
+	}
+
+	histAvg := historical.SFBStats.AverageMs()
+
+	maxSFBTime := 400.0
+	performance := 100.0 - (sfbAvg/maxSFBTime)*100
+	if performance < 0 {
+		performance = 0
+	}
+	colour := GetAccuracyColour(performance)
+	style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+
+	row.WriteString(valueStyle.Render(fmt.Sprintf("%d SFBs", sfbCount)))
+	if sfbCount > 0 {
+		row.WriteString(style.Render(fmt.Sprintf(" @%.0fms", sfbAvg)))
+	}
+	if histAvg > 0 {
+		row.WriteString(valueStyle.Render(fmt.Sprintf(" (avg: %.0fms)", histAvg)))
+	}
+
+	return row.String()
+}
+
+// renderTopErrors renders top error substitution patterns
+func (r *Renderer) renderTopErrors(historical *stats.HistoricalStats, labelWidth int) string {
+	var row strings.Builder
+	labelStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(ColourLabel)).
+		Width(labelWidth).
+		Align(lipgloss.Right)
+
+	row.WriteString(labelStyle.Render("Common errors:"))
+	row.WriteString(" ")
+
+	type errorPair struct {
+		expected string
+		typed    string
+		count    int
+	}
+	var errors []errorPair
+	for expected, typedMap := range historical.ErrorSubstitution {
+		for typed, count := range typedMap {
+			errors = append(errors, errorPair{expected, typed, count})
+		}
+	}
+
+	// Sort by count
+	for i := 0; i < len(errors); i++ {
+		for j := i + 1; j < len(errors); j++ {
+			if errors[j].count > errors[i].count {
+				errors[i], errors[j] = errors[j], errors[i]
+			}
+		}
+	}
+
+	shown := 0
+	for _, e := range errors {
+		if shown >= 5 {
+			break
+		}
+		if shown > 0 {
+			row.WriteString(" ")
+		}
+		row.WriteString(r.styles.ErrorStyle.Render(e.expected + "→" + e.typed))
+		row.WriteString(r.styles.CountStyle.Render(fmt.Sprintf("(%d)", e.count)))
+		shown++
+	}
+
+	if shown == 0 {
+		row.WriteString(r.styles.CountStyle.Render("none"))
+	}
+
+	return row.String()
+}

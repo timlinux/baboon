@@ -220,7 +220,81 @@ Baboon is a cross-platform terminal-based typing practice application built with
 - Animation interval SHALL be 50ms per frame
 - Stagger delay SHALL be 3 frames between each row starting
 - Spring parameters: 60 FPS, frequency 6.0, damping 0.5
-- Total of 14 animated rows (WPM, Time, Accuracy stats + sessions + letter matrix)
+- Total of 25 animated rows (core stats + typing theory stats + letter matrix)
+
+### FR-020: Finger-Specific Statistics
+- The application SHALL track per-finger typing accuracy and speed
+- Standard touch typing finger assignments SHALL be used:
+  - Left pinky (0): q, a, z
+  - Left ring (1): w, s, x
+  - Left middle (2): e, d, c
+  - Left index (3): r, f, v, t, g, b
+  - Right index (6): y, h, n, u, j, m
+  - Right middle (7): i, k
+  - Right ring (8): o, l
+  - Right pinky (9): p
+- For each finger, the application SHALL track:
+  - `presented`: Times a key for this finger was needed
+  - `correct`: Times the correct key was pressed
+  - `total_time_ms`: Total seek time for keys typed with this finger
+  - `count`: Number of timed keypresses
+- Results screen SHALL display finger accuracy row with colour-coded indicators
+- Finger labels: LP, LR, LM, LI (left hand), RI, RM, RR, RP (right hand)
+
+### FR-021: Keyboard Row Statistics
+- The application SHALL track per-row typing accuracy and speed
+- Row assignments:
+  - Top row (0): q, w, e, r, t, y, u, i, o, p
+  - Home row (1): a, s, d, f, g, h, j, k, l
+  - Bottom row (2): z, x, c, v, b, n, m
+- For each row, the application SHALL track:
+  - `presented`: Times a key on this row was needed
+  - `correct`: Times the correct key was pressed
+  - `total_time_ms`: Total seek time for keys on this row
+  - `count`: Number of timed keypresses
+- Results screen SHALL display row accuracy with labels: Top, Home, Bot
+
+### FR-022: Hand Balance and Alternation Tracking
+- The application SHALL track hand usage balance (left vs right)
+- Hand assignments: Left (q-t, a-g, z-b), Right (y-p, h-l, n-m)
+- The application SHALL track hand alternations vs same-hand runs:
+  - `hand_alternations`: Count of transitions between hands
+  - `same_hand_runs`: Count of consecutive same-hand keypresses
+- Alternation rate = hand_alternations / (hand_alternations + same_hand_runs) × 100
+- Higher alternation rate indicates better typing flow
+- Results screen SHALL display hand balance (L:X% R:Y%) and alternation rate
+
+### FR-023: Same-Finger Bigram (SFB) Tracking
+- The application SHALL detect and track same-finger bigrams
+- An SFB occurs when consecutive letters use the same finger
+- For each SFB occurrence, the application SHALL track:
+  - Count of SFBs encountered
+  - Total seek time for SFBs
+  - Average seek time = total_time / count
+- SFBs are inherently slower than alternating-finger bigrams
+- Results screen SHALL display SFB count and average time per session
+
+### FR-024: Rhythm Consistency (Variance) Tracking
+- The application SHALL track typing rhythm consistency
+- Rhythm is measured as the standard deviation of seek times
+- For rhythm calculation, the application SHALL track:
+  - All seek times during the session
+  - Sum of seek times
+  - Sum of squared seek times (for variance calculation)
+- Variance = (sum_of_squares / count) - (mean²)
+- Standard deviation = √variance
+- Lower standard deviation indicates more consistent rhythm
+- Results screen SHALL display session StdDev and historical average
+
+### FR-025: Error Substitution Pattern Tracking
+- The application SHALL track which letters are commonly confused
+- When a letter is mistyped, the application SHALL record:
+  - The expected letter
+  - The typed letter
+  - Increment the count for this (expected → typed) pair
+- Error substitution data SHALL persist across sessions
+- Results screen SHALL display top 5 most common error patterns
+- Format: "a→s(12)" means 'a' was typed as 's' 12 times
 
 ### FR-019: Punctuation Mode
 - The application SHALL support a `-p` command line flag for punctuation mode
@@ -312,6 +386,178 @@ The dictionary SHALL use British English spellings:
 - theatre, metre, litre, fibre
 - Words ending in -ise (apologise, capitalise, emphasise, etc.)
 
+## Architecture
+
+The application follows a clean backend/frontend separation with a well-defined API:
+
+### Backend Package (`backend/`)
+The backend handles all game logic, statistics tracking, and state management. The frontend communicates exclusively through the `GameAPI` interface.
+
+**Key Components:**
+- `api.go` - Defines the `GameAPI` interface and data types
+- `engine.go` - Implements the game engine
+
+**GameAPI Interface:**
+```go
+type GameAPI interface {
+    // Game Lifecycle
+    StartRound()
+
+    // Input Handling
+    ProcessKeystroke(char string) KeystrokeResult
+    ProcessBackspace() bool
+    ProcessSpace() SpaceResult
+
+    // State Queries
+    GetGameState() GameState
+    GetSessionStats() *stats.Stats
+    GetHistoricalStats() *stats.HistoricalStats
+
+    // Persistence
+    SaveStats() error
+}
+```
+
+### Frontend Package (`frontend/`)
+The frontend handles all rendering, user input, and visual presentation. It communicates with the backend exclusively through the `GameAPI` interface.
+
+**Key Components:**
+- `model.go` - Bubble Tea model (Init, Update, View)
+- `views.go` - All rendering functions (typing screen, results screen)
+- `styles.go` - Lipgloss styles and colour definitions
+- `animations.go` - Spring-based animation logic
+
+### Data Flow
+1. User input → Frontend Model → REST Client → HTTP → REST Server → Game Engine
+2. Game state changes → REST Client queries API → HTTP Response → Render updated view
+3. Statistics persist through REST Server → Stats package → JSON file
+
+### REST API
+
+The backend exposes a RESTful API that the frontend communicates with via HTTP. This enables:
+- Clean separation between frontend and backend processes
+- Multiple concurrent frontend sessions connecting to a single backend
+- Potential for alternative clients (web UI, mobile app, etc.)
+- Network-based or remote gameplay
+
+**Base URL:** `http://127.0.0.1:8787` (configurable via `-port` flag)
+
+#### Session Management
+
+The REST API uses session-based routing. Each frontend client creates a session on startup and receives a unique session ID. All game operations are then scoped to that session.
+
+**Session Lifecycle:**
+1. Client calls `POST /api/sessions` to create a new session
+2. Server responds with a unique `session_id` (32-character hex string)
+3. Client includes session ID in all subsequent requests: `/api/sessions/{id}/...`
+4. Client calls `DELETE /api/sessions/{id}` on exit to clean up
+
+#### Endpoints
+
+**Session Management:**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/sessions` | Create a new session |
+| DELETE | `/api/sessions/{id}` | Delete a session |
+| GET | `/api/sessions` | List all active sessions |
+| GET | `/api/health` | Health check (includes active session count) |
+
+**Game Operations (session-scoped):**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/sessions/{id}/round` | Start a new round |
+| POST | `/api/sessions/{id}/keystroke` | Process a keystroke (with timing) |
+| POST | `/api/sessions/{id}/backspace` | Process backspace |
+| POST | `/api/sessions/{id}/space` | Process space key (with timing) |
+| POST | `/api/sessions/{id}/timing` | Submit final round timing data |
+| GET | `/api/sessions/{id}/state` | Get current game state |
+| GET | `/api/sessions/{id}/stats/session` | Get session statistics |
+| GET | `/api/sessions/{id}/stats/historical` | Get historical statistics |
+| POST | `/api/sessions/{id}/save` | Save statistics to disk |
+
+#### Frontend Timing
+
+All timing-critical measurements are performed on the frontend to avoid network latency affecting accuracy:
+
+1. **Timer tracking**: The frontend tracks when the timer starts (first correct keystroke) and ends (round complete)
+2. **Seek time measurement**: Time between keystrokes is measured locally and sent with each request
+3. **Live WPM calculation**: Computed on the frontend using local timing data
+4. **Duration calculation**: Total round duration is calculated on the frontend and submitted at round end
+
+**How it works:**
+- Each keystroke/space request includes a `seek_time_ms` field with the frontend-measured time since the previous keystroke
+- When a round completes, the frontend calls `POST /api/sessions/{id}/timing` with:
+  - `start_time_unix_ms`: Unix milliseconds when timer started
+  - `end_time_unix_ms`: Unix milliseconds when round ended
+  - `duration_ms`: Total duration in milliseconds
+- The backend uses this timing data for WPM and accuracy calculations, ensuring network latency doesn't affect statistics
+
+#### Request/Response Examples
+
+**POST /api/sessions**
+```json
+// Request
+{"punctuation_mode": false}
+
+// Response (201 Created)
+{"session_id": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"}
+```
+
+**GET /api/sessions**
+```json
+// Response
+{
+  "sessions": [
+    {
+      "id": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+      "created_at": "2024-01-15T10:30:00Z",
+      "last_used": "2024-01-15T10:35:00Z"
+    }
+  ]
+}
+```
+
+**GET /api/health**
+```json
+// Response
+{"status": "healthy", "active_sessions": 3}
+```
+
+**POST /api/sessions/{id}/keystroke**
+```json
+// Request
+{"char": "a"}
+
+// Response
+{"is_correct": true, "timer_started": true, "char_index": 0}
+```
+
+**POST /api/sessions/{id}/space**
+```json
+// Response
+{"advanced": true, "round_complete": false, "treated_as_error": false}
+```
+
+**GET /api/sessions/{id}/state**
+```json
+// Response
+{
+  "words": ["hello", "world", ...],
+  "current_word_idx": 0,
+  "current_input": "hel",
+  "timer_started": true,
+  "punctuation_mode": false,
+  "word_number": 1,
+  "total_words": 30,
+  "live_wpm": 45.2,
+  "current_word": "hello",
+  "previous_word": "",
+  "next_word": "world"
+}
+```
+
 ## File Structure
 
 ```
@@ -320,18 +566,100 @@ baboon/
 ├── flake.lock          # Nix flake lock file
 ├── go.mod              # Go module definition
 ├── go.sum              # Go module checksums
-├── main.go             # Application entry point, TUI logic, rendering
+├── main.go             # Entry point - supports server, client, and combined modes
+├── backend/
+│   ├── api.go          # GameAPI interface and types
+│   ├── engine.go       # Game engine implementation
+│   └── server.go       # REST API server with session management
+├── frontend/
+│   ├── model.go        # Bubble Tea model with local timing
+│   ├── views.go        # Rendering functions
+│   ├── styles.go       # Lipgloss styles
+│   ├── animations.go   # Spring animation logic
+│   └── client.go       # REST API client (implements GameAPI)
 ├── font/
-│   └── font.go         # Block letter font definitions (a-z + space)
+│   └── font.go         # Block letter font definitions (a-z + punctuation)
 ├── words/
 │   └── words.go        # Dictionary of common words (British English)
 ├── stats/
-│   └── stats.go        # Statistics types, persistence, validation
+│   ├── stats.go        # Statistics types, persistence, validation
+│   └── keyboard.go     # Keyboard layout mappings (finger, hand, row)
+├── scripts/
+│   ├── start-backend.sh   # Start backend server in background
+│   ├── stop-backend.sh    # Stop backend server
+│   ├── status-backend.sh  # Check backend status and health
+│   └── launch-frontend.sh # Launch frontend client
 ├── SPECIFICATION.md    # This file
 ├── README.md           # User documentation
 ├── LICENSE             # MIT license
 └── .gitignore          # Git ignore patterns
 ```
+
+## Running Modes
+
+The application supports three running modes:
+
+### Combined Mode (Default)
+```bash
+baboon              # Start backend + frontend together
+baboon -p           # With punctuation mode
+baboon -port 9000   # On custom port
+```
+Both backend and frontend run in the same process. When you exit, everything stops.
+
+### Server-Only Mode
+```bash
+baboon -server              # Run backend only (blocking)
+baboon -server -port 9000   # On custom port
+```
+Runs the REST API server in the foreground. Useful for running as a service or allowing multiple frontend connections. Writes PID to `$XDG_RUNTIME_DIR/baboon.pid`.
+
+### Client-Only Mode
+```bash
+baboon -client              # Connect to existing backend
+baboon -client -p           # With punctuation mode
+baboon -client -port 9000   # Connect to custom port
+```
+Connects to an already-running backend server. Multiple clients can connect simultaneously, each with their own session.
+
+## Management Scripts
+
+Scripts are provided in the `scripts/` directory for managing the backend as a background service:
+
+### start-backend.sh
+Starts the backend server in the background.
+```bash
+./scripts/start-backend.sh           # Start on default port
+./scripts/start-backend.sh -port 9000  # Custom port
+./scripts/start-backend.sh -p        # With punctuation mode
+```
+- Checks if backend is already running
+- Writes PID file for management
+- Logs output to `$XDG_RUNTIME_DIR/baboon.log`
+
+### stop-backend.sh
+Stops the backend server gracefully.
+```bash
+./scripts/stop-backend.sh      # Graceful shutdown
+./scripts/stop-backend.sh -f   # Force kill
+```
+
+### status-backend.sh
+Checks the backend server status and health.
+```bash
+./scripts/status-backend.sh              # Check default port
+./scripts/status-backend.sh -port 9000   # Check custom port
+```
+Shows: process status, health endpoint response, active session count.
+
+### launch-frontend.sh
+Launches a frontend client connected to the backend.
+```bash
+./scripts/launch-frontend.sh           # Connect to default port
+./scripts/launch-frontend.sh -p        # With punctuation mode
+./scripts/launch-frontend.sh -port 9000  # Connect to custom port
+```
+Checks that backend is running before launching.
 
 ## Stats File Format
 
@@ -349,18 +677,41 @@ Location: `~/.config/baboon/stats.json`
   "last_session_date": "2024-01-15T10:30:00Z",
   "letter_accuracy": {
     "a": {"presented": 100, "correct": 99},
-    "b": {"presented": 45, "correct": 43},
-    "c": {"presented": 62, "correct": 60}
+    "b": {"presented": 45, "correct": 43}
   },
   "letter_seek_time": {
     "a": {"total_time_ms": 15000, "count": 100},
-    "b": {"total_time_ms": 9000, "count": 45},
-    "c": {"total_time_ms": 12400, "count": 62}
+    "b": {"total_time_ms": 9000, "count": 45}
   },
   "bigram_seek_time": {
     "th": {"total_time_ms": 8500, "count": 50},
-    "he": {"total_time_ms": 7200, "count": 48},
-    "in": {"total_time_ms": 9100, "count": 35}
+    "he": {"total_time_ms": 7200, "count": 48}
+  },
+  "finger_stats": {
+    "0": {"presented": 200, "correct": 198, "total_time_ms": 30000, "count": 198},
+    "1": {"presented": 180, "correct": 175, "total_time_ms": 27000, "count": 175}
+  },
+  "hand_stats": {
+    "0": {"presented": 800, "correct": 790, "total_time_ms": 120000, "count": 790},
+    "1": {"presented": 750, "correct": 740, "total_time_ms": 112500, "count": 740}
+  },
+  "row_stats": {
+    "0": {"presented": 400, "correct": 395, "total_time_ms": 60000, "count": 395},
+    "1": {"presented": 600, "correct": 595, "total_time_ms": 90000, "count": 595},
+    "2": {"presented": 350, "correct": 340, "total_time_ms": 52500, "count": 340}
+  },
+  "error_substitution": {
+    "a": {"s": 5, "q": 2},
+    "e": {"r": 3, "w": 1}
+  },
+  "sfb_stats": {"count": 150, "total_time_ms": 45000},
+  "hand_alternations": 1200,
+  "same_hand_runs": 800,
+  "rhythm_stats": {
+    "total_seek_time_ms": 300000,
+    "total_seek_time_sq": 75000000.0,
+    "count": 2000,
+    "last_variance": 0
   }
 }
 ```
@@ -382,6 +733,90 @@ Location: `~/.config/baboon/stats.json`
 | Gradient | 196→47 | Red through yellow to green |
 
 ## Version History
+
+### v0.8.0
+- Management scripts for backend server lifecycle
+  - `start-backend.sh` - Start backend in background with PID tracking
+  - `stop-backend.sh` - Graceful or forced shutdown
+  - `status-backend.sh` - Health check and session monitoring
+  - `launch-frontend.sh` - Launch frontend against running backend
+- Three running modes added:
+  - Combined mode (default): Backend + frontend in same process
+  - Server-only mode (`-server`): Run backend only, blocking
+  - Client-only mode (`-client`): Connect to existing backend
+- PID file written to `$XDG_RUNTIME_DIR/baboon.pid` in server mode
+- Graceful shutdown handling with SIGINT/SIGTERM
+
+### v0.7.0
+- Frontend timing implementation to eliminate network latency effects
+  - All timing-critical measurements now performed on the frontend
+  - Seek times measured locally and sent with keystroke/space requests
+  - Live WPM calculated on frontend using local timing data
+  - Round duration submitted via dedicated timing endpoint
+- New API methods:
+  - `ProcessKeystrokeWithTiming(char, seekTimeMs)` - keystroke with timing
+  - `ProcessSpaceWithTiming(seekTimeMs)` - space with timing
+  - `SubmitTiming(startTime, endTime, durationMs)` - submit final timing
+- New REST endpoint: `POST /api/sessions/{id}/timing`
+- Backend no longer calls `time.Now()` for timing-critical operations
+- Ensures accurate WPM and seek time statistics regardless of network conditions
+
+### v0.6.0
+- Multi-client session management for REST API
+  - Each frontend client creates a unique session on startup
+  - Session IDs are 32-character hex strings generated cryptographically
+  - All game operations are scoped to sessions: `/api/sessions/{id}/...`
+  - Sessions are automatically cleaned up when clients disconnect
+- New session management endpoints:
+  - `POST /api/sessions` - Create a new session
+  - `DELETE /api/sessions/{id}` - Delete a session
+  - `GET /api/sessions` - List all active sessions
+- Health endpoint now reports active session count
+- Thread-safe session storage with mutex protection
+- Enables multiple concurrent players on a single backend server
+
+### v0.5.0
+- RESTful API implementation for frontend-backend communication
+  - All frontend interactions routed through HTTP REST API
+  - Backend server (`backend/server.go`) exposes REST endpoints
+  - Frontend client (`frontend/client.go`) implements GameAPI via HTTP
+- REST API endpoints:
+  - `POST /api/round` - Start new round
+  - `POST /api/keystroke` - Process keystroke
+  - `POST /api/backspace` - Process backspace
+  - `POST /api/space` - Process space
+  - `GET /api/state` - Get game state
+  - `GET /api/stats/session` - Get session statistics
+  - `GET /api/stats/historical` - Get historical statistics
+  - `POST /api/save` - Save statistics
+  - `GET /api/health` - Health check
+- Configurable port via `-port` flag (default: 8787)
+- Thread-safe server with mutex protection
+
+### v0.4.0
+- Major architecture refactoring: clean backend/frontend separation
+  - Backend package (`backend/`): Game engine with `GameAPI` interface
+  - Frontend package (`frontend/`): TUI model, views, styles, animations
+  - Main.go reduced to simple entry point wiring backend and frontend
+- Clear API boundary: frontend communicates only through `GameAPI` interface
+- Improved code organisation and maintainability
+
+### v0.3.0
+- Advanced typing theory statistics for effective touch typing practice:
+  - Finger-specific accuracy and speed tracking (8 fingers mapped to QWERTY layout)
+  - Keyboard row tracking (top, home, bottom row performance)
+  - Hand balance and alternation rate tracking
+  - Same-finger bigram (SFB) detection and timing
+  - Rhythm consistency tracking (standard deviation of seek times)
+  - Error substitution pattern tracking (which letters get confused)
+- Results screen displays new typing theory metrics:
+  - Finger accuracy row: LP LR LM LI | RI RM RR RP with colour-coded indicators
+  - Row accuracy: Top, Home, Bot performance indicators
+  - Hand balance: L:X% R:Y% distribution with alternation rate
+  - Rhythm: Session StdDev vs historical average
+  - Same-finger: SFB count and average timing
+  - Common errors: Top 5 letter substitution patterns (e.g., a→s(12))
+- Increased animated rows from 14 to 25 for new stats sections
 
 ### v0.2.0
 - Per-letter accuracy tracking (tracks how often each letter a-z is presented and typed correctly)

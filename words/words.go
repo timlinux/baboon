@@ -120,3 +120,219 @@ func GetRandomWords(n int, rng func(int) int) []string {
 	}
 	return result
 }
+
+// WordsPerRound is the fixed number of words per round
+const WordsPerRound = 30
+
+// TargetCharacters is the exact number of characters per round
+const TargetCharacters = 150
+
+// LetterStats represents frequency and accuracy data for a letter
+type LetterStats struct {
+	Presented int // Number of times presented
+	Correct   int // Number of times typed correctly
+}
+
+// LetterData represents the combined frequency and accuracy data for letters
+type LetterData map[string]LetterStats
+
+// scoreWordByLetterData scores a word based on:
+// 1. How many underrepresented letters it contains (frequency balancing)
+// 2. How many letters the user has low accuracy on (practice weak letters)
+// Higher score = more underrepresented + lower accuracy letters = should be preferred
+func scoreWordByLetterData(word string, letterData LetterData) float64 {
+	if len(letterData) == 0 {
+		return 1.0 // No history, equal weight
+	}
+
+	// Find max frequency to normalize
+	var maxFreq int
+	for _, stats := range letterData {
+		if stats.Presented > maxFreq {
+			maxFreq = stats.Presented
+		}
+	}
+
+	if maxFreq == 0 {
+		return 1.0 // No data yet
+	}
+
+	// Calculate combined score for each letter
+	var score float64
+	for _, char := range word {
+		letter := string(char)
+		stats := letterData[letter]
+
+		// Frequency score: low frequency = high score (range 0 to 1)
+		normalizedFreq := float64(stats.Presented) / float64(maxFreq)
+		freqScore := 1.0 - normalizedFreq
+
+		// Accuracy score: low accuracy = high score (range 0 to 1)
+		var accScore float64
+		if stats.Presented > 0 {
+			accuracy := float64(stats.Correct) / float64(stats.Presented)
+			accScore = 1.0 - accuracy // Invert: low accuracy = high score
+		} else {
+			accScore = 0.5 // No data, neutral score
+		}
+
+		// Combined score: weight both factors equally
+		// Letters that are both rare AND have low accuracy get highest scores
+		letterScore := (freqScore + accScore) / 2.0
+		score += letterScore
+	}
+
+	// Normalize by word length to avoid bias toward longer words
+	if len(word) > 0 {
+		score = score / float64(len(word))
+	}
+
+	// Ensure minimum score to avoid zero probability
+	if score < 0.1 {
+		score = 0.1
+	}
+
+	return score
+}
+
+// weightedRandomSelect selects a word from candidates weighted by letter data score
+func weightedRandomSelect(candidates []string, letterData LetterData, rng func(int) int) string {
+	if len(candidates) == 0 {
+		return ""
+	}
+	if len(candidates) == 1 {
+		return candidates[0]
+	}
+
+	// Calculate scores for all candidates
+	scores := make([]float64, len(candidates))
+	var totalScore float64
+	for i, word := range candidates {
+		scores[i] = scoreWordByLetterData(word, letterData)
+		totalScore += scores[i]
+	}
+
+	// Weighted random selection
+	target := float64(rng(1000000)) / 1000000.0 * totalScore
+	var cumulative float64
+	for i, score := range scores {
+		cumulative += score
+		if cumulative >= target {
+			return candidates[i]
+		}
+	}
+
+	// Fallback to last candidate
+	return candidates[len(candidates)-1]
+}
+
+// GetRandomWordsFixedCount returns exactly numWords random words totalling exactly targetChars characters
+// Uses a stratified selection approach to ensure both constraints are met
+// Words containing underrepresented and low-accuracy letters are weighted higher
+func GetRandomWordsFixedCount(numWords, targetChars int, rng func(int) int, letterData LetterData) []string {
+	// Group words by length for efficient selection
+	wordsByLength := make(map[int][]string)
+	for _, word := range CommonWords {
+		word = strings.ToLower(word)
+		if len(strings.TrimSpace(word)) > 0 {
+			length := len(word)
+			wordsByLength[length] = append(wordsByLength[length], word)
+		}
+	}
+
+	// Try multiple times to find a valid combination
+	for attempt := 0; attempt < 100; attempt++ {
+		result := make([]string, 0, numWords)
+		currentChars := 0
+
+		for i := 0; i < numWords; i++ {
+			wordsRemaining := numWords - i
+			charsRemaining := targetChars - currentChars
+
+			if wordsRemaining == 0 {
+				break
+			}
+
+			// Calculate ideal length for this word
+			idealLength := float64(charsRemaining) / float64(wordsRemaining)
+
+			// For the last word, we need exact match
+			if wordsRemaining == 1 {
+				if words, exists := wordsByLength[charsRemaining]; exists && len(words) > 0 {
+					word := weightedRandomSelect(words, letterData, rng)
+					result = append(result, word)
+					currentChars += charsRemaining
+				}
+				break
+			}
+
+			// Find words close to the ideal length
+			// Allow some variance to keep it interesting
+			minLen := int(idealLength) - 2
+			maxLen := int(idealLength) + 2
+			if minLen < 1 {
+				minLen = 1
+			}
+
+			// Ensure we can still reach target with remaining words
+			// Min possible: remaining words * 1 char each (but we need words of at least length 1)
+			// Max possible: remaining words * max word length
+			minPossibleRemaining := wordsRemaining - 1 // Minimum 1 char per remaining word
+			maxPossibleRemaining := (wordsRemaining - 1) * 15 // Assuming max word length ~15
+
+			// Adjust bounds to ensure feasibility
+			if charsRemaining-maxLen < minPossibleRemaining {
+				minLen = charsRemaining - maxPossibleRemaining
+				if minLen < 1 {
+					minLen = 1
+				}
+			}
+			if charsRemaining-minLen > maxPossibleRemaining {
+				maxLen = charsRemaining - minPossibleRemaining
+			}
+
+			// Collect valid words within range
+			var candidates []string
+			for length := minLen; length <= maxLen; length++ {
+				if words, exists := wordsByLength[length]; exists {
+					candidates = append(candidates, words...)
+				}
+			}
+
+			if len(candidates) == 0 {
+				// Fallback: try any word that keeps us feasible
+				for length, words := range wordsByLength {
+					remaining := charsRemaining - length
+					if remaining >= wordsRemaining-1 && remaining <= (wordsRemaining-1)*15 {
+						candidates = append(candidates, words...)
+					}
+				}
+			}
+
+			if len(candidates) == 0 {
+				// This attempt failed, try again
+				break
+			}
+
+			// Use weighted selection based on letter data (frequency + accuracy)
+			word := weightedRandomSelect(candidates, letterData, rng)
+			result = append(result, word)
+			currentChars += len(word)
+		}
+
+		// Check if we got exactly what we need
+		if len(result) == numWords && currentChars == targetChars {
+			return result
+		}
+	}
+
+	// Fallback: just return random words (shouldn't happen with reasonable params)
+	result := make([]string, 0, numWords)
+	for len(result) < numWords {
+		word := strings.ToLower(CommonWords[rng(len(CommonWords))])
+		if len(strings.TrimSpace(word)) > 0 {
+			result = append(result, word)
+		}
+	}
+	return result
+}
