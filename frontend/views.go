@@ -32,7 +32,7 @@ func (r *Renderer) SetSize(width, height int) {
 	r.height = height
 }
 
-// RenderTypingScreen renders the main typing interface
+// RenderTypingScreen renders the main typing interface with carousel effect
 func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
 	if state.CurrentWordIdx >= len(state.Words) {
 		return ""
@@ -43,7 +43,7 @@ func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
 		return "Loading..."
 	}
 
-	// Render word using custom block font
+	// Render current word using custom block font
 	letterLines := font.RenderWord(currentWord)
 
 	// Build colored output for each line
@@ -81,9 +81,25 @@ func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
 	// Progress indicator
 	progress := fmt.Sprintf("Word %d/%d", state.WordNumber, state.TotalWords)
 
-	// Previous word (top left) and Next word (top right)
-	prevLabel := r.styles.PrevNext.Render(state.PreviousWord)
-	nextLabel := r.styles.PrevNext.Render(state.NextWord)
+	// Carousel style: Previous word above (dimmed, smaller font representation)
+	prevWordDisplay := ""
+	if state.PreviousWord != "" {
+		// Render previous word in dimmed style with decorative brackets
+		prevStyle := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("240")).
+			Italic(true)
+		prevWordDisplay = prevStyle.Render("· · · " + state.PreviousWord + " · · ·")
+	}
+
+	// Carousel style: Next word below (dimmed, smaller font representation)
+	nextWordDisplay := ""
+	if state.NextWord != "" {
+		// Render next word in dimmed style with decorative brackets
+		nextStyle := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("245")).
+			Bold(false)
+		nextWordDisplay = nextStyle.Render("▼  " + state.NextWord + "  ▼")
+	}
 
 	// Instructions
 	var helpText string
@@ -97,42 +113,58 @@ func (r *Renderer) RenderTypingScreen(state backend.GameState) string {
 	// WPM Bar
 	wpmBar := r.renderWPMBar(state.LiveWPM)
 
+	// Build the carousel layout vertically
+	var carouselElements []string
+
+	// Progress at top
+	carouselElements = append(carouselElements, "")
+	carouselElements = append(carouselElements, r.styles.Progress.Render(progress))
+	carouselElements = append(carouselElements, "")
+
+	// Previous word (above current, dimmed) - the word that scrolled up
+	if prevWordDisplay != "" {
+		carouselElements = append(carouselElements, prevWordDisplay)
+		carouselElements = append(carouselElements, "")
+	}
+
+	// Decorative separator before main word
+	separatorStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("238"))
+	carouselElements = append(carouselElements, separatorStyle.Render("─────────────────────────────────"))
+	carouselElements = append(carouselElements, "")
+
+	// Current word (large block letters) - the main focus
+	carouselElements = append(carouselElements, coloredWord)
+
+	// Decorative separator after main word
+	carouselElements = append(carouselElements, "")
+	carouselElements = append(carouselElements, separatorStyle.Render("─────────────────────────────────"))
+
+	// Next word (below current, dimmed) - coming up next
+	if nextWordDisplay != "" {
+		carouselElements = append(carouselElements, "")
+		carouselElements = append(carouselElements, nextWordDisplay)
+	}
+
+	carouselElements = append(carouselElements, "")
+	carouselElements = append(carouselElements, "")
+	carouselElements = append(carouselElements, help)
+
 	// Center the main content
 	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
-		"",
-		r.styles.Progress.Render(progress),
-		"",
-		"",
-		coloredWord,
-		"",
-		"",
-		help,
+		carouselElements...,
 	)
 
 	// Calculate vertical positioning
 	contentHeight := strings.Count(mainContent, "\n") + 1
 	wpmBarHeight := strings.Count(wpmBar, "\n") + 1
-	topPadding := (r.height - contentHeight - wpmBarHeight - 6) / 2
+	topPadding := (r.height - contentHeight - wpmBarHeight - 4) / 2
 	if topPadding < 0 {
 		topPadding = 0
 	}
 
 	// Build full screen layout
 	var fullContent strings.Builder
-
-	// Top bar with previous and next words
-	topBarWidth := r.width - 4
-	if topBarWidth < 20 {
-		topBarWidth = 20
-	}
-	spaceBetween := topBarWidth - len(state.PreviousWord) - len(state.NextWord)
-	if spaceBetween < 1 {
-		spaceBetween = 1
-	}
-	topBar := "  " + prevLabel + strings.Repeat(" ", spaceBetween) + nextLabel + "  "
-	fullContent.WriteString(topBar)
-	fullContent.WriteString("\n")
 
 	// Top padding
 	for i := 0; i < topPadding; i++ {
