@@ -445,7 +445,7 @@ The web frontend is a React application that provides the same functionality as 
 - **React 18**: Modern React with hooks for state management
 - **Chakra UI 2.x**: Component library with dark theme support
 - **Framer Motion**: Physics-based animations with spring dynamics
-- **Custom Theme**: Dark theme with cyan/purple/green accents
+- **Custom Theme**: Dark theme with Kartoza brand colours (orange #D4922A and blue #4A90A4)
 
 **Key Components:**
 - `App.js` - Main application component with state management and screen routing
@@ -785,6 +785,8 @@ Location: `~/.config/baboon/stats.json`
 
 ## Colour Palette Reference
 
+### TUI Colour Codes
+
 | Usage | Colour Code | Description |
 |-------|-------------|-------------|
 | Correct letter | 10 | Bright green |
@@ -799,14 +801,67 @@ Location: `~/.config/baboon/stats.json`
 | Empty bar | 236 | Dark gray |
 | Gradient | 196→47 | Red through yellow to green |
 
+### Web UI Kartoza Brand Colours
+
+The web frontend uses Kartoza's brand colour scheme derived from their wallpaper artwork.
+
+| Colour | Hex Code | Usage |
+|--------|----------|-------|
+| Kartoza Orange (Primary) | #D4922A | Primary brand colour, buttons, current letter highlight, WPM stat |
+| Kartoza Blue (Secondary) | #4A90A4 | Secondary brand colour, hover states, alternation, time stat |
+| Kartoza Gray Light | #C4C4C4 | Light gray accents |
+| Kartoza Gray Medium | #9A9A9A | Medium gray accents |
+| Kartoza Gray Dark | #6A6A6A | Dark gray, pending letters |
+| Green (Correct) | #4CAF50 | Correct keystrokes, high accuracy |
+| Red (Incorrect) | #E53935 | Incorrect keystrokes, errors |
+| Background Primary | #1a2833 | Main background |
+| Background Secondary | #243442 | Secondary background |
+| Background Card | #1f3040 | Card backgrounds |
+
+**Brand Colour Palette (Orange)**
+- 50: #fef6e9
+- 100: #fce8c7
+- 200: #f9d9a5
+- 300: #f5c983
+- 400: #e8a93d
+- 500: #D4922A (primary)
+- 600: #b87a22
+- 700: #9c631a
+- 800: #804c12
+- 900: #64350a
+
+**Brand Colour Palette (Blue)**
+- 50: #e9f4f7
+- 100: #c7e3ea
+- 200: #a5d2dd
+- 300: #83c1d0
+- 400: #61b0c3
+- 500: #4A90A4 (primary)
+- 600: #3d7688
+- 700: #305c6c
+- 800: #234250
+- 900: #162834
+
+The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
+
 ## Version History
+
+### v0.9.1
+- Kartoza brand colour scheme applied to web frontend
+  - Primary colour: Kartoza Orange (#D4922A)
+  - Secondary colour: Kartoza Blue (#4A90A4)
+  - Updated theme.js with full Kartoza colour palettes
+  - Updated WelcomeScreen gradient title with brand colours
+  - Updated TypingScreen with orange current letter highlight and blue/orange progress bars
+  - Updated ResultsScreen with brand colours for stats, hand balance, and heatmaps
+  - Kartoza wallpaper added to project assets (web/public/kartoza-wallpaper.png)
 
 ### v0.9.0
 - React web frontend with 100% feature parity to TUI
   - Built with React 18, Chakra UI 2.x, and Framer Motion
   - Physics-based animations using Framer Motion spring dynamics
   - Large chunky block letters with bounce effects on keystrokes
-  - Dark theme with cyan/purple/green accent colours
+  - Dark theme with Kartoza brand colours (orange and blue)
   - Custom theme with chunky button styles ("glow" and "chunky" variants)
 - Web frontend components:
   - WelcomeScreen: Animated logo, connection status, game options

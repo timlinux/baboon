@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   VStack,
@@ -17,13 +17,14 @@ const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
 
 // Hero stat - big number with comparison inline
-function HeroStat({ label, value, unit, best, avg, isBest, delay = 0, color = 'cyan' }) {
+function HeroStat({ label, value, unit, best, avg, isBest, delay = 0, color = 'orange' }) {
+  // Kartoza color scheme
   const colors = {
-    cyan: { bg: 'rgba(0, 204, 255, 0.1)', border: 'accent.cyan', text: 'accent.cyan' },
-    green: { bg: 'rgba(0, 255, 136, 0.1)', border: 'accent.green', text: 'accent.green' },
-    purple: { bg: 'rgba(170, 102, 255, 0.1)', border: 'accent.purple', text: 'accent.purple' },
+    orange: { bg: 'rgba(212, 146, 42, 0.1)', border: 'brand.500', text: 'brand.500' },
+    blue: { bg: 'rgba(74, 144, 164, 0.1)', border: 'kartoza.blue.500', text: 'kartoza.blue.500' },
+    green: { bg: 'rgba(76, 175, 80, 0.1)', border: 'accent.green', text: 'accent.green' },
   };
-  const c = colors[color] || colors.cyan;
+  const c = colors[color] || colors.orange;
 
   return (
     <MotionBox
@@ -68,7 +69,7 @@ function HeroStat({ label, value, unit, best, avg, isBest, delay = 0, color = 'c
             Best: <Text as="span" color="accent.green">{best.toFixed(1)}</Text>
           </Text>
           <Text color="gray.500" fontSize="xs">
-            Avg: <Text as="span" color="accent.purple">{avg.toFixed(1)}</Text>
+            Avg: <Text as="span" color="kartoza.blue.500">{avg.toFixed(1)}</Text>
           </Text>
         </HStack>
       </Box>
@@ -85,24 +86,25 @@ function LetterHeatmap({ letterAccuracy, letterSeekTime, delay = 0 }) {
   ];
 
   const getColor = (letter, type) => {
+    // Kartoza color scheme for heatmap
     if (type === 'accuracy') {
       const stats = letterAccuracy?.[letter];
       if (!stats || stats.presented === 0) return 'gray.700';
       const acc = (stats.correct / stats.presented) * 100;
-      if (acc >= 95) return '#00ff88';
-      if (acc >= 85) return '#88ff00';
-      if (acc >= 75) return '#ffcc00';
-      if (acc >= 60) return '#ff8844';
-      return '#ff4466';
+      if (acc >= 95) return '#4CAF50'; // Green
+      if (acc >= 85) return '#8BC34A'; // Light green
+      if (acc >= 75) return '#D4922A'; // Kartoza orange
+      if (acc >= 60) return '#E65100'; // Dark orange
+      return '#E53935'; // Red
     } else {
       const stats = letterSeekTime?.[letter];
       if (!stats || stats.count === 0) return 'gray.700';
       const avg = stats.total_time_ms / stats.count;
-      if (avg <= 150) return '#00ff88';
-      if (avg <= 200) return '#88ff00';
-      if (avg <= 250) return '#ffcc00';
-      if (avg <= 350) return '#ff8844';
-      return '#ff4466';
+      if (avg <= 150) return '#4CAF50'; // Green
+      if (avg <= 200) return '#8BC34A'; // Light green
+      if (avg <= 250) return '#D4922A'; // Kartoza orange
+      if (avg <= 350) return '#E65100'; // Dark orange
+      return '#E53935'; // Red
     }
   };
 
@@ -200,8 +202,8 @@ function CompactFingerStats({ fingerStats, delay = 0 }) {
     if (!stats || stats.presented === 0) return 'gray.600';
     const acc = (stats.correct / stats.presented) * 100;
     if (acc >= 95) return 'accent.green';
-    if (acc >= 85) return 'yellow.400';
-    if (acc >= 75) return 'orange.400';
+    if (acc >= 85) return 'kartoza.blue.500';
+    if (acc >= 75) return 'brand.500'; // Kartoza orange
     return 'red.400';
   };
 
@@ -274,28 +276,28 @@ function CompactHandBalance({ handStats, handAlternations, sameHandRuns, delay =
       <VStack align="stretch" spacing={2}>
         <Text color="gray.400" fontSize="xs" fontWeight="500">Hand Balance</Text>
         <HStack spacing={2}>
-          <Text color="accent.purple" fontSize="sm" fontWeight="bold" w="40px">
+          <Text color="brand.500" fontSize="sm" fontWeight="bold" w="40px">
             L {leftPct.toFixed(0)}%
           </Text>
           <Box flex={1} h="10px" bg="bg.tertiary" borderRadius="full" overflow="hidden">
             <Flex h="100%">
               <MotionBox
                 h="100%"
-                bg="accent.purple"
+                bg="brand.500"
                 initial={{ width: 0 }}
                 animate={{ width: `${leftPct}%` }}
                 transition={{ delay: delay + 0.1, type: 'spring' }}
               />
               <MotionBox
                 h="100%"
-                bg="accent.cyan"
+                bg="kartoza.blue.500"
                 initial={{ width: 0 }}
                 animate={{ width: `${rightPct}%` }}
                 transition={{ delay: delay + 0.2, type: 'spring' }}
               />
             </Flex>
           </Box>
-          <Text color="accent.cyan" fontSize="sm" fontWeight="bold" w="40px" textAlign="right">
+          <Text color="kartoza.blue.500" fontSize="sm" fontWeight="bold" w="40px" textAlign="right">
             R {rightPct.toFixed(0)}%
           </Text>
         </HStack>
@@ -392,6 +394,23 @@ function ResultsScreen({
   const isNewBestAccuracy = accuracy >= bestAccuracy && historicalStats?.total_sessions > 0;
   const isNewBestTime = (bestTime === 0 || duration <= bestTime) && historicalStats?.total_sessions > 0;
 
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        if (!isLoading) {
+          onNewRound();
+        }
+      } else if (e.key === 'Escape') {
+        onBackToMenu();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNewRound, onBackToMenu, isLoading]);
+
   return (
     <Flex minH="100vh" direction="column" p={4}>
       {/* Header */}
@@ -405,7 +424,7 @@ function ResultsScreen({
         <Text
           fontSize={{ base: '3xl', md: '5xl' }}
           fontWeight="800"
-          bgGradient="linear(to-r, accent.cyan, accent.green)"
+          bgGradient="linear(to-r, brand.500, kartoza.blue.500)"
           bgClip="text"
         >
           Round Complete!
@@ -424,7 +443,7 @@ function ResultsScreen({
           best={bestWpm}
           avg={avgWpm}
           isBest={isNewBestWpm}
-          color="cyan"
+          color="orange"
           delay={0.1}
         />
         <HeroStat
@@ -444,7 +463,7 @@ function ResultsScreen({
           best={bestTime}
           avg={avgTime}
           isBest={isNewBestTime}
-          color="purple"
+          color="blue"
           delay={0.2}
         />
       </HStack>
@@ -542,6 +561,11 @@ function ResultsScreen({
           </Button>
         </MotionBox>
       </MotionFlex>
+
+      {/* Keyboard hint */}
+      <Text color="gray.600" fontSize="xs" textAlign="center" pb={2}>
+        Press TAB for new round • ESC to exit
+      </Text>
     </Flex>
   );
 }

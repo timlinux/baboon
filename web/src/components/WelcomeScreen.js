@@ -31,7 +31,7 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
               <Text
                 fontSize={{ base: '6xl', md: '8xl' }}
                 fontWeight="800"
-                bgGradient="linear(to-r, accent.cyan, accent.purple, accent.green)"
+                bgGradient="linear(to-r, brand.500, kartoza.blue.500, brand.400)"
                 bgClip="text"
                 letterSpacing="tight"
               >
@@ -94,7 +94,7 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
                   </FormLabel>
                   <Switch
                     size="lg"
-                    colorScheme="cyan"
+                    colorScheme="orange"
                     isChecked={punctuationMode}
                     onChange={(e) => setPunctuationMode(e.target.checked)}
                   />

@@ -13,18 +13,19 @@ const MotionBox = motion(Box);
 
 // Large block letter component with physics
 function BlockLetter({ char, status, index }) {
+  // Kartoza color scheme
   const colors = {
-    correct: '#00ff88',
-    incorrect: '#ff4466',
-    pending: '#4a4a6a',
-    current: '#ffffff',
+    correct: '#4CAF50', // Green for correct
+    incorrect: '#E53935', // Red for incorrect
+    pending: '#6A6A6A', // Kartoza gray
+    current: '#D4922A', // Kartoza orange for current
   };
 
   const bgColors = {
-    correct: 'rgba(0, 255, 136, 0.15)',
-    incorrect: 'rgba(255, 68, 102, 0.15)',
+    correct: 'rgba(76, 175, 80, 0.15)',
+    incorrect: 'rgba(229, 57, 53, 0.15)',
     pending: 'transparent',
-    current: 'rgba(255, 255, 255, 0.1)',
+    current: 'rgba(212, 146, 42, 0.15)',
   };
 
   const spring = useSpring(0, { stiffness: 500, damping: 30 });
@@ -54,8 +55,8 @@ function BlockLetter({ char, status, index }) {
         bg={bgColors[status]}
         borderRadius="2xl"
         border="3px solid"
-        borderColor={status === 'current' ? 'accent.cyan' : 'transparent'}
-        boxShadow={status === 'current' ? '0 0 30px rgba(0, 204, 255, 0.4)' : 'none'}
+        borderColor={status === 'current' ? 'brand.500' : 'transparent'}
+        boxShadow={status === 'current' ? '0 0 30px rgba(212, 146, 42, 0.4)' : 'none'}
         transition="all 0.2s ease"
       >
         <Text
@@ -79,10 +80,10 @@ function WpmBar({ wpm, maxWpm = 120 }) {
 
   const getColor = (wpm) => {
     if (wpm < 30) return 'red.400';
-    if (wpm < 50) return 'orange.400';
+    if (wpm < 50) return 'brand.500'; // Kartoza orange
     if (wpm < 70) return 'yellow.400';
     if (wpm < 90) return 'green.400';
-    return 'cyan.400';
+    return 'kartoza.blue.500'; // Kartoza blue for best
   };
 
   return (
@@ -104,7 +105,7 @@ function WpmBar({ wpm, maxWpm = 120 }) {
       >
         <MotionBox
           h="100%"
-          bgGradient="linear(to-r, red.500, orange.400, yellow.400, green.400, cyan.400)"
+          bgGradient="linear(to-r, red.500, brand.500, yellow.400, green.400, kartoza.blue.500)"
           borderRadius="full"
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
@@ -233,7 +234,7 @@ function TypingScreen({
           bg="bg.tertiary"
           sx={{
             '& > div': {
-              bgGradient: 'linear(to-r, accent.purple, accent.cyan)',
+              bgGradient: 'linear(to-r, brand.500, kartoza.blue.500)',
             },
           }}
         />
