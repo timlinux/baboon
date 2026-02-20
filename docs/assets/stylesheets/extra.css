@@ -341,10 +341,104 @@
   background: linear-gradient(90deg, var(--baboon-orange), var(--baboon-blue));
 }
 
+/* Donation styling */
+.donation-hero {
+  background: linear-gradient(145deg, rgba(234, 74, 170, 0.1), rgba(212, 146, 42, 0.15));
+  border: 2px solid var(--baboon-orange);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.donation-hero h3 {
+  color: var(--baboon-orange);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.donation-buttons-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.donation-buttons-hero .md-button {
+  min-width: 180px;
+}
+
+.donation-box {
+  background: linear-gradient(145deg, rgba(36, 52, 66, 0.9), rgba(26, 40, 51, 0.95));
+  border: 2px solid var(--baboon-orange);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.donation-box h3 {
+  color: var(--baboon-orange);
+}
+
+.donation-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+/* Heart icon animation */
+.heart-icon {
+  color: #ea4aaa;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.15); }
+}
+
+/* Custom admonition for heart/support */
+.md-typeset .admonition.heart,
+.md-typeset details.heart {
+  border-color: #ea4aaa;
+}
+
+.md-typeset .admonition.heart > .admonition-title,
+.md-typeset details.heart > summary {
+  background-color: rgba(234, 74, 170, 0.1);
+}
+
+.md-typeset .admonition.heart > .admonition-title::before,
+.md-typeset details.heart > summary::before {
+  background-color: #ea4aaa;
+  -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>');
+  mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>');
+}
+
+/* Stripe button styling */
+.md-button[href*="stripe"],
+.md-button[href*="kartoza"] {
+  background: linear-gradient(135deg, #635BFF, #7A73FF);
+  border-color: #635BFF;
+}
+
+.md-button[href*="stripe"]:hover,
+.md-button[href*="kartoza"]:hover {
+  background: linear-gradient(135deg, #7A73FF, #635BFF);
+}
+
 /* Print styles - hide decorative elements */
 @media print {
   .baboon-mascot,
-  .hero-section {
+  .hero-section,
+  .donation-hero,
+  .donation-box {
     display: none;
   }
 }

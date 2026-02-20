@@ -131,6 +131,28 @@ Jump straight in with our quick start guide.
 
 ---
 
+## Support Baboon :material-heart:{ .heart-icon }
+
+<div class="donation-hero" markdown>
+
+### Free software isn't free to make!
+
+Baboon represents **hundreds of hours** of passionate development. It's yours to use forever, completely free. But if it helps you type faster, consider fueling its continued development.
+
+**Suggested donation: €10 / $10** - *Less than two coffees, but it means the world!*
+
+<div class="donation-buttons-hero" markdown>
+
+[:material-heart: Sponsor on GitHub](https://github.com/sponsors/timlinux){ .md-button .md-button--primary }
+[:material-coffee: Ko-fi](https://ko-fi.com/timlinux){ .md-button }
+[:fontawesome-brands-stripe: Donate via Kartoza](https://kartoza.com/donate){ .md-button }
+
+</div>
+
+</div>
+
+---
+
 <p style="text-align: center; color: #666;" markdown>
 
 Made with :material-heart: for typists everywhere

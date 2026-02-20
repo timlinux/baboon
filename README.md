@@ -28,8 +28,31 @@
   <a href="#installation">Installation</a> •
   <a href="#usage">Usage</a> •
   <a href="#statistics">Statistics</a> •
-  <a href="#development">Development</a>
+  <a href="#support-baboon">Support</a>
 </p>
+
+---
+
+<div align="center">
+
+### **Love Baboon? Support its development!**
+
+Baboon is **free and open source**, built with love during nights and weekends.
+Your support keeps the project alive and growing!
+
+<a href="https://github.com/sponsors/timlinux">
+  <img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor on GitHub">
+</a>
+<a href="https://ko-fi.com/timlinux">
+  <img src="https://img.shields.io/badge/Ko--fi-Support-%23FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Support on Ko-fi">
+</a>
+<a href="https://kartoza.com/donate">
+  <img src="https://img.shields.io/badge/Stripe-Donate-%23635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Donate via Stripe">
+</a>
+
+**Suggested donation: €10 / $10** - *Less than a coffee a month, helps a developer for a day!*
+
+</div>
 
 ---
 
@@ -281,6 +304,52 @@ baboon/
 - British English spelling throughout
 - Kartoza brand colours in web interface
 
+## Support Baboon
+
+<div align="center">
+
+### **Baboon saved you hours? Return the favour!**
+
+This project represents **hundreds of hours** of development, testing, and refinement.
+If Baboon has helped improve your typing skills, consider supporting its creator.
+
+| What Your Support Provides | |
+|---|---|
+| Ongoing maintenance & bug fixes | |
+| New features & improvements | |
+| Server costs & infrastructure | |
+| Coffee to fuel late-night coding | |
+
+<br>
+
+<a href="https://github.com/sponsors/timlinux">
+  <img src="https://img.shields.io/badge/GitHub_Sponsors-%E2%9D%A4_Become_a_Sponsor-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor on GitHub">
+</a>
+
+<br><br>
+
+<a href="https://ko-fi.com/timlinux">
+  <img src="https://img.shields.io/badge/Ko--fi-Buy_me_a_coffee-%23FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Support on Ko-fi">
+</a>
+&nbsp;&nbsp;
+<a href="https://kartoza.com/donate">
+  <img src="https://img.shields.io/badge/Stripe_(Kartoza)-Donate-%23635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Donate via Stripe">
+</a>
+
+<br><br>
+
+### **Suggested: €10 / $10**
+
+*That's less than two coffees - but it makes a real difference!*
+
+Every contribution, no matter how small, is deeply appreciated and helps keep Baboon free for everyone.
+
+**Thank you for being awesome!**
+
+</div>
+
+---
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
@@ -288,5 +357,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
-  Made with love for typists everywhere
+  Made with love for typists everywhere<br>
+  <sub>If you love it too, <a href="https://github.com/sponsors/timlinux">show some support</a></sub>
 </p>

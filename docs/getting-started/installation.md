@@ -2,6 +2,13 @@
 
 Get Baboon running on your system in no time! Choose the installation method that works best for you.
 
+!!! heart "Support Baboon Development"
+    **Baboon is free, but not free to make!** If you find it useful, please consider a small donation of **€10 / $10** to support ongoing development.
+
+    [:material-heart: Sponsor on GitHub](https://github.com/sponsors/timlinux){ .md-button .md-button--primary }
+    [:material-coffee: Buy me a coffee](https://ko-fi.com/timlinux){ .md-button }
+    [:fontawesome-brands-stripe: Donate via Kartoza](https://kartoza.com/donate){ .md-button }
+
 ## Pre-built Binaries
 
 The easiest way to get started is to download a pre-built binary from our [GitHub Releases](https://github.com/timlinux/baboon/releases) page.
@@ -188,3 +195,35 @@ Flags:
 ## Next Steps
 
 Ready to start typing? Head over to the [Quick Start](quick-start.md) guide!
+
+---
+
+## Support the Developer
+
+<div class="donation-box" markdown>
+
+### Enjoying Baboon? Show your appreciation!
+
+You've just downloaded software that took **hundreds of hours** to build. It's yours to use forever, completely free.
+
+But if Baboon helps you become a faster typist, saves you time, or just brings a smile to your face - consider giving back.
+
+**A suggested donation of €10 / $10:**
+
+- Buys the developer a nice lunch
+- Keeps the project maintained and updated
+- Helps fund new features you'll love
+- Shows that open source work is valued
+
+<div class="donation-buttons" markdown>
+
+[:material-heart: Sponsor on GitHub](https://github.com/sponsors/timlinux){ .md-button .md-button--primary }
+
+[:material-coffee: Ko-fi](https://ko-fi.com/timlinux){ .md-button }
+[:fontawesome-brands-stripe: Donate via Kartoza](https://kartoza.com/donate){ .md-button }
+
+</div>
+
+*Every donation, no matter the size, is genuinely appreciated!*
+
+</div>
