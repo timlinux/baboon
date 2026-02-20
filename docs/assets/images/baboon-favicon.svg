@@ -1,36 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs>
-    <linearGradient id="fur" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#8B5A2B"/>
-      <stop offset="100%" style="stop-color:#5C3D2E"/>
+    <!-- Chacma baboon: dark grey-brown/olive fur -->
+    <linearGradient id="chacmaFur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5A5449"/>
+      <stop offset="100%" style="stop-color:#3D3833"/>
     </linearGradient>
-    <linearGradient id="face" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#DEB887"/>
-      <stop offset="100%" style="stop-color:#C4A57B"/>
+    <!-- Dark face skin -->
+    <linearGradient id="chacmaFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2D2520"/>
+      <stop offset="100%" style="stop-color:#1F1A17"/>
     </linearGradient>
   </defs>
 
   <!-- Background -->
   <circle cx="16" cy="16" r="15" fill="#1a2833" stroke="#D4922A" stroke-width="1"/>
 
-  <!-- Head -->
-  <ellipse cx="16" cy="14" rx="10" ry="9" fill="url(#fur)"/>
+  <!-- Head - Chacma shape -->
+  <ellipse cx="16" cy="12" rx="9" ry="8" fill="url(#chacmaFur)"/>
 
-  <!-- Face -->
-  <ellipse cx="16" cy="16" rx="6" ry="5" fill="url(#face)"/>
+  <!-- Brow ridge -->
+  <path d="M8 9 Q12 7, 16 8 Q20 7, 24 9" fill="none" stroke="#4A443D" stroke-width="2"/>
 
-  <!-- Nose -->
-  <ellipse cx="16" cy="18" rx="2" ry="1.5" fill="#333"/>
+  <!-- Long muzzle - characteristic Chacma feature -->
+  <path d="M11 12 Q9 16, 11 20 Q14 22, 16 22 Q18 22, 21 20 Q23 16, 21 12 Q18 10, 16 10 Q14 10, 11 12" fill="url(#chacmaFace)"/>
 
-  <!-- Eyes -->
-  <circle cx="12" cy="13" r="2.5" fill="white"/>
-  <circle cx="20" cy="13" r="2.5" fill="white"/>
-  <circle cx="12.5" cy="13" r="1.2" fill="#333"/>
-  <circle cx="20.5" cy="13" r="1.2" fill="#333"/>
+  <!-- Muzzle ridges -->
+  <path d="M12 13 L13 18" fill="none" stroke="#3A3430" stroke-width="1" opacity="0.6"/>
+  <path d="M20 13 L19 18" fill="none" stroke="#3A3430" stroke-width="1" opacity="0.6"/>
+
+  <!-- Nose at end of muzzle -->
+  <ellipse cx="16" cy="19" rx="3" ry="2" fill="#1A1512"/>
+
+  <!-- Eyes - deep set -->
+  <circle cx="12" cy="10" r="2" fill="#FFF8E7"/>
+  <circle cx="20" cy="10" r="2" fill="#FFF8E7"/>
+  <circle cx="12.5" cy="10" r="1" fill="#4A3728"/>
+  <circle cx="20.5" cy="10" r="1" fill="#4A3728"/>
 
   <!-- Ears -->
-  <ellipse cx="6" cy="10" rx="3" ry="4" fill="url(#fur)"/>
-  <ellipse cx="26" cy="10" rx="3" ry="4" fill="url(#fur)"/>
+  <ellipse cx="7" cy="8" rx="2" ry="3" fill="url(#chacmaFur)"/>
+  <ellipse cx="25" cy="8" rx="2" ry="3" fill="url(#chacmaFur)"/>
 
   <!-- Keyboard hint -->
   <rect x="6" y="25" width="20" height="4" rx="1" fill="#4A4A4A"/>

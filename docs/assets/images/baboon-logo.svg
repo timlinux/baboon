@@ -1,12 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <linearGradient id="furGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#8B5A2B"/>
-      <stop offset="100%" style="stop-color:#5C3D2E"/>
+    <!-- Chacma baboon fur: dark grey-brown/olive-brown -->
+    <linearGradient id="chacmaFur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5A5449"/>
+      <stop offset="50%" style="stop-color:#4A443D"/>
+      <stop offset="100%" style="stop-color:#3D3833"/>
     </linearGradient>
-    <linearGradient id="faceGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#DEB887"/>
-      <stop offset="100%" style="stop-color:#C4A57B"/>
+    <!-- Dark face skin - Chacma have dark/black facial skin -->
+    <linearGradient id="chacmaFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2D2520"/>
+      <stop offset="100%" style="stop-color:#1F1A17"/>
+    </linearGradient>
+    <!-- Muzzle ridge coloring -->
+    <linearGradient id="muzzleRidge" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3A3430"/>
+      <stop offset="100%" style="stop-color:#252220"/>
     </linearGradient>
     <linearGradient id="keyboardGradient" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#4A4A4A"/>
@@ -52,58 +60,64 @@
     <rect x="136" y="157" width="12" height="10" rx="2"/>
   </g>
 
-  <!-- Baboon body -->
-  <ellipse cx="100" cy="125" rx="45" ry="30" fill="url(#furGradient)"/>
+  <!-- Chacma Baboon body - darker, greyish -->
+  <ellipse cx="100" cy="125" rx="45" ry="30" fill="url(#chacmaFur)"/>
 
-  <!-- Baboon head -->
-  <ellipse cx="100" cy="70" rx="40" ry="35" fill="url(#furGradient)"/>
+  <!-- Chacma Baboon head - characteristic shape -->
+  <ellipse cx="100" cy="65" rx="38" ry="32" fill="url(#chacmaFur)"/>
 
-  <!-- Baboon face/snout -->
-  <ellipse cx="100" cy="80" rx="22" ry="20" fill="url(#faceGradient)"/>
+  <!-- Prominent brow ridge - distinctive Chacma feature -->
+  <path d="M62 50 Q80 42, 100 45 Q120 42, 138 50 Q140 55, 138 58 Q120 52, 100 54 Q80 52, 62 58 Q60 55, 62 50" fill="#4A443D"/>
 
-  <!-- Muzzle/nose bridge -->
-  <ellipse cx="100" cy="88" rx="12" ry="10" fill="#C4A57B"/>
+  <!-- Long dog-like muzzle - KEY Chacma feature -->
+  <path d="M75 65 Q70 80, 75 100 Q85 115, 100 118 Q115 115, 125 100 Q130 80, 125 65 Q115 60, 100 58 Q85 60, 75 65" fill="url(#chacmaFace)"/>
 
-  <!-- Nose -->
-  <ellipse cx="100" cy="92" rx="6" ry="4" fill="#333"/>
+  <!-- Muzzle ridges - Chacma have pronounced ridges -->
+  <path d="M80 70 Q85 85, 88 100" fill="none" stroke="#3A3430" stroke-width="3" opacity="0.7"/>
+  <path d="M120 70 Q115 85, 112 100" fill="none" stroke="#3A3430" stroke-width="3" opacity="0.7"/>
 
-  <!-- Nostrils -->
-  <circle cx="96" cy="93" r="2" fill="#222"/>
-  <circle cx="104" cy="93" r="2" fill="#222"/>
+  <!-- Nose - at end of long muzzle -->
+  <ellipse cx="100" cy="108" rx="10" ry="7" fill="#1A1512"/>
 
-  <!-- Eyes -->
+  <!-- Nostrils - set wide apart, typical of Chacma -->
+  <ellipse cx="93" cy="109" rx="3" ry="2" fill="#0D0A08"/>
+  <ellipse cx="107" cy="109" rx="3" ry="2" fill="#0D0A08"/>
+
+  <!-- Deep-set eyes under brow ridge -->
   <g>
-    <ellipse cx="82" cy="68" rx="10" ry="9" fill="white"/>
-    <ellipse cx="118" cy="68" rx="10" ry="9" fill="white"/>
-    <circle cx="84" cy="68" r="5" fill="#333"/>
-    <circle cx="120" cy="68" r="5" fill="#333"/>
-    <circle cx="86" cy="66" r="2" fill="white"/>
-    <circle cx="122" cy="66" r="2" fill="white"/>
+    <ellipse cx="78" cy="58" rx="9" ry="8" fill="#1A1512"/>
+    <ellipse cx="122" cy="58" rx="9" ry="8" fill="#1A1512"/>
+    <ellipse cx="78" cy="58" rx="7" ry="6" fill="#FFF8E7"/>
+    <ellipse cx="122" cy="58" rx="7" ry="6" fill="#FFF8E7"/>
+    <circle cx="80" cy="58" r="4" fill="#4A3728"/>
+    <circle cx="124" cy="58" r="4" fill="#4A3728"/>
+    <circle cx="81" cy="57" r="1.5" fill="white"/>
+    <circle cx="125" cy="57" r="1.5" fill="white"/>
   </g>
 
-  <!-- Eyebrows (focused expression) -->
-  <path d="M73 58 Q82 55, 92 58" fill="none" stroke="#5C3D2E" stroke-width="3" stroke-linecap="round"/>
-  <path d="M108 58 Q118 55, 127 58" fill="none" stroke="#5C3D2E" stroke-width="3" stroke-linecap="round"/>
+  <!-- Thick brow expression -->
+  <path d="M65 48 Q78 44, 88 50" fill="none" stroke="#3D3833" stroke-width="4" stroke-linecap="round"/>
+  <path d="M112 50 Q122 44, 135 48" fill="none" stroke="#3D3833" stroke-width="4" stroke-linecap="round"/>
 
-  <!-- Ears -->
-  <ellipse cx="55" cy="55" rx="12" ry="15" fill="url(#furGradient)"/>
-  <ellipse cx="55" cy="55" rx="7" ry="10" fill="#DEB887"/>
-  <ellipse cx="145" cy="55" rx="12" ry="15" fill="url(#furGradient)"/>
-  <ellipse cx="145" cy="55" rx="7" ry="10" fill="#DEB887"/>
+  <!-- Ears - smaller, set back on head like Chacma -->
+  <ellipse cx="55" cy="48" rx="10" ry="14" fill="url(#chacmaFur)"/>
+  <ellipse cx="55" cy="48" rx="5" ry="8" fill="#2D2520"/>
+  <ellipse cx="145" cy="48" rx="10" ry="14" fill="url(#chacmaFur)"/>
+  <ellipse cx="145" cy="48" rx="5" ry="8" fill="#2D2520"/>
 
-  <!-- Mouth (slight smile while concentrating) -->
-  <path d="M90 100 Q100 105, 110 100" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+  <!-- Mouth line -->
+  <path d="M88 112 Q100 116, 112 112" fill="none" stroke="#0D0A08" stroke-width="2" stroke-linecap="round"/>
 
-  <!-- Arms reaching to keyboard -->
-  <ellipse cx="58" cy="130" rx="12" ry="20" fill="url(#furGradient)"/>
-  <ellipse cx="142" cy="130" rx="12" ry="20" fill="url(#furGradient)"/>
+  <!-- Arms reaching to keyboard - darker fur -->
+  <ellipse cx="58" cy="130" rx="12" ry="20" fill="url(#chacmaFur)"/>
+  <ellipse cx="142" cy="130" rx="12" ry="20" fill="url(#chacmaFur)"/>
 
-  <!-- Hands on keyboard -->
-  <ellipse cx="55" cy="148" rx="10" ry="6" fill="url(#faceGradient)"/>
-  <ellipse cx="145" cy="148" rx="10" ry="6" fill="url(#faceGradient)"/>
+  <!-- Hands on keyboard - dark skin -->
+  <ellipse cx="55" cy="148" rx="10" ry="6" fill="#2D2520"/>
+  <ellipse cx="145" cy="148" rx="10" ry="6" fill="#2D2520"/>
 
-  <!-- Fingers on keys -->
-  <g fill="#DEB887">
+  <!-- Fingers on keys - dark skin -->
+  <g fill="#2D2520">
     <circle cx="48" cy="150" r="3"/>
     <circle cx="55" cy="151" r="3"/>
     <circle cx="62" cy="150" r="3"/>
@@ -120,11 +134,11 @@
 
   <!-- Speed lines -->
   <g stroke="#4A90A4" stroke-width="1.5" opacity="0.6" stroke-linecap="round">
-    <line x1="20" y1="80" x2="30" y2="80"/>
-    <line x1="18" y1="90" x2="28" y2="90"/>
-    <line x1="20" y1="100" x2="30" y2="100"/>
-    <line x1="170" y1="80" x2="180" y2="80"/>
-    <line x1="172" y1="90" x2="182" y2="90"/>
-    <line x1="170" y1="100" x2="180" y2="100"/>
+    <line x1="20" y1="70" x2="30" y2="70"/>
+    <line x1="18" y1="80" x2="28" y2="80"/>
+    <line x1="20" y1="90" x2="30" y2="90"/>
+    <line x1="170" y1="70" x2="180" y2="70"/>
+    <line x1="172" y1="80" x2="182" y2="80"/>
+    <line x1="170" y1="90" x2="180" y2="90"/>
   </g>
 </svg>
