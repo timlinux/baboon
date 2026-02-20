@@ -77,7 +77,7 @@ web-install:
 	cd web && npm install
 
 web-dev: web-install
-	cd web && npm start
+	cd web && npm run dev
 
 web-build: web-install
 	cd web && npm run build
@@ -87,7 +87,7 @@ web-start: build
 	./baboon -server &
 	@sleep 2
 	@echo "Starting web frontend..."
-	cd web && npm start
+	cd web && npm run dev
 
 # Help
 help:

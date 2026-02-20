@@ -8,10 +8,10 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from './api';
-import TypingScreen from './components/TypingScreen';
-import ResultsScreen from './components/ResultsScreen';
-import WelcomeScreen from './components/WelcomeScreen';
+import api from './api.js';
+import TypingScreen from './components/TypingScreen.jsx';
+import ResultsScreen from './components/ResultsScreen.jsx';
+import WelcomeScreen from './components/WelcomeScreen.jsx';
 
 const MotionBox = motion(Box);
 
