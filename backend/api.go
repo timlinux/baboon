@@ -121,7 +121,11 @@ type GameState struct {
 	PreviousWord string
 
 	// NextWord is the upcoming word (empty if on last word).
+	// Deprecated: Use NextWords instead.
 	NextWord string
+
+	// NextWords contains the next 3 upcoming words (or fewer if near the end).
+	NextWords []string
 }
 
 // Config holds configuration options for creating a new game engine.

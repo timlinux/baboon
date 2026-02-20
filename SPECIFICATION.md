@@ -53,9 +53,9 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
 - All words SHALL be lowercase only (the font only supports a-z)
 - Words SHALL be displayed in a carousel layout:
   - The previous word SHALL be displayed ABOVE the current word in dimmed text
-  - The next word SHALL be displayed BELOW the current word in dimmed text
+  - The next 3 upcoming words SHALL be displayed BELOW the current word in dimmed text
   - When advancing to the next word, smooth carousel animation SHALL scroll words upward
-- Console: Previous word uses greyscale colour (240), next word uses greyscale (245), with decorative markers
+- Console: Previous word uses greyscale colour (240), next words use decreasing greyscale (from 245), with decorative markers on first upcoming word
 - Web: Previous/next words displayed at 50% scale with blur effects
 
 ### FR-002: Block Letter Font
@@ -602,7 +602,8 @@ All timing-critical measurements are performed on the frontend to avoid network 
   "live_wpm": 45.2,
   "current_word": "hello",
   "previous_word": "",
-  "next_word": "world"
+  "next_word": "world",
+  "next_words": ["world", "typing", "test"]
 }
 ```
 
@@ -849,6 +850,15 @@ The web frontend uses Kartoza's brand colour scheme derived from their wallpaper
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.2.0
+- Show next 3 upcoming words in carousel display
+  - Words displayed below the current word with decreasing opacity
+  - First upcoming word has decorative arrows (▼), subsequent words shown plain
+  - All upcoming words centered horizontally using lipgloss alignment
+  - Provides better look-ahead for typing preparation
+- Updated GameState API to include `NextWords` slice (array of up to 3 words)
+- Backwards compatible: falls back to `NextWord` if `NextWords` is empty
 
 ### v1.1.0
 - Beautiful carousel animation for word transitions

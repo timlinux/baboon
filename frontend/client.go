@@ -283,6 +283,7 @@ func (c *Client) GetGameState() backend.GameState {
 		CurrentWord     string   `json:"current_word"`
 		PreviousWord    string   `json:"previous_word"`
 		NextWord        string   `json:"next_word"`
+		NextWords       []string `json:"next_words"`
 	}
 	json.NewDecoder(resp.Body).Decode(&state)
 
@@ -298,6 +299,7 @@ func (c *Client) GetGameState() backend.GameState {
 		CurrentWord:     state.CurrentWord,
 		PreviousWord:    state.PreviousWord,
 		NextWord:        state.NextWord,
+		NextWords:       state.NextWords,
 	}
 
 	c.cachedState = &result

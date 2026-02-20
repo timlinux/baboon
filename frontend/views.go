@@ -106,16 +106,31 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 		prevWordDisplay = prevStyle.Render("· · · " + state.PreviousWord + " · · ·")
 	}
 
-	// Carousel style: Next word below (animated opacity)
-	nextWordDisplay := ""
-	if state.NextWord != "" {
-		greyLevel := 232 + int(nextOpacity*23)
+	// Carousel style: Next words below (up to 3, with decreasing opacity)
+	var nextWordsDisplay []string
+	// Use NextWords if available, otherwise fall back to NextWord for backwards compatibility
+	nextWords := state.NextWords
+	if len(nextWords) == 0 && state.NextWord != "" {
+		nextWords = []string{state.NextWord}
+	}
+	for i, word := range nextWords {
+		// Decrease opacity for words further ahead
+		wordOpacity := nextOpacity * (1.0 - float64(i)*0.2)
+		if wordOpacity < 0.2 {
+			wordOpacity = 0.2
+		}
+		greyLevel := 232 + int(wordOpacity*23)
 		if greyLevel > 255 {
 			greyLevel = 255
 		}
 		nextStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color(fmt.Sprintf("%d", greyLevel)))
-		nextWordDisplay = nextStyle.Render("▼  " + state.NextWord + "  ▼")
+			Foreground(lipgloss.Color(fmt.Sprintf("%d", greyLevel))).
+			Align(lipgloss.Center)
+		if i == 0 {
+			nextWordsDisplay = append(nextWordsDisplay, nextStyle.Render("▼  "+word+"  ▼"))
+		} else {
+			nextWordsDisplay = append(nextWordsDisplay, nextStyle.Render(word))
+		}
 	}
 
 	// Instructions
@@ -169,8 +184,8 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	carouselElements = append(carouselElements, "")
 	carouselElements = append(carouselElements, separatorStyle.Render("─────────────────────────────────"))
 
-	// Next word (below current, animated)
-	if nextWordDisplay != "" {
+	// Next words (below current, animated) - show up to 3 upcoming words
+	if len(nextWordsDisplay) > 0 {
 		nextOffset := 0
 		if carousel != nil {
 			nextOffset = carousel.GetNextOffset()
@@ -179,7 +194,9 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 			carouselElements = append(carouselElements, "")
 		}
 		carouselElements = append(carouselElements, "")
-		carouselElements = append(carouselElements, nextWordDisplay)
+		for _, nextWord := range nextWordsDisplay {
+			carouselElements = append(carouselElements, nextWord)
+		}
 	}
 
 	carouselElements = append(carouselElements, "")

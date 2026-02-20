@@ -180,6 +180,7 @@ type GameStateResponse struct {
 	CurrentWord     string   `json:"current_word"`
 	PreviousWord    string   `json:"previous_word"`
 	NextWord        string   `json:"next_word"`
+	NextWords       []string `json:"next_words"`
 }
 
 // HealthResponse is the response body for GET /api/health
@@ -376,6 +377,7 @@ func (s *Server) handleGetState(w http.ResponseWriter, r *http.Request) {
 		CurrentWord:     state.CurrentWord,
 		PreviousWord:    state.PreviousWord,
 		NextWord:        state.NextWord,
+		NextWords:       state.NextWords,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

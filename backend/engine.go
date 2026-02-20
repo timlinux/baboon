@@ -329,6 +329,15 @@ func (e *Engine) GetGameState() GameState {
 		state.NextWord = e.words[e.wordIdx+1]
 	}
 
+	// Populate next 3 words (or fewer if near the end)
+	state.NextWords = []string{}
+	for i := 1; i <= 3; i++ {
+		nextIdx := e.wordIdx + i
+		if nextIdx < len(e.words) {
+			state.NextWords = append(state.NextWords, e.words[nextIdx])
+		}
+	}
+
 	// Note: LiveWPM is now calculated on the frontend to avoid network latency
 	// The frontend tracks timing locally and overrides this value
 	state.LiveWPM = 0
