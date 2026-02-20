@@ -50,7 +50,6 @@ theme:
 
 plugins:
   - search
-  - social
 
 extra:
   social:
