@@ -63,7 +63,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case animTickMsg:
 		if m.state == StateResults && m.animator != nil {
 			m.animator.Update()
-			return m, animTickCmd()
+			// Stop animation loop once all animations are complete
+			if !m.animator.IsComplete() {
+				return m, animTickCmd()
+			}
 		}
 		return m, nil
 

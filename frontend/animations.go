@@ -57,6 +57,25 @@ func (a *Animator) Update() {
 	}
 }
 
+// IsComplete returns true if all animations have finished
+func (a *Animator) IsComplete() bool {
+	for i := range a.positions {
+		// Check if position is close to target (1.0) and velocity is near zero
+		if a.positions[i] < 0.99 || abs(a.velocities[i]) > 0.01 {
+			return false
+		}
+	}
+	return true
+}
+
+// abs returns the absolute value of a float64
+func abs(x float64) float64 {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
 // ApplyAnimation applies slide-in animation to a row based on position (0-1)
 func (a *Animator) ApplyAnimation(row string, animIdx int) string {
 	if animIdx >= len(a.positions) {
