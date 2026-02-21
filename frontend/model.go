@@ -133,6 +133,16 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case tea.KeyCtrlC, tea.KeyEsc:
 		return m, tea.Quit
 
+	case tea.KeyTab:
+		// Restart the current round
+		m.api.StartRound()
+		m.carouselAnimator = NewCarouselAnimator()
+		m.timerStarted = false
+		m.startTime = time.Time{}
+		m.lastKeyTime = time.Time{}
+		m.correctChars = 0
+		return m, nil
+
 	case tea.KeySpace:
 		// Calculate seek time locally
 		var seekTimeMs int64
@@ -199,7 +209,7 @@ func (m Model) handleResultsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case tea.KeyCtrlC, tea.KeyEsc:
 		return m, tea.Quit
 
-	case tea.KeyEnter:
+	case tea.KeyEnter, tea.KeyTab:
 		m.api.StartRound()
 		m.state = StateTyping
 		m.animator = nil

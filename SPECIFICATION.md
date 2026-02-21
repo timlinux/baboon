@@ -331,6 +331,7 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
 - ESC or Ctrl+C SHALL exit the application at any time
 - SPACE SHALL advance to the next word during typing (when input length > 0)
 - ENTER SHALL start a new round when viewing results screen
+- TAB SHALL restart the current round at any time (typing or results screen)
 - The application SHALL use alternate screen buffer (fullscreen mode)
 
 ## Technical Requirements
