@@ -211,22 +211,26 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
   2. **Accuracy row**: Filled circles (●) coloured by typing accuracy
   3. **Frequency row**: Filled circles (●) coloured by presentation count
   4. **Seek time row**: Filled circles (●) coloured by average typing speed
-- Each circle SHALL be coloured on a red-to-green gradient
+- Each circle SHALL be coloured using **relative scaling** (see BR-006)
+- Letters with no data SHALL be displayed in gray (colour 240)
 - Letters in header row are spaced to align with circles below
 - Seek time is measured as milliseconds between keystrokes
 - Seek times > 5 seconds are filtered out (assumed pauses)
-- Gradient colours (accuracy/speed percentage → colour code):
-  - 95-100%: 46 (bright green)
-  - 90-94%: 82
-  - 85-89%: 118
-  - 80-84%: 154
-  - 75-79%: 190
-  - 70-74%: 226 (yellow)
-  - 65-69%: 220
-  - 60-64%: 214
-  - 50-59%: 208
-  - 40-49%: 202
-  - 0-39%: 196 (red)
+
+### FR-027: Relative Colour Scaling for Statistics
+- Finger, row, and letter statistics SHALL use **relative colour scaling**
+- Relative scaling ensures meaningful visual differentiation when values are clustered
+- The colour gradient spreads across the actual data range (min to max)
+- Statistics with best values get green, worst values get red
+- This prevents all items appearing identical when they have similar absolute values
+- Example: If finger accuracies range from 92% to 97%, the 92% finger gets red and 97% gets green
+- Absolute thresholds (FR-009) still apply to session-level WPM, Time, Accuracy bars
+
+**Gradient colours (index 0-11 in GradientColours array):**
+  - 196: Red (worst in range)
+  - 202, 208, 214, 220, 226: Red → Yellow gradient
+  - 190, 154, 118, 82: Yellow → Green gradient
+  - 46, 47: Bright green (best in range)
 
 ### FR-018: Results Screen Animation
 - Results screen elements SHALL animate in sequentially using spring physics
@@ -412,6 +416,20 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
 - Accuracy: New best if current >= historical best
 - Time: New best if current <= historical best (lower is better)
 - First session always counts as "new best" for all metrics
+
+### BR-006: Relative Colour Scaling
+- Per-item statistics (fingers, rows, letters) use relative colour scaling
+- This ensures meaningful visual differentiation when absolute values are clustered
+- Algorithm:
+  1. Calculate min and max values across all items with data
+  2. For each value, compute: normalized = (value - min) / (max - min)
+  3. Map normalized (0.0-1.0) to gradient colour index (0-11)
+  4. Index 0 = red (worst in range), Index 11 = green (best in range)
+- Items with no data are shown in gray (colour 240)
+- For inverted metrics (seek time: lower is better):
+  1. Compute inverted_value = max - value + min
+  2. Apply same normalization to inverted_value
+- This prevents all items appearing the same colour when accuracy is e.g. 92-97%
 
 ## Word Dictionary
 
@@ -882,6 +900,17 @@ The web frontend uses Kartoza's brand colour scheme derived from their wallpaper
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.3.1
+- Improved statistics colour display with relative scaling
+  - Fixed issue where finger, row, and letter accuracy all appeared as identical green
+  - When accuracy values are clustered (e.g., 92-97%), they now show meaningful colour differentiation
+  - Lowest accuracy in the range shows red, highest shows green, with gradient between
+  - Items with no data display in gray (colour 240)
+- Added new colour function `GetRelativeColour()` for relative value visualization
+- Updated FR-014 (Letter Statistics Display) with relative scaling reference
+- Added FR-027 (Relative Colour Scaling for Statistics) as new functional requirement
+- Added BR-006 (Relative Colour Scaling) with algorithm specification
 
 ### v1.3.0
 - Options screen for configuring application settings

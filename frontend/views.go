@@ -605,11 +605,16 @@ func (r *Renderer) renderLetterHeaderRow() string {
 }
 
 // renderLetterAccuracyRow renders a row of 26 filled circles coloured by accuracy
+// Uses relative coloring to show meaningful differences between letters
 func (r *Renderer) renderLetterAccuracyRow(historical *stats.HistoricalStats) string {
 	var row strings.Builder
 	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-	for i, letter := range letters {
+	// First pass: calculate min/max accuracy for relative scaling
+	var accuracies []float64
+	minAcc := 100.0
+	maxAcc := 0.0
+	for _, letter := range letters {
 		lowerLetter := string(letter + 32)
 		letterStats := historical.LetterAccuracy[lowerLetter]
 
@@ -617,8 +622,28 @@ func (r *Renderer) renderLetterAccuracyRow(historical *stats.HistoricalStats) st
 		if letterStats.Presented > 0 {
 			accuracy = (float64(letterStats.Correct) / float64(letterStats.Presented)) * 100
 		}
+		accuracies = append(accuracies, accuracy)
+		if letterStats.Presented > 0 {
+			if accuracy < minAcc {
+				minAcc = accuracy
+			}
+			if accuracy > maxAcc {
+				maxAcc = accuracy
+			}
+		}
+	}
 
-		colour := GetAccuracyColour(accuracy)
+	// Second pass: render with relative colors
+	for i, accuracy := range accuracies {
+		lowerLetter := string(letters[i] + 32)
+		letterStats := historical.LetterAccuracy[lowerLetter]
+
+		var colour string
+		if letterStats.Presented == 0 {
+			colour = "240" // Gray for no data
+		} else {
+			colour = GetRelativeColour(accuracy, minAcc, maxAcc)
+		}
 		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
 
 		row.WriteString(style.Render("●"))
@@ -665,27 +690,45 @@ func (r *Renderer) renderLetterFrequencyRow(historical *stats.HistoricalStats) s
 }
 
 // renderLetterSeekTimeRow renders a row of 26 filled circles coloured by seek time
+// Uses relative coloring - fast times are green, slow times are red
 func (r *Renderer) renderLetterSeekTimeRow(historical *stats.HistoricalStats) string {
 	var row strings.Builder
 	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-	var maxSeekTime float64
+	// First pass: calculate min/max seek time for relative scaling
+	var seekTimes []float64
+	minTime := 999999.0
+	maxTime := 0.0
 	for _, letter := range letters {
 		lowerLetter := string(letter + 32)
-		if seekStats, exists := historical.LetterSeekTime[lowerLetter]; exists {
-			avgTime := seekStats.AverageMs()
-			if avgTime > maxSeekTime {
-				maxSeekTime = avgTime
+		seekStats := historical.LetterSeekTime[lowerLetter]
+		avgTime := seekStats.AverageMs()
+		seekTimes = append(seekTimes, avgTime)
+		if seekStats.Count > 0 {
+			if avgTime < minTime {
+				minTime = avgTime
+			}
+			if avgTime > maxTime {
+				maxTime = avgTime
 			}
 		}
 	}
 
+	// Second pass: render with relative colors (inverted - low time = green, high time = red)
 	for i, letter := range letters {
 		lowerLetter := string(letter + 32)
 		seekStats := historical.LetterSeekTime[lowerLetter]
-		avgTime := seekStats.AverageMs()
+		avgTime := seekTimes[i]
 
-		colour := GetSeekTimeColour(avgTime, maxSeekTime)
+		var colour string
+		if seekStats.Count == 0 {
+			colour = "240" // Gray for no data
+		} else {
+			// Invert for seek time: lower is better
+			// GetRelativeColour expects higher = better, so we flip the value
+			invertedValue := maxTime - avgTime + minTime
+			colour = GetRelativeColour(invertedValue, minTime, maxTime)
+		}
 		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
 
 		row.WriteString(style.Render("●"))
@@ -697,7 +740,7 @@ func (r *Renderer) renderLetterSeekTimeRow(historical *stats.HistoricalStats) st
 	return row.String()
 }
 
-// renderFingerRow renders finger accuracy
+// renderFingerRow renders finger accuracy with relative coloring
 func (r *Renderer) renderFingerRow(historical *stats.HistoricalStats, labelWidth int) string {
 	var row strings.Builder
 	labelStyle := lipgloss.NewStyle().
@@ -712,10 +755,35 @@ func (r *Renderer) renderFingerRow(historical *stats.HistoricalStats, labelWidth
 	fingerLabels := []string{"LP", "LR", "LM", "LI", "RI", "RM", "RR", "RP"}
 	labelStyleSmall := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourHelp))
 
-	for i, finger := range fingers {
+	// First pass: calculate min/max accuracy for relative scaling
+	var accuracies []float64
+	minAcc := 100.0
+	maxAcc := 0.0
+	for _, finger := range fingers {
 		stat := historical.FingerStats[finger]
 		accuracy := stat.Accuracy()
-		colour := GetAccuracyColour(accuracy)
+		accuracies = append(accuracies, accuracy)
+		if stat.Presented > 0 {
+			if accuracy < minAcc {
+				minAcc = accuracy
+			}
+			if accuracy > maxAcc {
+				maxAcc = accuracy
+			}
+		}
+	}
+
+	// Second pass: render with relative colors
+	for i, finger := range fingers {
+		stat := historical.FingerStats[finger]
+		accuracy := accuracies[i]
+
+		var colour string
+		if stat.Presented == 0 {
+			colour = "240" // Gray for no data
+		} else {
+			colour = GetRelativeColour(accuracy, minAcc, maxAcc)
+		}
 		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
 		row.WriteString(labelStyleSmall.Render(fingerLabels[i]))
 		row.WriteString(style.Render("●"))
@@ -727,7 +795,7 @@ func (r *Renderer) renderFingerRow(historical *stats.HistoricalStats, labelWidth
 	return row.String()
 }
 
-// renderRowAccuracyRow renders keyboard row accuracy
+// renderRowAccuracyRow renders keyboard row accuracy with relative coloring
 func (r *Renderer) renderRowAccuracyRow(historical *stats.HistoricalStats, labelWidth int) string {
 	var row strings.Builder
 	labelStyle := lipgloss.NewStyle().
@@ -742,10 +810,35 @@ func (r *Renderer) renderRowAccuracyRow(historical *stats.HistoricalStats, label
 	rowLabels := []string{"Top", "Home", "Bot"}
 	labelStyleSmall := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourHelp))
 
-	for i, rowIdx := range rows {
+	// First pass: calculate min/max accuracy for relative scaling
+	var accuracies []float64
+	minAcc := 100.0
+	maxAcc := 0.0
+	for _, rowIdx := range rows {
 		stat := historical.RowStats[rowIdx]
 		accuracy := stat.Accuracy()
-		colour := GetAccuracyColour(accuracy)
+		accuracies = append(accuracies, accuracy)
+		if stat.Presented > 0 {
+			if accuracy < minAcc {
+				minAcc = accuracy
+			}
+			if accuracy > maxAcc {
+				maxAcc = accuracy
+			}
+		}
+	}
+
+	// Second pass: render with relative colors
+	for i, rowIdx := range rows {
+		stat := historical.RowStats[rowIdx]
+		accuracy := accuracies[i]
+
+		var colour string
+		if stat.Presented == 0 {
+			colour = "240" // Gray for no data
+		} else {
+			colour = GetRelativeColour(accuracy, minAcc, maxAcc)
+		}
 		style := lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
 		row.WriteString(labelStyleSmall.Render(rowLabels[i]))
 		row.WriteString(style.Render("●"))

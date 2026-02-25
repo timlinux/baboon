@@ -75,6 +75,7 @@ func NewStyles() Styles {
 }
 
 // GetAccuracyColour returns a colour on red-yellow-green gradient based on accuracy (0-100)
+// This uses absolute thresholds - for relative comparisons, use GetRelativeColour
 func GetAccuracyColour(accuracy float64) string {
 	if accuracy >= 95 {
 		return "46" // Bright green
@@ -100,9 +101,40 @@ func GetAccuracyColour(accuracy float64) string {
 	return "196" // Red
 }
 
+// GetRelativeColour returns a colour based on where a value falls within a min-max range.
+// This ensures visual differentiation even when all values are clustered.
+// A value at min gets red, at max gets green, with gradient in between.
+func GetRelativeColour(value, minVal, maxVal float64) string {
+	if maxVal <= minVal {
+		return "46" // All same - show green
+	}
+
+	// Normalize to 0-1 range
+	normalized := (value - minVal) / (maxVal - minVal)
+
+	// Clamp to 0-1
+	if normalized < 0 {
+		normalized = 0
+	}
+	if normalized > 1 {
+		normalized = 1
+	}
+
+	// Map to color gradient (index 0-11 in GradientColours)
+	// Index 0 = red (worst), Index 11 = green (best)
+	colourIdx := int(normalized * 11)
+	if colourIdx > 11 {
+		colourIdx = 11
+	}
+
+	return GradientColours[colourIdx]
+}
+
 // GetFrequencyColour returns a colour based on frequency (0-1)
+// Higher frequency = more red (problematic letters appear more), lower = green
 func GetFrequencyColour(frequency float64) string {
-	return GetAccuracyColour(frequency * 100)
+	// Invert: high frequency should be red (more practice needed), low should be green
+	return GetAccuracyColour((1.0 - frequency) * 100)
 }
 
 // GetSeekTimeColour returns a colour based on seek time (inverted: fast=green, slow=red)
