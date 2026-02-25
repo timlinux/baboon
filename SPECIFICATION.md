@@ -367,6 +367,16 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
 - The application SHALL use tea.WithAltScreen() for fullscreen mode
 - The application SHALL handle tea.WindowSizeMsg for responsive centering
 
+### TR-004: Screen Layout Structure
+- All screens (typing, results, options) SHALL use a fixed three-section layout:
+  1. **Header**: Fixed at the top of the terminal (line 0), displaying "🐒 BABOON - Typing Practice" centered
+  2. **Content**: Main content vertically centered in the available space between header and footer
+  3. **Footer**: Fixed at the bottom of the terminal (last line), displaying context-sensitive help text
+- The header and footer SHALL remain at the terminal boundaries regardless of window size
+- Main content SHALL be horizontally centered within the terminal width
+- Header text SHALL be cyan (colour 14) and bold
+- Footer text SHALL be gray (colour 8) for help hints
+
 ### TR-003: Update Loop
 - The application SHALL use tea.Tick with 100ms interval for WPM bar updates
 - Tick messages SHALL continue throughout the typing session

@@ -134,27 +134,13 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 		}
 	}
 
-	// Instructions
-	var helpText string
-	advanceKeyHint := "SPACE"
-	if s != nil {
-		advanceKeyHint = s.AdvanceKey.KeyHint()
-	}
-	if !state.TimerStarted {
-		helpText = "Type the first letter to start | 'o' for options | ESC to quit"
-	} else {
-		helpText = fmt.Sprintf("Type the word, then press %s to continue | ESC to quit", advanceKeyHint)
-	}
-	help := r.styles.Help.Render(helpText)
-
 	// WPM Bar
 	wpmBar := r.renderWPMBar(state.LiveWPM)
 
-	// Build the carousel layout vertically
+	// Build the carousel layout vertically (main content only)
 	var carouselElements []string
 
-	// Progress at top
-	carouselElements = append(carouselElements, "")
+	// Progress at top of main content
 	carouselElements = append(carouselElements, r.styles.Progress.Render(progress))
 	carouselElements = append(carouselElements, "")
 
@@ -205,19 +191,42 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	}
 
 	carouselElements = append(carouselElements, "")
-	carouselElements = append(carouselElements, "")
-	carouselElements = append(carouselElements, help)
+	carouselElements = append(carouselElements, wpmBar)
 
-	// Center the main content
+	// Center the main content horizontally
 	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
 		carouselElements...,
 	)
 
-	// Calculate vertical positioning
+	// Fixed header at top
+	headerStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("14")).
+		Bold(true)
+	header := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
+		headerStyle.Render("🐒 BABOON - Typing Practice"))
+
+	// Fixed footer at bottom
+	var helpText string
+	advanceKeyHint := "SPACE"
+	if s != nil {
+		advanceKeyHint = s.AdvanceKey.KeyHint()
+	}
+	if !state.TimerStarted {
+		helpText = "Type the first letter to start | Tab to restart | 'o' for options | ESC to quit"
+	} else {
+		helpText = fmt.Sprintf("Type the word, then press %s to continue | Tab to restart | ESC to quit", advanceKeyHint)
+	}
+	footer := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, r.styles.Help.Render(helpText))
+
+	// Calculate heights
+	headerHeight := 1
+	footerHeight := 1
 	contentHeight := strings.Count(mainContent, "\n") + 1
-	wpmBarHeight := strings.Count(wpmBar, "\n") + 1
-	topPadding := (r.height - contentHeight - wpmBarHeight - 4) / 2
+	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
+
+	// Calculate top padding to center main content in available space
+	topPadding := (availableHeight - contentHeight) / 2
 	if topPadding < 0 {
 		topPadding = 0
 	}
@@ -225,27 +234,27 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	// Build full screen layout
 	var fullContent strings.Builder
 
-	// Top padding
+	// Header at top (line 0)
+	fullContent.WriteString(header)
+	fullContent.WriteString("\n")
+
+	// Top padding to center content
 	for i := 0; i < topPadding; i++ {
 		fullContent.WriteString("\n")
 	}
 
-	// Center main content horizontally
+	// Main content (centered horizontally)
 	centeredMain := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, mainContent)
 	fullContent.WriteString(centeredMain)
 
-	// Spacer before WPM bar
-	fullContent.WriteString("\n\n")
-
-	// Bottom WPM bar (centered)
-	centeredBar := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, wpmBar)
-	fullContent.WriteString(centeredBar)
-
-	// Fill remaining space
-	currentHeight := topPadding + contentHeight + 2 + wpmBarHeight + 2
-	for i := currentHeight; i < r.height; i++ {
+	// Bottom padding to push footer to the bottom
+	currentHeight := headerHeight + 1 + topPadding + contentHeight
+	for i := currentHeight; i < r.height-footerHeight; i++ {
 		fullContent.WriteString("\n")
 	}
+
+	// Footer at bottom (last line)
+	fullContent.WriteString(footer)
 
 	return fullContent.String()
 }
@@ -427,23 +436,62 @@ func (r *Renderer) RenderResultsScreen(
 		statsLines = append(statsLines, r.styles.NewBest.Render("* = New personal best!"))
 	}
 
-	help := r.styles.Help.Render("Press ENTER for a new round | ESC to quit")
-
-	content := lipgloss.JoinVertical(
+	// Main content (title + stats)
+	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
 		title,
 		strings.Join(statsLines, "\n"),
-		"",
-		help,
 	)
 
-	return lipgloss.Place(
-		r.width,
-		r.height,
-		lipgloss.Center,
-		lipgloss.Center,
-		content,
-	)
+	// Fixed header at top
+	headerStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("14")).
+		Bold(true)
+	header := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
+		headerStyle.Render("🐒 BABOON - Typing Practice"))
+
+	// Fixed footer at bottom
+	footer := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
+		r.styles.Help.Render("Press ENTER for a new round | 'o' for options | ESC to quit"))
+
+	// Calculate heights
+	headerHeight := 1
+	footerHeight := 1
+	contentHeight := strings.Count(mainContent, "\n") + 1
+	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
+
+	// Calculate top padding to center main content in available space
+	topPadding := (availableHeight - contentHeight) / 2
+	if topPadding < 0 {
+		topPadding = 0
+	}
+
+	// Build full screen layout
+	var fullContent strings.Builder
+
+	// Header at top (line 0)
+	fullContent.WriteString(header)
+	fullContent.WriteString("\n")
+
+	// Top padding to center content
+	for i := 0; i < topPadding; i++ {
+		fullContent.WriteString("\n")
+	}
+
+	// Main content (centered horizontally)
+	centeredMain := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, mainContent)
+	fullContent.WriteString(centeredMain)
+
+	// Bottom padding to push footer to the bottom
+	currentHeight := headerHeight + 1 + topPadding + contentHeight
+	for i := currentHeight; i < r.height-footerHeight; i++ {
+		fullContent.WriteString("\n")
+	}
+
+	// Footer at bottom (last line)
+	fullContent.WriteString(footer)
+
+	return fullContent.String()
 }
 
 // formatStatRow creates a perfectly aligned row with label, value, and bar
@@ -934,24 +982,60 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 		optionLines = append(optionLines, line.String())
 	}
 
-	optionLines = append(optionLines, "")
-	optionLines = append(optionLines, "")
-
-	// Help text
-	help := r.styles.Help.Render("↑/↓ to navigate | Enter/Space to select | 1-3 quick select | ESC to go back")
-
-	content := lipgloss.JoinVertical(
+	// Main content (title + options)
+	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
 		title,
 		strings.Join(optionLines, "\n"),
-		help,
 	)
 
-	return lipgloss.Place(
-		r.width,
-		r.height,
-		lipgloss.Center,
-		lipgloss.Center,
-		content,
-	)
+	// Fixed header at top
+	headerStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("14")).
+		Bold(true)
+	header := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
+		headerStyle.Render("🐒 BABOON - Typing Practice"))
+
+	// Fixed footer at bottom
+	footer := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
+		r.styles.Help.Render("↑/↓ to navigate | Enter/Space to select | 1-3 quick select | ESC to go back"))
+
+	// Calculate heights
+	headerHeight := 1
+	footerHeight := 1
+	contentHeight := strings.Count(mainContent, "\n") + 1
+	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
+
+	// Calculate top padding to center main content in available space
+	topPadding := (availableHeight - contentHeight) / 2
+	if topPadding < 0 {
+		topPadding = 0
+	}
+
+	// Build full screen layout
+	var fullContent strings.Builder
+
+	// Header at top (line 0)
+	fullContent.WriteString(header)
+	fullContent.WriteString("\n")
+
+	// Top padding to center content
+	for i := 0; i < topPadding; i++ {
+		fullContent.WriteString("\n")
+	}
+
+	// Main content (centered horizontally)
+	centeredMain := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, mainContent)
+	fullContent.WriteString(centeredMain)
+
+	// Bottom padding to push footer to the bottom
+	currentHeight := headerHeight + 1 + topPadding + contentHeight
+	for i := currentHeight; i < r.height-footerHeight; i++ {
+		fullContent.WriteString("\n")
+	}
+
+	// Footer at bottom (last line)
+	fullContent.WriteString(footer)
+
+	return fullContent.String()
 }
