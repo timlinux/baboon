@@ -213,7 +213,7 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 		advanceKeyHint = s.AdvanceKey.KeyHint()
 	}
 	if !state.TimerStarted {
-		helpText = "Type the first letter to start | Tab to restart | 'o' for options | ESC to quit"
+		helpText = "Type the first letter to start | Tab to restart | Ctrl+O for options | ESC to quit"
 	} else {
 		helpText = fmt.Sprintf("Type the word, then press %s to continue | Tab to restart | ESC to quit", advanceKeyHint)
 	}
@@ -452,7 +452,7 @@ func (r *Renderer) RenderResultsScreen(
 
 	// Fixed footer at bottom
 	footer := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
-		r.styles.Help.Render("Press ENTER for a new round | 'o' for options | ESC to quit"))
+		r.styles.Help.Render("Press ENTER for a new round | Ctrl+O for options | ESC to quit"))
 
 	// Calculate heights
 	headerHeight := 1

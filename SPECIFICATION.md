@@ -332,11 +332,11 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
 - The advance key (configurable: Space, Enter, or Either) SHALL advance to the next word during typing (when input length > 0)
 - ENTER SHALL start a new round when viewing results screen
 - TAB SHALL restart the current round at any time (typing or results screen)
-- The 'o' key SHALL open the options screen before the timer starts
+- Ctrl+O SHALL open the options screen before the timer starts (from typing screen) or at any time (from results screen)
 - The application SHALL use alternate screen buffer (fullscreen mode)
 
 ### FR-026: Options Screen
-- The application SHALL provide an options screen accessible via 'o' key
+- The application SHALL provide an options screen accessible via Ctrl+O
 - The options screen SHALL be accessible from typing screen (before timer starts) and results screen
 - The options screen SHALL allow configuring which key advances to the next word:
   - **Space** (default): Press Space to advance to the next word

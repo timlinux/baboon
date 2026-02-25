@@ -207,16 +207,17 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case tea.KeyBackspace:
 		m.api.ProcessBackspace()
 
-	case tea.KeyRunes:
-		char := string(msg.Runes)
-
-		// Open options with 'o' key (only before timer starts)
-		if char == "o" && !m.timerStarted {
+	case tea.KeyCtrlO:
+		// Open options with Ctrl+O (only before timer starts)
+		if !m.timerStarted {
 			m.state = StateOptions
 			m.optionsCursor = 0
 			m.optionsFromTyping = true
 			return m, nil
 		}
+
+	case tea.KeyRunes:
+		char := string(msg.Runes)
 
 		// Calculate seek time locally before sending to backend
 		var seekTimeMs int64
@@ -261,14 +262,12 @@ func (m Model) handleResultsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.lastKeyTime = time.Time{}
 		m.correctChars = 0
 
-	case tea.KeyRunes:
-		// Open options with 'o' key
-		if string(msg.Runes) == "o" {
-			m.state = StateOptions
-			m.optionsCursor = 0
-			m.optionsFromTyping = false
-			return m, nil
-		}
+	case tea.KeyCtrlO:
+		// Open options with Ctrl+O
+		m.state = StateOptions
+		m.optionsCursor = 0
+		m.optionsFromTyping = false
+		return m, nil
 	}
 
 	return m, nil
