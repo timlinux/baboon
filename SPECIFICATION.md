@@ -329,10 +329,29 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
 
 ### FR-012: Navigation
 - ESC or Ctrl+C SHALL exit the application at any time
-- SPACE SHALL advance to the next word during typing (when input length > 0)
+- The advance key (configurable: Space, Enter, or Either) SHALL advance to the next word during typing (when input length > 0)
 - ENTER SHALL start a new round when viewing results screen
 - TAB SHALL restart the current round at any time (typing or results screen)
+- The 'o' key SHALL open the options screen before the timer starts
 - The application SHALL use alternate screen buffer (fullscreen mode)
+
+### FR-026: Options Screen
+- The application SHALL provide an options screen accessible via 'o' key
+- The options screen SHALL be accessible from typing screen (before timer starts) and results screen
+- The options screen SHALL allow configuring which key advances to the next word:
+  - **Space** (default): Press Space to advance to the next word
+  - **Enter**: Press Enter to advance to the next word
+  - **Either**: Press Space or Enter to advance to the next word
+- Navigation in options screen:
+  - ↑/↓ or Tab/Shift+Tab SHALL move the cursor between options
+  - Enter or Space SHALL select the highlighted option
+  - Number keys (1-3) SHALL quick-select the corresponding option
+  - ESC SHALL return to the previous screen without changes
+- The currently selected option SHALL be indicated with a green checkmark (✓)
+- The cursor position SHALL be highlighted with a contrasting background colour
+- Settings SHALL be persisted to `~/.config/baboon/settings.json`
+- Settings SHALL be loaded on application startup
+- Help text in typing screen SHALL dynamically reflect the configured advance key
 
 ## Technical Requirements
 
@@ -634,6 +653,8 @@ baboon/
 ├── stats/
 │   ├── stats.go        # Statistics types, persistence, validation
 │   └── keyboard.go     # Keyboard layout mappings (finger, hand, row)
+├── settings/
+│   └── settings.go     # User preferences (advance key setting)
 ├── scripts/
 │   ├── start-backend.sh   # Start backend server in background
 │   ├── stop-backend.sh    # Stop backend server
@@ -851,6 +872,16 @@ The web frontend uses Kartoza's brand colour scheme derived from their wallpaper
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.3.0
+- Options screen for configuring application settings
+  - Accessible via 'o' key from typing screen (before timer starts) or results screen
+  - Configurable advance key: Space (default), Enter, or Either
+  - Navigation with ↑/↓ keys, Enter/Space to select, 1-3 for quick select
+  - Settings persist to `~/.config/baboon/settings.json`
+- New settings package (`settings/settings.go`) for user preferences
+- Dynamic help text reflects currently configured advance key
+- Added FR-026 (Options Screen) to functional requirements
 
 ### v1.2.0
 - Show next 3 upcoming words in carousel display

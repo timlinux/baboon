@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/timlinux/baboon/backend"
 	"github.com/timlinux/baboon/font"
+	"github.com/timlinux/baboon/settings"
 	"github.com/timlinux/baboon/stats"
 )
 
@@ -33,7 +34,7 @@ func (r *Renderer) SetSize(width, height int) {
 }
 
 // RenderTypingScreenAnimated renders the main typing interface with smooth carousel animations
-func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel *CarouselAnimator) string {
+func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel *CarouselAnimator, s *settings.Settings) string {
 	if state.CurrentWordIdx >= len(state.Words) {
 		return ""
 	}
@@ -135,10 +136,14 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 
 	// Instructions
 	var helpText string
+	advanceKeyHint := "SPACE"
+	if s != nil {
+		advanceKeyHint = s.AdvanceKey.KeyHint()
+	}
 	if !state.TimerStarted {
-		helpText = "Type the first letter to start the timer | ESC to quit"
+		helpText = "Type the first letter to start | 'o' for options | ESC to quit"
 	} else {
-		helpText = "Type the word, then press SPACE to continue | ESC to quit"
+		helpText = fmt.Sprintf("Type the word, then press %s to continue | ESC to quit", advanceKeyHint)
 	}
 	help := r.styles.Help.Render(helpText)
 
@@ -858,4 +863,95 @@ func (r *Renderer) renderTopErrors(historical *stats.HistoricalStats, labelWidth
 	}
 
 	return row.String()
+}
+
+// RenderOptionsScreen renders the options/settings screen
+func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string {
+	title := r.styles.Title.Render("Options")
+
+	// Options for advance key
+	options := []struct {
+		key         settings.AdvanceKey
+		label       string
+		description string
+	}{
+		{settings.AdvanceKeySpace, "Space", "Press Space to advance to the next word (default)"},
+		{settings.AdvanceKeyEnter, "Enter", "Press Enter to advance to the next word"},
+		{settings.AdvanceKeyEither, "Either", "Press Space or Enter to advance to the next word"},
+	}
+
+	var optionLines []string
+	optionLines = append(optionLines, "")
+	optionLines = append(optionLines, r.styles.SessionLabel.Render("Advance to next word with:"))
+	optionLines = append(optionLines, "")
+
+	for i, opt := range options {
+		// Build the option line
+		var line strings.Builder
+
+		// Number prefix
+		numStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+		line.WriteString(numStyle.Render(fmt.Sprintf(" %d. ", i+1)))
+
+		// Selection indicator and label
+		isSelected := s.AdvanceKey == opt.key
+		isCursor := cursor == i
+
+		var labelStyle lipgloss.Style
+		if isCursor {
+			// Cursor position - highlighted
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("0")).
+				Background(lipgloss.Color("39")).
+				Bold(true).
+				Padding(0, 1)
+		} else if isSelected {
+			// Currently selected option
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("46")).
+				Bold(true)
+		} else {
+			// Normal option
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("252"))
+		}
+
+		// Checkmark for selected option
+		if isSelected {
+			checkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("46")).Bold(true)
+			line.WriteString(checkStyle.Render("✓ "))
+		} else {
+			line.WriteString("  ")
+		}
+
+		line.WriteString(labelStyle.Render(opt.label))
+
+		// Description
+		descStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Italic(true)
+		line.WriteString("  ")
+		line.WriteString(descStyle.Render(opt.description))
+
+		optionLines = append(optionLines, line.String())
+	}
+
+	optionLines = append(optionLines, "")
+	optionLines = append(optionLines, "")
+
+	// Help text
+	help := r.styles.Help.Render("↑/↓ to navigate | Enter/Space to select | 1-3 quick select | ESC to go back")
+
+	content := lipgloss.JoinVertical(
+		lipgloss.Center,
+		title,
+		strings.Join(optionLines, "\n"),
+		help,
+	)
+
+	return lipgloss.Place(
+		r.width,
+		r.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		content,
+	)
 }

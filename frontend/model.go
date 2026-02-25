@@ -5,6 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/timlinux/baboon/backend"
+	"github.com/timlinux/baboon/settings"
 )
 
 // GameState represents the current state of the game UI
@@ -13,6 +14,7 @@ type GameState int
 const (
 	StateTyping GameState = iota
 	StateResults
+	StateOptions
 )
 
 // tickMsg is sent periodically to update the WPM display
@@ -42,16 +44,24 @@ type Model struct {
 	startTime    time.Time
 	lastKeyTime  time.Time
 	correctChars int // For live WPM calculation
+
+	// Settings
+	settings          *settings.Settings
+	optionsCursor     int  // Current selection in options menu
+	optionsFromTyping bool // Whether options was opened from typing screen
 }
 
 // NewModel creates a new Model with the given backend API
 func NewModel(api backend.GameAPI) Model {
+	// Load settings (use defaults if error)
+	s, _ := settings.Load()
 	return Model{
 		api:              api,
 		state:            StateTyping,
 		renderer:         NewRenderer(80, 24), // Default size, will be updated
 		carouselAnimator: NewCarouselAnimator(),
 		lastWordIdx:      0,
+		settings:         s,
 	}
 }
 
@@ -90,6 +100,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.handleTypingInput(msg)
 		case StateResults:
 			return m.handleResultsInput(msg)
+		case StateOptions:
+			return m.handleOptionsInput(msg)
 		}
 
 	case tea.WindowSizeMsg:
@@ -114,13 +126,15 @@ func (m Model) View() string {
 			}
 		}
 		gameState.TimerStarted = m.timerStarted
-		return m.renderer.RenderTypingScreenAnimated(gameState, m.carouselAnimator)
+		return m.renderer.RenderTypingScreenAnimated(gameState, m.carouselAnimator, m.settings)
 	case StateResults:
 		return m.renderer.RenderResultsScreen(
 			m.api.GetSessionStats(),
 			m.api.GetHistoricalStats(),
 			m.animator,
 		)
+	case StateOptions:
+		return m.renderer.RenderOptionsScreen(m.settings, m.optionsCursor)
 	}
 	return ""
 }
@@ -128,6 +142,19 @@ func (m Model) View() string {
 // handleTypingInput processes keyboard input during typing
 func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	now := time.Now()
+
+	// Check if this key should advance to the next word
+	isAdvanceKey := func() bool {
+		switch m.settings.AdvanceKey {
+		case settings.AdvanceKeySpace:
+			return msg.Type == tea.KeySpace
+		case settings.AdvanceKeyEnter:
+			return msg.Type == tea.KeyEnter
+		case settings.AdvanceKeyEither:
+			return msg.Type == tea.KeySpace || msg.Type == tea.KeyEnter
+		}
+		return msg.Type == tea.KeySpace // default
+	}
 
 	switch msg.Type {
 	case tea.KeyCtrlC, tea.KeyEsc:
@@ -143,7 +170,12 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.correctChars = 0
 		return m, nil
 
-	case tea.KeySpace:
+	case tea.KeySpace, tea.KeyEnter:
+		// Only process if this is the configured advance key
+		if !isAdvanceKey() {
+			return m, nil
+		}
+
 		// Calculate seek time locally
 		var seekTimeMs int64
 		if m.timerStarted && !m.lastKeyTime.IsZero() {
@@ -177,6 +209,14 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyRunes:
 		char := string(msg.Runes)
+
+		// Open options with 'o' key (only before timer starts)
+		if char == "o" && !m.timerStarted {
+			m.state = StateOptions
+			m.optionsCursor = 0
+			m.optionsFromTyping = true
+			return m, nil
+		}
 
 		// Calculate seek time locally before sending to backend
 		var seekTimeMs int64
@@ -220,6 +260,96 @@ func (m Model) handleResultsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.startTime = time.Time{}
 		m.lastKeyTime = time.Time{}
 		m.correctChars = 0
+
+	case tea.KeyRunes:
+		// Open options with 'o' key
+		if string(msg.Runes) == "o" {
+			m.state = StateOptions
+			m.optionsCursor = 0
+			m.optionsFromTyping = false
+			return m, nil
+		}
+	}
+
+	return m, nil
+}
+
+// handleOptionsInput processes keyboard input on options screen
+func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.Type {
+	case tea.KeyCtrlC:
+		return m, tea.Quit
+
+	case tea.KeyEsc:
+		// Return to previous screen
+		if m.optionsFromTyping {
+			m.state = StateTyping
+		} else {
+			m.state = StateResults
+		}
+		return m, nil
+
+	case tea.KeyUp, tea.KeyShiftTab:
+		// Move cursor up (wrap around)
+		if m.optionsCursor > 0 {
+			m.optionsCursor--
+		} else {
+			m.optionsCursor = 2 // Wrap to last option (3 options: 0, 1, 2)
+		}
+
+	case tea.KeyDown, tea.KeyTab:
+		// Move cursor down (wrap around)
+		if m.optionsCursor < 2 {
+			m.optionsCursor++
+		} else {
+			m.optionsCursor = 0 // Wrap to first option
+		}
+
+	case tea.KeyEnter, tea.KeySpace:
+		// Select current option
+		m.settings.AdvanceKey = settings.AdvanceKey(m.optionsCursor)
+		// Save settings
+		_ = m.settings.Save()
+		// Return to previous screen
+		if m.optionsFromTyping {
+			m.state = StateTyping
+		} else {
+			m.state = StateResults
+		}
+		return m, nil
+
+	case tea.KeyRunes:
+		char := string(msg.Runes)
+		// Quick select with number keys
+		switch char {
+		case "1":
+			m.settings.AdvanceKey = settings.AdvanceKeySpace
+			_ = m.settings.Save()
+			if m.optionsFromTyping {
+				m.state = StateTyping
+			} else {
+				m.state = StateResults
+			}
+			return m, nil
+		case "2":
+			m.settings.AdvanceKey = settings.AdvanceKeyEnter
+			_ = m.settings.Save()
+			if m.optionsFromTyping {
+				m.state = StateTyping
+			} else {
+				m.state = StateResults
+			}
+			return m, nil
+		case "3":
+			m.settings.AdvanceKey = settings.AdvanceKeyEither
+			_ = m.settings.Save()
+			if m.optionsFromTyping {
+				m.state = StateTyping
+			} else {
+				m.state = StateResults
+			}
+			return m, nil
+		}
 	}
 
 	return m, nil
