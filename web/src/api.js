@@ -98,6 +98,11 @@ class BaboonAPI {
     const response = await fetch(`${this.baseUrl}/health`);
     return response.json();
   }
+
+  async getConfig() {
+    const response = await fetch(`${this.baseUrl}/config`);
+    return response.json();
+  }
 }
 
 export const api = new BaboonAPI();

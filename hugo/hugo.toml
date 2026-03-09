@@ -1,0 +1,82 @@
+baseURL = "/docs/"
+languageCode = "en-gb"
+title = "Baboon - Typing Practice"
+theme = "baboon"
+
+# Build settings
+enableRobotsTXT = true
+enableGitInfo = true
+
+[params]
+  description = "Master your typing with beautiful practice"
+  author = "Tim Sutton"
+  github = "https://github.com/timlinux/baboon"
+
+  # Kartoza branding
+  kartoza_url = "https://kartoza.com"
+  sponsor_url = "https://github.com/sponsors/timlinux"
+  kofi_url = "https://ko-fi.com/timlinux"
+
+  # Brand colors (matching web app)
+  brand_orange = "#D4922A"
+  brand_blue = "#4A90A4"
+  bg_primary = "#1a2833"
+  bg_secondary = "#243442"
+
+  # Features
+  enableSearch = true
+
+[markup]
+  [markup.highlight]
+    style = "monokai"
+    lineNos = false
+    codeFences = true
+    guessSyntax = true
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 4
+
+[menu]
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+  [[menu.main]]
+    name = "Getting Started"
+    url = "/getting-started/"
+    weight = 2
+  [[menu.main]]
+    name = "Features"
+    url = "/features/"
+    weight = 3
+  [[menu.main]]
+    name = "User Guide"
+    url = "/guide/"
+    weight = 4
+  [[menu.main]]
+    name = "Development"
+    url = "/development/"
+    weight = 5
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 6
+  [[menu.main]]
+    name = "Launch App"
+    url = "/"
+    weight = 7
+    [menu.main.params]
+      isExternal = true
+      isAppLink = true
+
+[outputs]
+  home = ["HTML", "RSS"]
+  section = ["HTML"]
+  page = ["HTML"]
+
+[sitemap]
+  changefreq = "weekly"
+  priority = 0.5

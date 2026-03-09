@@ -1,4 +1,4 @@
-.PHONY: all build clean test run server client install help web-install web-dev web-build web-start
+.PHONY: all build clean test run server client install help web-install web-dev web-build web-start docs docs-dev docs-build docs-clean docs-open docs-new web-bundle web-serve
 
 # Default target
 all: build
@@ -89,6 +89,37 @@ web-start: build
 	@echo "Starting web frontend..."
 	cd web && npm run dev
 
+# Documentation (Hugo)
+docs-dev:
+	cd hugo && hugo server -D --bind 0.0.0.0
+
+docs-build:
+	cd hugo && hugo --minify
+
+docs: docs-build
+	@echo "Documentation built in hugo/public/"
+
+docs-clean:
+	rm -rf hugo/public hugo/resources web/build/docs
+
+docs-open:
+	xdg-open http://localhost:1313 2>/dev/null || open http://localhost:1313 2>/dev/null || echo "Open http://localhost:1313 in your browser"
+
+docs-new:
+	@read -p "Enter page path (e.g., posts/my-new-post): " path; \
+	cd hugo && hugo new "$$path.md"
+
+# Combined production build (React + Hugo bundled together)
+web-bundle: web-build docs-build
+	@echo "Bundling Hugo docs into web/build/docs/..."
+	rm -rf web/build/docs
+	cp -r hugo/public web/build/docs
+	@echo "Production bundle complete in web/build/"
+
+# Run production server with bundled docs
+web-serve: web-bundle build
+	./baboon web -port 8787 -dir web/build
+
 # Help
 help:
 	@echo "Baboon - Terminal typing practice"
@@ -116,6 +147,8 @@ help:
 	@echo "  make web-dev     - Start web dev server"
 	@echo "  make web-build   - Build web for production"
 	@echo "  make web-start   - Start backend + web frontend"
+	@echo "  make web-bundle  - Build React + Hugo bundled together"
+	@echo "  make web-serve   - Run production server with docs"
 	@echo ""
 	@echo "Development:"
 	@echo "  make test        - Run tests"
@@ -123,3 +156,11 @@ help:
 	@echo "  make lint        - Lint code"
 	@echo "  make vendor      - Vendor dependencies"
 	@echo "  make deps        - Update dependencies"
+	@echo ""
+	@echo "Documentation (Hugo):"
+	@echo "  make docs-dev    - Start Hugo dev server"
+	@echo "  make docs-build  - Build documentation"
+	@echo "  make docs        - Build documentation (alias)"
+	@echo "  make docs-clean  - Remove built documentation"
+	@echo "  make docs-open   - Open docs in browser"
+	@echo "  make docs-new    - Create new documentation page"

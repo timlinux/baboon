@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+baboon
+result
+*.exe
+
+# Development
+.envrc
+.exrc
+.nvim.lua
+PROMPT.log
+
+# Documentation
+docs/
+hugo/
+mkdocs.yml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node modules (we copy pre-built dist)
+web/node_modules/
+
+# Kubernetes manifests
+k8s/
+
+# Nix
+.direnv/

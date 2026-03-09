@@ -15,14 +15,47 @@ import WelcomeScreen from './components/WelcomeScreen.jsx';
 
 const MotionBox = motion(Box);
 
+// Local storage keys
+const STORAGE_KEYS = {
+  HISTORICAL_STATS: 'baboon_historical_stats',
+  SETTINGS: 'baboon_settings',
+};
+
+// Load data from local storage
+const loadFromStorage = (key, defaultValue = null) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (e) {
+    console.error('Error loading from storage:', e);
+    return defaultValue;
+  }
+};
+
+// Save data to local storage
+const saveToStorage = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.error('Error saving to storage:', e);
+  }
+};
+
 function App() {
-  const [screen, setScreen] = useState('welcome'); // welcome, typing, results
-  const [punctuationMode, setPunctuationMode] = useState(false);
+  const [screen, setScreen] = useState('typing'); // welcome, typing, results (start on typing)
+  const [punctuationMode, setPunctuationMode] = useState(() => {
+    const settings = loadFromStorage(STORAGE_KEYS.SETTINGS, {});
+    return settings.punctuationMode || false;
+  });
   const [gameState, setGameState] = useState(null);
   const [sessionStats, setSessionStats] = useState(null);
   const [historicalStats, setHistoricalStats] = useState(null);
+  const [localHistoricalStats, setLocalHistoricalStats] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.HISTORICAL_STATS, null)
+  );
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [config, setConfig] = useState({ adsense_enabled: false, adsense_key: '' });
 
   // Timing state (tracked on frontend to avoid latency)
   const [timerStarted, setTimerStarted] = useState(false);
@@ -34,12 +67,32 @@ function App() {
   const toast = useToast();
   const wpmIntervalRef = useRef(null);
 
-  // Check backend health and create session
+  // Save punctuation mode preference
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.SETTINGS, { punctuationMode });
+  }, [punctuationMode]);
+
+  // Check backend health, fetch config, and auto-start game
   useEffect(() => {
     const init = async () => {
       try {
         await api.checkHealth();
         setIsConnected(true);
+
+        // Fetch server config (includes AdSense key if set)
+        try {
+          const serverConfig = await api.getConfig();
+          setConfig(serverConfig);
+        } catch (e) {
+          console.log('Config endpoint not available, using defaults');
+        }
+
+        // Auto-start the game immediately
+        await api.createSession(punctuationMode);
+        await api.startRound();
+        const state = await api.getState();
+        setGameState(state);
+        setScreen('typing');
       } catch (e) {
         toast({
           title: 'Backend not available',
@@ -48,11 +101,12 @@ function App() {
           duration: null,
           isClosable: true,
         });
+        setScreen('welcome');
       }
       setIsLoading(false);
     };
     init();
-  }, [toast]);
+  }, [toast, punctuationMode]);
 
   // Live WPM calculation
   useEffect(() => {
@@ -154,6 +208,11 @@ function App() {
         ]);
         setSessionStats(session);
         setHistoricalStats(historical);
+
+        // Save historical stats to local storage for persistence
+        setLocalHistoricalStats(historical);
+        saveToStorage(STORAGE_KEYS.HISTORICAL_STATS, historical);
+
         setScreen('results');
       } else {
         const state = await api.getState();
@@ -227,6 +286,7 @@ function App() {
               setPunctuationMode={setPunctuationMode}
               onStart={startGame}
               isLoading={isLoading}
+              localStats={localHistoricalStats}
             />
           </MotionBox>
         )}
@@ -247,6 +307,8 @@ function App() {
               onBackspace={handleBackspace}
               onSpace={handleSpace}
               onExit={handleBackToMenu}
+              adsenseEnabled={config.adsense_enabled}
+              adsenseKey={config.adsense_key}
             />
           </MotionBox>
         )}

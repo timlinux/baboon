@@ -34,6 +34,10 @@ type GameAPI interface {
 	// Returns true if there was a character to remove.
 	ProcessBackspace() bool
 
+	// ClearInput removes all typed characters for the current word.
+	// Returns true if there were characters to remove.
+	ClearInput() bool
+
 	// ProcessSpace handles the space key, potentially advancing to the next word (legacy).
 	// Returns the result indicating whether the word advanced or round completed.
 	ProcessSpace() SpaceResult
@@ -138,6 +142,14 @@ type Config struct {
 
 	// CharactersPerRound is the target total characters per round.
 	CharactersPerRound int
+
+	// AdsenseEnabled indicates whether AdSense is enabled (show ads or preview).
+	AdsenseEnabled bool
+
+	// AdsenseKey is the Google AdSense publisher ID for web monetisation.
+	// When set, real ads will be displayed. When empty but AdsenseEnabled is true,
+	// a preview placeholder is shown.
+	AdsenseKey string
 }
 
 // DefaultConfig returns the default game configuration.

@@ -6,8 +6,11 @@ import {
   Text,
   Flex,
   Progress,
+  Link,
+  IconButton,
 } from '@chakra-ui/react';
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import AdSense from './AdSense.jsx';
 
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
@@ -315,6 +318,8 @@ function TypingScreen({
   onBackspace,
   onSpace,
   onExit,
+  adsenseEnabled,
+  adsenseKey,
 }) {
   const currentWord = gameState?.current_word || '';
   const currentInput = gameState?.current_input || '';
@@ -552,11 +557,61 @@ function TypingScreen({
       </Box>
 
       {/* Footer hint */}
-      <Flex justify="center" pb={4}>
-        <Text color="gray.600" fontSize="sm">
-          Press SPACE when done with word • ESC to exit
-        </Text>
+      <Flex justify="center" pb={2}>
+        <HStack spacing={4} color="gray.600" fontSize="sm">
+          <Text>Press SPACE when done with word • ESC to exit</Text>
+          <Text>•</Text>
+          <Link
+            href="/docs/"
+            color="kartoza.blue.400"
+            _hover={{ color: 'kartoza.blue.300', textDecoration: 'underline' }}
+          >
+            Documentation
+          </Link>
+        </HStack>
       </Flex>
+
+      {/* Kartoza branding */}
+      <Flex justify="center" pb={4}>
+        <HStack spacing={2} color="gray.600" fontSize="xs">
+          <Text>Made with</Text>
+          <Text color="red.400">♥</Text>
+          <Text>by</Text>
+          <Link
+            href="https://kartoza.com"
+            isExternal
+            color="brand.500"
+            _hover={{ color: 'brand.400' }}
+          >
+            Kartoza
+          </Link>
+          <Text>|</Text>
+          <Link
+            href="https://github.com/sponsors/timlinux"
+            isExternal
+            color="kartoza.blue.500"
+            _hover={{ color: 'kartoza.blue.400' }}
+          >
+            Donate!
+          </Link>
+          <Text>|</Text>
+          <Link
+            href="https://github.com/timlinux/baboon"
+            isExternal
+            color="gray.500"
+            _hover={{ color: 'gray.400' }}
+          >
+            GitHub
+          </Link>
+        </HStack>
+      </Flex>
+
+      {/* AdSense ad (only shown if enabled via --adsense flag) */}
+      {adsenseEnabled && (
+        <Box pb={4}>
+          <AdSense publisherId={adsenseKey} showPreview={true} />
+        </Box>
+      )}
     </Flex>
   );
 }

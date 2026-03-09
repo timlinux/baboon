@@ -249,6 +249,15 @@ func (e *Engine) ProcessBackspace() bool {
 	return false
 }
 
+// ClearInput removes all typed characters for the current word.
+func (e *Engine) ClearInput() bool {
+	if len(e.input) > 0 {
+		e.input = ""
+		return true
+	}
+	return false
+}
+
 // ProcessSpace handles the space key (legacy, no timing).
 func (e *Engine) ProcessSpace() SpaceResult {
 	return e.ProcessSpaceWithTiming(0)

@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: baboon
+
+resources:
+  - ../../base
+
+# Use local image for development
+images:
+  - name: baboon
+    newName: baboon
+    newTag: dev
+
+# Single replica for development
+replicas:
+  - name: baboon
+    count: 1
+
+# Disable HPA in development
+patches:
+  - patch: |-
+      $patch: delete
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: baboon
+    target:
+      kind: HorizontalPodAutoscaler
+      name: baboon

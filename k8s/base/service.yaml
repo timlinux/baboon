@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: baboon
+  namespace: baboon
+  labels:
+    app.kubernetes.io/name: baboon
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: baboon
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+  # Session affinity ensures users maintain connection to same pod
+  # This is CRITICAL for Baboon as sessions are stored in-memory
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      # 3 hour timeout for long typing sessions
+      timeoutSeconds: 10800

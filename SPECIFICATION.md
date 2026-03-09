@@ -75,6 +75,7 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
   - **Red (colour 9)**: Character does not match the expected character
   - **Gray (colour 8)**: Characters not yet typed
 - The backspace key SHALL remove the last typed character (undoing its colour)
+- Ctrl+W (or Ctrl+Backspace) SHALL clear all typed characters for the current word
 - The space key SHALL only advance to the next word when ALL letters have been typed
 - If space is pressed before the word is complete, it SHALL be treated as an incorrect character (red)
 - Extra characters beyond word length SHALL count as incorrect (red)
@@ -333,11 +334,28 @@ Both frontends communicate with the same Go backend via REST API, ensuring 100% 
 
 ### FR-012: Navigation
 - ESC or Ctrl+C SHALL exit the application at any time
+- Ctrl+W SHALL clear all typed characters for the current word (undo all input)
 - The advance key (configurable: Space, Enter, or Either) SHALL advance to the next word during typing (when input length > 0)
 - ENTER SHALL start a new round when viewing results screen
 - TAB SHALL restart the current round at any time (typing or results screen)
 - Ctrl+O SHALL open the options screen before the timer starts (from typing screen) or at any time (from results screen)
 - The application SHALL use alternate screen buffer (fullscreen mode)
+
+### FR-028: Web Frontend Local Storage
+- The web frontend SHALL store user historical statistics in browser local storage
+- The storage key SHALL be `baboon_historical_stats` for statistics
+- The storage key SHALL be `baboon_settings` for user preferences (e.g., punctuation mode)
+- The welcome screen SHALL display the user's best WPM, best accuracy, and total sessions if available
+- Settings SHALL persist across browser sessions
+- Local storage data SHALL be updated after each completed round
+
+### FR-029: Google AdSense Integration
+- The web server mode SHALL accept an `-adsense` flag with a Google AdSense publisher ID
+- When AdSense is enabled, the `/api/config` endpoint SHALL return the publisher ID
+- The web frontend SHALL display an ad component beneath the typing game when a publisher ID is configured
+- The ad component SHALL load the Google AdSense script dynamically
+- The ad SHALL be styled to match the application's dark theme
+- Ads SHALL NOT interfere with the typing experience or keyboard input
 
 ### FR-026: Options Screen
 - The application SHALL provide an options screen accessible via Ctrl+O
@@ -469,6 +487,7 @@ type GameAPI interface {
     // Input Handling
     ProcessKeystroke(char string) KeystrokeResult
     ProcessBackspace() bool
+    ClearInput() bool
     ProcessSpace() SpaceResult
 
     // State Queries
@@ -558,6 +577,7 @@ The REST API uses session-based routing. Each frontend client creates a session 
 | DELETE | `/api/sessions/{id}` | Delete a session |
 | GET | `/api/sessions` | List all active sessions |
 | GET | `/api/health` | Health check (includes active session count) |
+| GET | `/api/config` | Get server configuration (AdSense key, etc.) |
 
 **Game Operations (session-scoped):**
 
@@ -566,6 +586,7 @@ The REST API uses session-based routing. Each frontend client creates a session 
 | POST | `/api/sessions/{id}/round` | Start a new round |
 | POST | `/api/sessions/{id}/keystroke` | Process a keystroke (with timing) |
 | POST | `/api/sessions/{id}/backspace` | Process backspace |
+| POST | `/api/sessions/{id}/clearinput` | Clear all typed characters for current word |
 | POST | `/api/sessions/{id}/space` | Process space key (with timing) |
 | POST | `/api/sessions/{id}/timing` | Submit final round timing data |
 | GET | `/api/sessions/{id}/state` | Get current game state |
@@ -699,9 +720,10 @@ baboon/
 │       ├── api.js         # REST API client
 │       ├── theme.js       # Chakra UI custom theme
 │       └── components/
-│           ├── WelcomeScreen.js   # Landing screen
-│           ├── TypingScreen.js    # Typing practice screen
-│           └── ResultsScreen.js   # Statistics display
+│           ├── WelcomeScreen.jsx  # Landing screen with local stats
+│           ├── TypingScreen.jsx   # Typing practice screen
+│           ├── ResultsScreen.jsx  # Statistics display
+│           └── AdSense.jsx        # Google AdSense component
 ├── Makefile            # Build and run targets
 ├── SPECIFICATION.md    # This file
 ├── README.md           # User documentation
@@ -743,6 +765,15 @@ make web-dev                # Start web dev server only (needs backend running)
 make web-build              # Build for production
 ```
 Starts the React web frontend on port 3000. The frontend proxies API requests to the backend on port 8787.
+
+### Web Server Mode (Production)
+```bash
+baboon web                              # Serve web frontend + API on port 8787
+baboon web -port 8080                   # On custom port
+baboon web -adsense ca-pub-1234567890   # Enable Google AdSense ads
+baboon web -dir ./web/dist              # Custom web directory
+```
+Serves the built web frontend with the REST API from a single binary. This is the recommended mode for production deployments. The `-adsense` flag enables Google AdSense advertising, which displays ads beneath the typing game.
 
 ## Management Scripts
 

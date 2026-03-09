@@ -67,14 +67,21 @@ func NewModel(api backend.GameAPI) Model {
 
 // Init initializes the model and returns the initial command
 func (m Model) Init() tea.Cmd {
-	return tickCmd()
+	// Don't start tick loop immediately - only start when timer starts
+	// This reduces unnecessary screen updates and flicker
+	return nil
 }
 
 // Update handles messages and updates the model state
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tickMsg:
-		return m, tickCmd()
+		// Only continue ticking if timer is running (for live WPM updates)
+		if m.timerStarted && m.state == StateTyping {
+			return m, tickCmd()
+		}
+		// Stop ticking when timer not running to reduce flicker
+		return m, nil
 
 	case animTickMsg:
 		// Handle results screen animations
@@ -114,19 +121,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View renders the current state
+// Flicker is reduced by:
+// 1. Rounding WPM to integers (no constant small changes)
+// 2. Using 500ms tick interval instead of 100ms
+// 3. Bubble Tea's built-in view diffing
 func (m Model) View() string {
 	switch m.state {
 	case StateTyping:
 		gameState := m.api.GetGameState()
-		// Override live WPM with locally calculated value (avoids network latency)
+
+		// Calculate live WPM locally, rounded to integer for stable display
 		if m.timerStarted && m.correctChars > 0 {
 			elapsed := time.Since(m.startTime).Minutes()
 			if elapsed > 0 {
-				gameState.LiveWPM = (float64(m.correctChars) / 5.0) / elapsed
+				// Round to integer to prevent constant tiny updates
+				gameState.LiveWPM = float64(int((float64(m.correctChars) / 5.0) / elapsed))
 			}
 		}
 		gameState.TimerStarted = m.timerStarted
+
 		return m.renderer.RenderTypingScreenAnimated(gameState, m.carouselAnimator, m.settings)
+
 	case StateResults:
 		return m.renderer.RenderResultsScreen(
 			m.api.GetSessionStats(),
@@ -207,6 +222,10 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case tea.KeyBackspace:
 		m.api.ProcessBackspace()
 
+	case tea.KeyCtrlW:
+		// Ctrl+W or Ctrl+Backspace clears all typed characters
+		m.api.ClearInput()
+
 	case tea.KeyCtrlO:
 		// Open options with Ctrl+O (only before timer starts)
 		if !m.timerStarted {
@@ -231,6 +250,8 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if result.TimerStarted && !m.timerStarted {
 			m.timerStarted = true
 			m.startTime = now
+			// Start tick loop for live WPM updates now that timer is running
+			return m, tickCmd()
 		}
 
 		// Track correct chars for local live WPM
@@ -355,8 +376,9 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 // tickCmd returns a command that sends tick messages
+// Using 500ms interval since WPM is displayed as integer (no need for faster updates)
 func tickCmd() tea.Cmd {
-	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
+	return tea.Tick(500*time.Millisecond, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
 }

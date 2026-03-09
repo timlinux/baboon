@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -24,10 +25,11 @@ type Session struct {
 // Server provides a RESTful API for the game engine.
 // It supports multiple concurrent sessions, each with their own game state.
 type Server struct {
-	config   Config
-	sessions map[string]*Session
-	mu       sync.RWMutex
-	addr     string
+	config    Config
+	sessions  map[string]*Session
+	mu        sync.RWMutex
+	addr      string
+	staticDir string
 }
 
 // NewServer creates a new REST API server with the given configuration.
@@ -42,6 +44,11 @@ func NewServer(config Config, addr string) (*Server, error) {
 // GetAddr returns the server address.
 func (s *Server) GetAddr() string {
 	return s.addr
+}
+
+// SetStaticDir sets the directory for serving static web files.
+func (s *Server) SetStaticDir(dir string) {
+	s.staticDir = dir
 }
 
 // generateSessionID creates a unique session identifier.
@@ -78,6 +85,7 @@ func (s *Server) Start() error {
 	// Input handling (session-specific)
 	mux.HandleFunc("POST /api/sessions/{id}/keystroke", s.handleKeystroke)
 	mux.HandleFunc("POST /api/sessions/{id}/backspace", s.handleBackspace)
+	mux.HandleFunc("POST /api/sessions/{id}/clearinput", s.handleClearInput)
 	mux.HandleFunc("POST /api/sessions/{id}/space", s.handleSpace)
 
 	// State queries (session-specific)
@@ -93,6 +101,51 @@ func (s *Server) Start() error {
 
 	// Health check
 	mux.HandleFunc("GET /api/health", s.handleHealth)
+
+	// Configuration endpoint for web frontend
+	mux.HandleFunc("GET /api/config", s.handleConfig)
+
+	// Serve static files if directory is configured
+	if s.staticDir != "" {
+		// Serve static files for all non-API routes
+		fs := http.FileServer(http.Dir(s.staticDir))
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			// Check if the file exists
+			path := s.staticDir + r.URL.Path
+			if r.URL.Path == "/" {
+				path = s.staticDir + "/index.html"
+			}
+
+			// Handle /docs/ paths - serve Hugo static site directly
+			if strings.HasPrefix(r.URL.Path, "/docs/") || r.URL.Path == "/docs" {
+				// Redirect /docs to /docs/
+				if r.URL.Path == "/docs" {
+					http.Redirect(w, r, "/docs/", http.StatusMovedPermanently)
+					return
+				}
+				// Serve docs files directly (no SPA routing)
+				if _, err := os.Stat(path); os.IsNotExist(err) {
+					// Try adding index.html for directory paths
+					indexPath := path + "/index.html"
+					if _, err := os.Stat(indexPath); err == nil {
+						http.ServeFile(w, r, indexPath)
+						return
+					}
+					http.NotFound(w, r)
+					return
+				}
+				fs.ServeHTTP(w, r)
+				return
+			}
+
+			if _, err := os.Stat(path); os.IsNotExist(err) {
+				// For SPA routing, serve index.html for non-existent paths
+				http.ServeFile(w, r, s.staticDir+"/index.html")
+				return
+			}
+			fs.ServeHTTP(w, r)
+		})
+	}
 
 	return http.ListenAndServe(s.addr, mux)
 }
@@ -185,8 +238,14 @@ type GameStateResponse struct {
 
 // HealthResponse is the response body for GET /api/health
 type HealthResponse struct {
-	Status        string `json:"status"`
-	ActiveSessions int   `json:"active_sessions"`
+	Status         string `json:"status"`
+	ActiveSessions int    `json:"active_sessions"`
+}
+
+// ConfigResponse is the response body for GET /api/config
+type ConfigResponse struct {
+	AdsenseEnabled bool   `json:"adsense_enabled"`
+	AdsenseKey     string `json:"adsense_key,omitempty"`
 }
 
 // Handler implementations
@@ -321,6 +380,24 @@ func (s *Server) handleBackspace(w http.ResponseWriter, r *http.Request) {
 	s.mu.Unlock()
 
 	resp := BackspaceResponse{Removed: removed}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func (s *Server) handleClearInput(w http.ResponseWriter, r *http.Request) {
+	sessionID := r.PathValue("id")
+	session, exists := s.getSession(sessionID)
+	if !exists {
+		http.Error(w, "session not found", http.StatusNotFound)
+		return
+	}
+
+	s.mu.Lock()
+	cleared := session.Engine.ClearInput()
+	s.mu.Unlock()
+
+	resp := BackspaceResponse{Removed: cleared}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
@@ -469,8 +546,17 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	s.mu.RUnlock()
 
 	resp := HealthResponse{
-		Status:        "healthy",
+		Status:         "healthy",
 		ActiveSessions: activeCount,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
+	resp := ConfigResponse{
+		AdsenseEnabled: s.config.AdsenseEnabled,
+		AdsenseKey:     s.config.AdsenseKey,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)

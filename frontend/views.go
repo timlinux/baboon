@@ -206,7 +206,7 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	header := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
 		headerStyle.Render("🐒 BABOON - Typing Practice"))
 
-	// Fixed footer at bottom
+	// Fixed footer at bottom (help text + Kartoza branding)
 	var helpText string
 	advanceKeyHint := "SPACE"
 	if s != nil {
@@ -215,13 +215,29 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	if !state.TimerStarted {
 		helpText = "Type the first letter to start | Tab to restart | Ctrl+O for options | ESC to quit"
 	} else {
-		helpText = fmt.Sprintf("Type the word, then press %s to continue | Tab to restart | ESC to quit", advanceKeyHint)
+		helpText = fmt.Sprintf("Press %s to continue | Ctrl+W to clear word | Tab to restart | ESC to quit", advanceKeyHint)
 	}
-	footer := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, r.styles.Help.Render(helpText))
+
+	// Kartoza branding
+	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
+	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
+	kartozaLine := kartozaStyle.Render("Made with ") +
+		heartStyle.Render("♥") +
+		kartozaStyle.Render(" by ") +
+		linkStyle.Render("Kartoza") +
+		kartozaStyle.Render(" | ") +
+		linkStyle.Render("github.com/timlinux/baboon")
+
+	footer := lipgloss.JoinVertical(lipgloss.Center,
+		r.styles.Help.Render(helpText),
+		kartozaLine,
+	)
+	footer = lipgloss.PlaceHorizontal(r.width, lipgloss.Center, footer)
 
 	// Calculate heights
 	headerHeight := 1
-	footerHeight := 1
+	footerHeight := 2 // Now two lines
 	contentHeight := strings.Count(mainContent, "\n") + 1
 	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
 
@@ -450,13 +466,29 @@ func (r *Renderer) RenderResultsScreen(
 	header := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
 		headerStyle.Render("🐒 BABOON - Typing Practice"))
 
-	// Fixed footer at bottom
-	footer := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
-		r.styles.Help.Render("Press ENTER for a new round | Ctrl+O for options | ESC to quit"))
+	// Fixed footer at bottom (help text + Kartoza branding)
+	helpText := "Press ENTER for a new round | Ctrl+O for options | ESC to quit"
+
+	// Kartoza branding
+	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
+	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
+	kartozaLine := kartozaStyle.Render("Made with ") +
+		heartStyle.Render("♥") +
+		kartozaStyle.Render(" by ") +
+		linkStyle.Render("Kartoza") +
+		kartozaStyle.Render(" | ") +
+		linkStyle.Render("github.com/timlinux/baboon")
+
+	footer := lipgloss.JoinVertical(lipgloss.Center,
+		r.styles.Help.Render(helpText),
+		kartozaLine,
+	)
+	footer = lipgloss.PlaceHorizontal(r.width, lipgloss.Center, footer)
 
 	// Calculate heights
 	headerHeight := 1
-	footerHeight := 1
+	footerHeight := 2 // Now two lines
 	contentHeight := strings.Count(mainContent, "\n") + 1
 	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
 
@@ -1089,13 +1121,29 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 	header := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
 		headerStyle.Render("🐒 BABOON - Typing Practice"))
 
-	// Fixed footer at bottom
-	footer := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
-		r.styles.Help.Render("↑/↓ to navigate | Enter/Space to select | 1-3 quick select | ESC to go back"))
+	// Fixed footer at bottom (help text + Kartoza branding)
+	helpText := "↑/↓ to navigate | Enter/Space to select | 1-3 quick select | ESC to go back"
+
+	// Kartoza branding
+	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
+	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
+	kartozaLine := kartozaStyle.Render("Made with ") +
+		heartStyle.Render("♥") +
+		kartozaStyle.Render(" by ") +
+		linkStyle.Render("Kartoza") +
+		kartozaStyle.Render(" | ") +
+		linkStyle.Render("github.com/timlinux/baboon")
+
+	footer := lipgloss.JoinVertical(lipgloss.Center,
+		r.styles.Help.Render(helpText),
+		kartozaLine,
+	)
+	footer = lipgloss.PlaceHorizontal(r.width, lipgloss.Center, footer)
 
 	// Calculate heights
 	headerHeight := 1
-	footerHeight := 1
+	footerHeight := 2 // Now two lines
 	contentHeight := strings.Count(mainContent, "\n") + 1
 	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
 

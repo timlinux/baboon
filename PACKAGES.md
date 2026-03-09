@@ -180,6 +180,77 @@ Main typing interface with physics-based block letters.
 #### `ResultsScreen.js`
 Statistics display with animated stat cards.
 
+## Web Server Mode
+
+### `main.go` - Web Subcommand
+The `baboon web` subcommand serves the built React frontend with the REST API.
+
+**Flags:**
+- `-port` - Server port (default: 8787)
+- `-adsense` - Google AdSense publisher ID
+- `-dir` - Web frontend directory (default: web/dist)
+
+**Responsibilities:**
+- Serve static files from web/dist
+- Expose `/api/config` endpoint for frontend configuration
+- Handle SPA routing (serve index.html for non-API routes)
+
+### `web/src/components/AdSense.jsx`
+Google AdSense component for monetisation.
+
+**Features:**
+- Dynamically loads AdSense script
+- Only renders when publisherId is provided
+- Matches application dark theme styling
+
+## Documentation (`hugo/`)
+
+Hugo-based documentation site with custom theme matching the web app.
+
+### `hugo/themes/baboon/`
+Custom Hugo theme with integrated styling.
+
+**Components:**
+- `layouts/` - Base, single, list, and home page templates
+- `layouts/shortcodes/` - callout, terminal, kbd, feature shortcodes
+- `static/css/theme.css` - CSS matching web app variables
+- `static/js/main.js` - Theme toggle, mobile nav, code copy
+
+**CSS Variables:**
+Uses the same variables as the React web app:
+- `--brand-orange: #D4922A`
+- `--brand-blue: #4A90A4`
+- `--bg-primary: #1a2833`
+
+## Kubernetes Deployment (`k8s/`)
+
+Kustomize-based Kubernetes manifests.
+
+### `k8s/base/`
+Base manifests for any environment.
+
+**Files:**
+- `namespace.yaml` - baboon namespace
+- `deployment.yaml` - Pod spec with health checks
+- `service.yaml` - ClusterIP with session affinity
+- `hpa.yaml` - Horizontal Pod Autoscaler
+- `pdb.yaml` - Pod Disruption Budget
+
+### `k8s/overlays/production/`
+Production-specific configuration.
+
+**Key Features:**
+- NGINX Ingress with cookie-based sticky sessions
+- TLS configuration
+- Higher resource limits
+- 3 replicas
+
+### Session Affinity
+Critical for Baboon as sessions are in-memory:
+- Service uses `sessionAffinity: ClientIP`
+- Ingress uses `BABOON_AFFINITY` cookie
+- 3-hour session timeout
+
 ## External Dependencies
 
 ### Go Dependencies

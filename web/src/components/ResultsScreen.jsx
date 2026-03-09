@@ -10,6 +10,7 @@ import {
   GridItem,
   Badge,
   Tooltip,
+  Link,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 
@@ -566,6 +567,41 @@ function ResultsScreen({
       <Text color="gray.600" fontSize="xs" textAlign="center" pb={2}>
         Press TAB for new round • ESC to exit
       </Text>
+
+      {/* Kartoza branding */}
+      <Flex justify="center" pb={4}>
+        <HStack spacing={2} color="gray.600" fontSize="xs">
+          <Text>Made with</Text>
+          <Text color="red.400">♥</Text>
+          <Text>by</Text>
+          <Link
+            href="https://kartoza.com"
+            isExternal
+            color="brand.500"
+            _hover={{ color: 'brand.400' }}
+          >
+            Kartoza
+          </Link>
+          <Text>|</Text>
+          <Link
+            href="https://github.com/sponsors/timlinux"
+            isExternal
+            color="kartoza.blue.500"
+            _hover={{ color: 'kartoza.blue.400' }}
+          >
+            Donate!
+          </Link>
+          <Text>|</Text>
+          <Link
+            href="https://github.com/timlinux/baboon"
+            isExternal
+            color="gray.500"
+            _hover={{ color: 'gray.400' }}
+          >
+            GitHub
+          </Link>
+        </HStack>
+      </Flex>
     </Flex>
   );
 }

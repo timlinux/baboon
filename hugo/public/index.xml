@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Home on Baboon - Typing Practice</title><link>/docs/</link><description>Recent content in Home on Baboon - Typing Practice</description><generator>Hugo</generator><language>en-gb</language><atom:link href="/docs/index.xml" rel="self" type="application/rss+xml"/><item><title>Architecture</title><link>/docs/development/architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/development/architecture/</guid><description>&lt;p&gt;Baboon follows a clean backend/frontend separation with a well-defined REST API.&lt;/p&gt;
+&lt;h2 id="high-level-architecture"&gt;High-Level Architecture&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;┌─────────────────┐ REST API ┌─────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Frontend (TUI) │ ◄───────────────► │ Backend │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Bubble Tea │ │ Game Engine │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└─────────────────┘ └─────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▲ │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ ┌─────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;┌─────────────────┐ │ Statistics │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Frontend (Web) │ │ ~/.config/ │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ React │ ◄─────────────────│ baboon/ │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└─────────────────┘ └─────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="package-structure"&gt;Package Structure&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;baboon/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── main.go # Entry point
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── backend/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ ├── api.go # GameAPI interface &amp;amp; types
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ ├── engine.go # Game logic implementation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ └── server.go # REST API server
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── frontend/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ ├── model.go # Bubble Tea model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ ├── views.go # Rendering
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ ├── styles.go # Lipgloss styles
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ ├── animations.go # Spring animations
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ └── client.go # REST client
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── web/ # React frontend
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── stats/ # Statistics &amp;amp; persistence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── settings/ # User preferences
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── words/ # Word dictionary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└── font/ # Block letter font
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="the-gameapi-interface"&gt;The GameAPI Interface&lt;/h2&gt;
+&lt;p&gt;All frontend-backend communication goes through a single interface:&lt;/p&gt;</description></item><item><title>Feature Overview</title><link>/docs/features/overview/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/features/overview/</guid><description>&lt;p&gt;Baboon is more than just a typing test - it&amp;rsquo;s a comprehensive typing improvement tool with features designed to help you become a faster, more accurate typist.&lt;/p&gt;
+&lt;h2 id="core-features"&gt;Core Features&lt;/h2&gt;
+&lt;h3 id="beautiful-block-letters"&gt;Beautiful Block Letters&lt;/h3&gt;
+&lt;p&gt;Words are displayed using large Unicode block characters that change colour in real-time as you type:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Green&lt;/strong&gt; for correct keystrokes&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Red&lt;/strong&gt; for mistakes&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Orange&lt;/strong&gt; highlighting the current position&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="real-time-wpm-tracking"&gt;Real-time WPM Tracking&lt;/h3&gt;
+&lt;p&gt;Watch your speed as you type with a live WPM bar that updates continuously, giving you immediate feedback on your pace.&lt;/p&gt;</description></item><item><title>How to Play</title><link>/docs/guide/how-to-play/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/guide/how-to-play/</guid><description>&lt;p&gt;Baboon is designed to be intuitive, but here&amp;rsquo;s a complete guide to playing.&lt;/p&gt;
+&lt;h2 id="the-basics"&gt;The Basics&lt;/h2&gt;
+&lt;h3 id="starting-a-round"&gt;Starting a Round&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;Launch Baboon: &lt;code&gt;baboon&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;A word appears in large block letters&lt;/li&gt;
+&lt;li&gt;The timer starts when you type the first correct letter&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="typing-words"&gt;Typing Words&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Type each letter as you see it&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Letters change colour based on correctness:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Gray&lt;/strong&gt;: Pending (not yet typed)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Orange&lt;/strong&gt;: Current position&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Green&lt;/strong&gt;: Correct&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Red&lt;/strong&gt;: Incorrect&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Press &lt;span class="keyboard-key "&gt;Space&lt;/span&gt;
+ when you&amp;rsquo;ve typed the entire word&lt;/p&gt;</description></item><item><title>Installation</title><link>/docs/getting-started/installation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/getting-started/installation/</guid><description>&lt;p&gt;Get Baboon running on your system in no time! Choose the installation method that works best for you.&lt;/p&gt;
+&lt;div class="callout callout-success"&gt;
+ &lt;strong&gt;Support Baboon Development&lt;/strong&gt; - Baboon is free, but not free to make! If you find it useful, please consider a small donation of &lt;strong&gt;€10 / $10&lt;/strong&gt; to support ongoing development.
+&lt;/div&gt;
+
+&lt;h2 id="pre-built-binaries"&gt;Pre-built Binaries&lt;/h2&gt;
+&lt;p&gt;The easiest way to get started is to download a pre-built binary from our &lt;a href="https://github.com/timlinux/baboon/releases"&gt;GitHub Releases&lt;/a&gt; page.&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Platform&lt;/th&gt;
+ &lt;th&gt;File&lt;/th&gt;
+ &lt;th&gt;Architecture&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Linux&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;baboon-linux-amd64&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;x86_64&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Linux&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;baboon-linux-arm64&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;ARM64&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;macOS&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;baboon-darwin-amd64&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Intel&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;macOS&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;baboon-darwin-arm64&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Apple Silicon&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Windows&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;baboon-windows-amd64.exe&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;x86_64&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="linux-packages"&gt;Linux Packages&lt;/h3&gt;
+&lt;p&gt;For Debian/Ubuntu users:&lt;/p&gt;</description></item><item><title>License</title><link>/docs/about/license/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/about/license/</guid><description>&lt;p&gt;Baboon is released under the MIT License.&lt;/p&gt;
+&lt;h2 id="mit-license"&gt;MIT License&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-zed" data-lang="zed"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;MIT License
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Copyright (c) &lt;span style="color:#960050;background-color:#1e0010"&gt;2024&lt;/span&gt; Tim Sutton &lt;span style="color:#f92672"&gt;/&lt;/span&gt; Kartoza
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Permission is hereby granted, free of charge, to any person obtaining a copy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;of this software and associated documentation files (the &lt;span style="color:#960050;background-color:#1e0010"&gt;&amp;#34;&lt;/span&gt;Software&lt;span style="color:#960050;background-color:#1e0010"&gt;&amp;#34;&lt;/span&gt;), to deal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;in the Software without restriction, including without limitation the rights
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;copies of the Software, and to permit persons to whom the Software is
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;furnished to do so, subject to the following conditions&lt;span style="color:#f92672"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;The above copyright notice and this &lt;span style="color:#66d9ef"&gt;permission&lt;/span&gt; notice shall be included in all
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;copies or substantial portions of the Software.
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;THE SOFTWARE IS PROVIDED &lt;span style="color:#960050;background-color:#1e0010"&gt;&amp;#34;&lt;/span&gt;AS IS&lt;span style="color:#960050;background-color:#1e0010"&gt;&amp;#34;&lt;/span&gt;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SOFTWARE.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="what-this-means"&gt;What This Means&lt;/h2&gt;
+&lt;p&gt;You are free to:&lt;/p&gt;</description></item><item><title>Quick Start</title><link>/docs/getting-started/quick-start/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/getting-started/quick-start/</guid><description>&lt;p&gt;Get typing in under a minute with this quick start guide!&lt;/p&gt;
+&lt;h2 id="terminal-mode"&gt;Terminal Mode&lt;/h2&gt;
+&lt;p&gt;The simplest way to start:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;baboon
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That&amp;rsquo;s it! You&amp;rsquo;ll see a word displayed in large block letters. Start typing!&lt;/p&gt;
+&lt;h3 id="what-youll-see"&gt;What You&amp;rsquo;ll See&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;The Word&lt;/strong&gt; - Displayed in large block letters in the center&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Progress&lt;/strong&gt; - Shows &amp;ldquo;Word X/30&amp;rdquo; in the header&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;WPM Bar&lt;/strong&gt; - Live words-per-minute displayed at the bottom&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="how-to-play"&gt;How to Play&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;Type the letters you see&lt;/li&gt;
+&lt;li&gt;Letters turn &lt;strong&gt;green&lt;/strong&gt; when correct, &lt;strong&gt;red&lt;/strong&gt; when wrong&lt;/li&gt;
+&lt;li&gt;Press &lt;span class="keyboard-key "&gt;Space&lt;/span&gt;
+ when you&amp;rsquo;ve typed the whole word&lt;/li&gt;
+&lt;li&gt;Complete 30 words to finish the round&lt;/li&gt;
+&lt;li&gt;View your statistics on the results screen&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="keyboard-shortcuts"&gt;Keyboard Shortcuts&lt;/h3&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Key&lt;/th&gt;
+ &lt;th&gt;Action&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;span class="keyboard-key "&gt;Space&lt;/span&gt;
+&lt;/td&gt;
+ &lt;td&gt;Advance to next word&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;span class="keyboard-key "&gt;Backspace&lt;/span&gt;
+&lt;/td&gt;
+ &lt;td&gt;Delete last character&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;span class="keyboard-key "&gt;Ctrl+W&lt;/span&gt;
+&lt;/td&gt;
+ &lt;td&gt;Clear entire word&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;span class="keyboard-key "&gt;Tab&lt;/span&gt;
+&lt;/td&gt;
+ &lt;td&gt;Restart round&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;span class="keyboard-key "&gt;Ctrl+O&lt;/span&gt;
+&lt;/td&gt;
+ &lt;td&gt;Open options&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;span class="keyboard-key "&gt;Esc&lt;/span&gt;
+&lt;/td&gt;
+ &lt;td&gt;Exit&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="web-mode"&gt;Web Mode&lt;/h2&gt;
+&lt;p&gt;For a beautiful browser-based experience:&lt;/p&gt;</description></item><item><title>Your First Session</title><link>/docs/getting-started/first-session/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/getting-started/first-session/</guid><description>&lt;p&gt;Let&amp;rsquo;s walk through your first complete typing session with Baboon.&lt;/p&gt;
+&lt;h2 id="starting-the-app"&gt;Starting the App&lt;/h2&gt;
+&lt;p&gt;Launch Baboon from your terminal:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;baboon
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You&amp;rsquo;ll see the typing screen with a word displayed in large block letters.&lt;/p&gt;
+&lt;h2 id="the-typing-phase"&gt;The Typing Phase&lt;/h2&gt;
+&lt;h3 id="understanding-the-display"&gt;Understanding the Display&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Header&lt;/strong&gt;: Shows &amp;ldquo;BABOON - Typing Practice&amp;rdquo; and word progress (e.g., &amp;ldquo;Word 1/30&amp;rdquo;)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Main Area&lt;/strong&gt;: The current word in large block letters&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Footer&lt;/strong&gt;: WPM bar and keyboard hints&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="typing-your-first-word"&gt;Typing Your First Word&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;Look at the word displayed&lt;/li&gt;
+&lt;li&gt;Type each letter - watch them turn green as you go&lt;/li&gt;
+&lt;li&gt;If you make a mistake, the letter turns red&lt;/li&gt;
+&lt;li&gt;Use &lt;span class="keyboard-key "&gt;Backspace&lt;/span&gt;
+ to correct errors&lt;/li&gt;
+&lt;li&gt;When done, press &lt;span class="keyboard-key "&gt;Space&lt;/span&gt;
+ to advance&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="visual-feedback"&gt;Visual Feedback&lt;/h3&gt;
+&lt;p&gt;Letters change colour as you type:&lt;/p&gt;</description></item></channel></rss>

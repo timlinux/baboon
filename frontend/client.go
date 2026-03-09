@@ -191,6 +191,30 @@ func (c *Client) ProcessBackspace() bool {
 	return result.Removed
 }
 
+// ClearInput clears all typed characters for the current word.
+func (c *Client) ClearInput() bool {
+	if c.sessionID == "" {
+		return false
+	}
+
+	req, _ := http.NewRequest("POST", c.sessionURL()+"/clearinput", nil)
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Removed bool `json:"removed"`
+	}
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	// Invalidate cache
+	c.cachedState = nil
+
+	return result.Removed
+}
+
 // ProcessSpace sends a space to the server (legacy, no timing).
 func (c *Client) ProcessSpace() backend.SpaceResult {
 	return c.ProcessSpaceWithTiming(0)

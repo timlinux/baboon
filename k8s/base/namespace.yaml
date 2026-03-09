@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: baboon
+  labels:
+    app.kubernetes.io/name: baboon
+    app.kubernetes.io/part-of: baboon
