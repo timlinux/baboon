@@ -1,19 +1,19 @@
 // Baboon - Terminal-based typing practice application
 //
-// This is the entry point that starts the REST API server (backend)
-// and connects the terminal UI (frontend) to it via HTTP.
+// This is the entry point for the typing practice application.
 //
 // Architecture:
-//   - Backend: REST API server handling game logic and statistics
-//   - Frontend: Bubble Tea TUI communicating via REST client
+//   - TUI mode (default): Embedded engine with Bubble Tea frontend (single binary)
+//   - Server mode: REST API server for web frontend or remote clients
+//   - Client mode: TUI connecting to a remote server
 //
 // Usage:
 //
-//	baboon              # Normal mode (starts backend + frontend)
+//	baboon              # TUI mode with embedded engine (default)
 //	baboon -p           # Punctuation mode (words separated by punctuation)
-//	baboon -port 8080   # Use custom port for REST API
-//	baboon -server      # Run backend server only (blocking)
-//	baboon -client      # Run frontend only (connect to existing backend)
+//	baboon -server      # Run REST API server only (for web frontend)
+//	baboon -client      # Run TUI connecting to existing server
+//	baboon -port 8080   # Use custom port (for -server or -client modes)
 package main
 
 import (
@@ -32,6 +32,27 @@ import (
 	"github.com/timlinux/baboon/frontend"
 )
 
+// runEmbedded runs the TUI with the engine embedded directly (default mode).
+// This is a single-binary mode with no client-server architecture.
+func runEmbedded(punctuationMode bool) {
+	config := backend.DefaultConfig()
+	config.PunctuationMode = punctuationMode
+
+	engine, err := backend.NewEngine(config)
+	if err != nil {
+		fmt.Printf("Error creating engine: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Create and run TUI with embedded engine
+	model := frontend.NewModel(engine)
+	p := tea.NewProgram(model, tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Error running program: %v\n", err)
+		os.Exit(1)
+	}
+}
+
 func main() {
 	// Check for subcommands first
 	if len(os.Args) > 1 && os.Args[1] == "web" {
@@ -42,8 +63,8 @@ func main() {
 	// Parse command line flags
 	punctuationMode := flag.Bool("p", false, "Enable punctuation mode (words separated by punctuation + space)")
 	port := flag.Int("port", 8787, "Port for the REST API server")
-	serverOnly := flag.Bool("server", false, "Run backend server only (no TUI)")
-	clientOnly := flag.Bool("client", false, "Run frontend only (connect to existing backend)")
+	serverOnly := flag.Bool("server", false, "Run REST API server only (for web frontend)")
+	clientOnly := flag.Bool("client", false, "Run TUI connecting to existing server")
 	flag.Parse()
 
 	addr := fmt.Sprintf("127.0.0.1:%d", *port)
@@ -55,7 +76,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Server-only mode: run backend and block
+	// Server-only mode: run REST API server and block
 	if *serverOnly {
 		runServerOnly(addr, *punctuationMode)
 		return
@@ -67,8 +88,8 @@ func main() {
 		return
 	}
 
-	// Default mode: start backend and frontend together
-	runCombined(addr, baseURL, *punctuationMode)
+	// Default mode: TUI with embedded engine (no server)
+	runEmbedded(*punctuationMode)
 }
 
 // runServerOnly starts the backend server and blocks until interrupted.
@@ -119,44 +140,6 @@ func runClientOnly(baseURL string, punctuationMode bool) {
 	if err := client.WaitForServer(5 * time.Second); err != nil {
 		fmt.Printf("Error: Could not connect to backend: %v\n", err)
 		fmt.Println("Make sure the backend is running with: baboon -server")
-		os.Exit(1)
-	}
-
-	// Create a session on the server
-	if err := client.CreateSession(); err != nil {
-		fmt.Printf("Error creating session: %v\n", err)
-		os.Exit(1)
-	}
-	defer client.DeleteSession()
-
-	// Create and run TUI
-	model := frontend.NewModel(client)
-	p := tea.NewProgram(model, tea.WithAltScreen())
-	if _, err := p.Run(); err != nil {
-		fmt.Printf("Error running program: %v\n", err)
-		os.Exit(1)
-	}
-}
-
-// runCombined starts both backend and frontend together (default mode).
-func runCombined(addr, baseURL string, punctuationMode bool) {
-	config := backend.DefaultConfig()
-	config.PunctuationMode = punctuationMode
-
-	server, err := backend.NewServer(config, addr)
-	if err != nil {
-		fmt.Printf("Error creating server: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Start server in background
-	server.StartAsync()
-
-	client := frontend.NewClient(baseURL, punctuationMode)
-
-	// Wait for server to be ready
-	if err := client.WaitForServer(2 * time.Second); err != nil {
-		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 

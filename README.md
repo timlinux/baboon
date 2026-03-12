@@ -177,27 +177,28 @@ go build -o baboon .
 
 ## Usage
 
-### Console Mode (Default)
+### Terminal Mode (Default)
 
 ```bash
-# Start with integrated backend
+# Start with embedded engine (single binary, no server)
 ./baboon
 
 # With punctuation practice
 ./baboon -p
-
-# Custom port
-./baboon -port 9000
 ```
 
-### Server/Client Mode
+### Server/Client Mode (for web frontend or remote access)
 
 ```bash
-# Start backend server only
+# Start REST API server only (required for web frontend)
 ./baboon -server
 
-# Connect client to running server
+# Connect TUI client to running server
 ./baboon -client
+
+# Custom port for server/client
+./baboon -server -port 9000
+./baboon -client -port 9000
 ```
 
 ### Web Interface
@@ -293,7 +294,7 @@ baboon/
 
 ## Technology
 
-- **Backend**: Go with REST API architecture
+- **Game Engine**: Go with embedded engine (TUI) or REST API (web/remote)
 - **TUI**: [Bubble Tea](https://github.com/charmbracelet/bubbletea) + [Lipgloss](https://github.com/charmbracelet/lipgloss)
 - **Web**: React 18 + [Chakra UI](https://chakra-ui.com/) + [Framer Motion](https://www.framer.com/motion/)
 - **Animations**: [Harmonica](https://github.com/charmbracelet/harmonica) spring physics

@@ -4,11 +4,11 @@
 
 Baboon is a cross-platform typing practice application built with Go. It helps users improve their typing speed and accuracy by presenting common English words in large block letter format. The application features two frontends:
 
-1. **Terminal UI (TUI)**: Built with Bubble Tea and Lipgloss, displaying words using Unicode block characters (█) that change colour in real-time as the user types.
+1. **Terminal UI (TUI)**: Built with Bubble Tea and Lipgloss, displaying words using Unicode block characters (█) that change colour in real-time as the user types. The TUI runs as a **single embedded binary** with no client-server architecture required.
 
-2. **Web UI**: Built with React and Chakra UI, featuring physics-based animations with Framer Motion, large chunky block letters, and a beautiful dark theme.
+2. **Web UI**: Built with React and Chakra UI, featuring physics-based animations with Framer Motion, large chunky block letters, and a beautiful dark theme. The web frontend communicates with the Go backend via REST API.
 
-Both frontends communicate with the same Go backend via REST API, ensuring 100% feature parity.
+The TUI uses an embedded game engine directly, while the web frontend uses the REST API for multi-client support.
 
 ## User Stories
 
@@ -543,6 +543,13 @@ The web frontend is a React application that provides the same functionality as 
 - UI elements have hover/tap scaling effects
 
 ### Data Flow
+
+**Embedded TUI Mode (default):**
+1. User input → Frontend Model → Game Engine (direct function calls)
+2. Game state changes → Frontend queries engine → Render updated view
+3. Statistics persist through Engine → Stats package → JSON file
+
+**Web/Client Mode:**
 1. User input → Frontend Model → REST Client → HTTP → REST Server → Game Engine
 2. Game state changes → REST Client queries API → HTTP Response → Render updated view
 3. Statistics persist through REST Server → Stats package → JSON file
@@ -733,22 +740,21 @@ baboon/
 
 ## Running Modes
 
-The application supports three running modes:
+The application supports multiple running modes:
 
-### Combined Mode (Default)
+### Embedded Mode (Default)
 ```bash
-baboon              # Start backend + frontend together
+baboon              # TUI with embedded engine (single binary, no server)
 baboon -p           # With punctuation mode
-baboon -port 9000   # On custom port
 ```
-Both backend and frontend run in the same process. When you exit, everything stops.
+The TUI runs with the game engine embedded directly - no client-server architecture, no HTTP overhead. This is the simplest and most performant way to use Baboon. Stats persist to `~/.config/baboon/`.
 
 ### Server-Only Mode
 ```bash
-baboon -server              # Run backend only (blocking)
+baboon -server              # Run REST API server only (blocking)
 baboon -server -port 9000   # On custom port
 ```
-Runs the REST API server in the foreground. Useful for running as a service or allowing multiple frontend connections. Writes PID to `$XDG_RUNTIME_DIR/baboon.pid`.
+Runs the REST API server in the foreground. Required for the web frontend or for remote TUI clients. Writes PID to `$XDG_RUNTIME_DIR/baboon.pid`.
 
 ### Client-Only Mode
 ```bash
@@ -756,7 +762,7 @@ baboon -client              # Connect to existing backend
 baboon -client -p           # With punctuation mode
 baboon -client -port 9000   # Connect to custom port
 ```
-Connects to an already-running backend server. Multiple clients can connect simultaneously, each with their own session.
+Runs the TUI connecting to an already-running backend server via REST API. Useful when you want multiple clients to share a single backend, or when connecting remotely.
 
 ### Web Frontend Mode
 ```bash
@@ -931,6 +937,15 @@ The web frontend uses Kartoza's brand colour scheme derived from their wallpaper
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.4.0
+- TUI now uses embedded engine by default (no client-server architecture)
+  - Running `baboon` directly embeds the game engine in the TUI binary
+  - No HTTP server startup, no REST API overhead for TUI usage
+  - Simpler, faster, single-binary experience
+- Server mode (`-server`) still available for web frontend
+- Client mode (`-client`) still available for connecting to remote servers
+- Architecture documentation updated to reflect embedded mode
 
 ### v1.3.1
 - Improved statistics colour display with relative scaling
