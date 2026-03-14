@@ -61,10 +61,9 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 ### FR-002: Block Letter Font
 - Each letter SHALL be 6 lines tall
 - Letters SHALL be constructed using Unicode block elements for smooth edges:
-  - █ (full block) for solid areas
-  - ▀ (upper half block) for rounded tops
-  - ▄ (lower half block) for rounded bottoms
-- The font SHALL support lowercase letters a-z and punctuation: , . ; : ! ?
+  - █ (full block) for solid letter bodies
+  - ◢ ◣ ◤ ◥ (filled triangles) for smooth rounded corners at curved edges
+- The font SHALL support lowercase letters a-z, numbers 0-9, and punctuation: , . ; : ! ? - ' "
 - Unknown characters SHALL render as spaces
 - Letters SHALL have 1 character spacing between them
 
@@ -1103,6 +1102,19 @@ The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the pr
   - `GET /api/health` - Health check
 - Configurable port via `-port` flag (default: 8787)
 - Thread-safe server with mutex protection
+
+### v1.5.0
+- Asciinema demo recording integration for terminal screencasts
+  - `nix run .#demo-record` - Record terminal demo with asciinema
+  - `nix run .#demo-play` - Play recorded demo locally
+  - Automatic GIF conversion for README and documentation embedding
+  - Demo GIF displayed prominently on README and documentation landing pages
+  - Makefile targets: `make demo-record`, `make demo-play`
+  - Neovim shortcuts: `<leader>par` (record), `<leader>pap` (play)
+- Improved block letter font with smooth triangle corners
+  - Uses filled triangles (◢ ◣ ◤ ◥) for smooth rounded corners
+  - Added support for numbers 0-9 and additional punctuation (- ' ")
+  - Eliminates blocky jagged appearance at letter edges
 
 ### v0.4.0
 - Major architecture refactoring: clean backend/frontend separation

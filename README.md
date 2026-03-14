@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="screenshots/web1.png" alt="Baboon Welcome Screen" width="600">
+  <img src="demo/baboon-demo.gif" alt="Baboon Demo" width="700">
 </p>
 
 <h1 align="center">Baboon</h1>

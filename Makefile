@@ -1,4 +1,4 @@
-.PHONY: all build clean test run server client install help web-install web-dev web-build web-start docs docs-dev docs-build docs-clean docs-open docs-new web-bundle web-serve
+.PHONY: all build clean test run server client install help web-install web-dev web-build web-start docs docs-dev docs-build docs-clean docs-open docs-new web-bundle web-serve demo-record demo-play
 
 # Default target
 all: build
@@ -120,6 +120,13 @@ web-bundle: web-build docs-build
 web-serve: web-bundle build
 	./baboon web -port 8787 -dir web/build
 
+# Demo recording (asciinema)
+demo-record:
+	nix run .#demo-record
+
+demo-play:
+	nix run .#demo-play
+
 # Help
 help:
 	@echo "Baboon - Terminal typing practice"
@@ -164,3 +171,7 @@ help:
 	@echo "  make docs-clean  - Remove built documentation"
 	@echo "  make docs-open   - Open docs in browser"
 	@echo "  make docs-new    - Create new documentation page"
+	@echo ""
+	@echo "Demo Recording (asciinema):"
+	@echo "  make demo-record - Record a terminal demo"
+	@echo "  make demo-play   - Play the recorded demo"

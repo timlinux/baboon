@@ -51,6 +51,13 @@ if exists(':WhichKey')
         r = { "<cmd>!nix run<cr>", "Nix run" },
         d = { "<cmd>!nix run .#docs-serve<cr>", "Nix docs serve" },
       },
+
+      -- Demo Recording
+      a = {
+        name = "Asciinema Demo",
+        r = { "<cmd>terminal nix run .#demo-record<cr>", "Record demo" },
+        p = { "<cmd>terminal nix run .#demo-play<cr>", "Play demo" },
+      },
     },
   }, { prefix = "<leader>" })
 EOF
@@ -89,4 +96,8 @@ else
   nnoremap <leader>pnb :!nix build<CR>
   nnoremap <leader>pnr :!nix run<CR>
   nnoremap <leader>pnd :!nix run .#docs-serve<CR>
+
+  " Demo Recording
+  nnoremap <leader>par :terminal nix run .#demo-record<CR>
+  nnoremap <leader>pap :terminal nix run .#demo-play<CR>
 endif

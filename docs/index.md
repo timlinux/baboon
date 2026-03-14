@@ -78,6 +78,12 @@ Or download a binary from the [releases page](https://github.com/timlinux/baboon
 
 ## See It In Action
 
+<div class="demo-container">
+  <img src="../demo/baboon-demo.gif" alt="Baboon Demo" class="demo-gif" style="max-width: 100%; border-radius: 8px;">
+</div>
+
+*Note: The screen recording doesn't fully capture the smooth animations - it's even better in your terminal!*
+
 <div class="screenshot-gallery">
   <figure class="screenshot-item">
     <img src="screenshots/console1.png" alt="Terminal typing screen">
