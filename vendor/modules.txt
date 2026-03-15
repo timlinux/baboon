@@ -51,6 +51,9 @@ github.com/muesli/termenv
 # github.com/rivo/uniseg v0.4.7
 ## explicit; go 1.18
 github.com/rivo/uniseg
+# github.com/timlinux/blockfont v0.0.0-20260314213237-2f6245cb16fd
+## explicit; go 1.22
+github.com/timlinux/blockfont
 # github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e
 ## explicit; go 1.19
 github.com/xo/terminfo

@@ -6,9 +6,9 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/timlinux/baboon/backend"
-	"github.com/timlinux/baboon/font"
 	"github.com/timlinux/baboon/settings"
 	"github.com/timlinux/baboon/stats"
+	"github.com/timlinux/blockfont"
 )
 
 // Renderer handles all view rendering for the application
@@ -45,12 +45,12 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	}
 
 	// Render current word using custom block font
-	letterLines := font.RenderWord(currentWord)
+	letterLines := blockfont.RenderWord(currentWord)
 
 	// Build colored output for each line
-	coloredLines := make([]string, font.LetterHeight)
+	coloredLines := make([]string, blockfont.LetterHeight)
 
-	for lineIdx := 0; lineIdx < font.LetterHeight; lineIdx++ {
+	for lineIdx := 0; lineIdx < blockfont.LetterHeight; lineIdx++ {
 		var lineBuilder strings.Builder
 
 		for charIdx, letterLine := range letterLines[lineIdx] {

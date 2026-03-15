@@ -88,16 +88,6 @@ REST API client implementing the `GameAPI` interface.
 - Session creation and cleanup
 - Request/response serialization
 
-### `font/` - Block Letter Rendering
-
-#### `font.go`
-Custom block font using Unicode characters.
-
-**Features:**
-- 6-line tall letters using `█`, `▀`, `▄` characters
-- Supports a-z lowercase and punctuation (, . ; : ! ?)
-- `RenderWord()` function for multi-letter rendering
-
 ### `words/` - Dictionary
 
 #### `words.go`
@@ -257,6 +247,7 @@ Critical for Baboon as sessions are in-memory:
 - `github.com/charmbracelet/bubbletea` - Terminal UI framework
 - `github.com/charmbracelet/lipgloss` - TUI styling
 - `github.com/charmbracelet/harmonica` - Spring physics animations
+- `github.com/timlinux/blockfont` - Unicode block letter rendering (custom fonts, animations, theming)
 
 ### Web Dependencies
 - `react` (18.x) - UI framework
@@ -273,7 +264,7 @@ main.go
 │   └── server.go → engine.go
 └── frontend/
     ├── model.go → backend/api, settings/
-    ├── views.go → backend/, stats/, settings/, font/
+    ├── views.go → backend/, stats/, settings/, blockfont (external)
     ├── styles.go
     ├── animations.go
     └── client.go → backend/api
@@ -284,9 +275,6 @@ stats/
 
 settings/
 └── settings.go
-
-font/
-└── font.go
 
 words/
 └── words.go

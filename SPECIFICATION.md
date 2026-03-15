@@ -384,7 +384,7 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 ### TR-002: Terminal Interface
 - The application SHALL use the Bubble Tea framework (github.com/charmbracelet/bubbletea)
 - The application SHALL use lipgloss for styling (github.com/charmbracelet/lipgloss)
-- The application SHALL use custom block font rendering (no external font libraries)
+- The application SHALL use github.com/timlinux/blockfont for block letter rendering
 - The application SHALL use tea.WithAltScreen() for fullscreen mode
 - The application SHALL handle tea.WindowSizeMsg for responsive centering
 
@@ -701,8 +701,6 @@ baboon/
 │   ├── styles.go       # Lipgloss styles
 │   ├── animations.go   # Spring animation logic
 │   └── client.go       # REST API client (implements GameAPI)
-├── font/
-│   └── font.go         # Block letter font definitions (a-z + punctuation)
 ├── words/
 │   └── words.go        # Dictionary of common words (British English)
 ├── stats/
@@ -714,7 +712,8 @@ baboon/
 │   ├── start-backend.sh   # Start backend server in background
 │   ├── stop-backend.sh    # Stop backend server
 │   ├── status-backend.sh  # Check backend status and health
-│   └── launch-frontend.sh # Launch frontend client
+│   ├── launch-frontend.sh # Launch frontend client
+│   └── release.sh         # Interactive version bump and release
 ├── web/                   # React web frontend
 │   ├── package.json       # NPM dependencies
 │   ├── package-lock.json  # NPM lockfile
@@ -818,6 +817,73 @@ Launches a frontend client connected to the backend.
 ./scripts/launch-frontend.sh -port 9000  # Connect to custom port
 ```
 Checks that backend is running before launching.
+
+## Release Management
+
+### Version Bump and Release
+
+The project provides an interactive release tool accessible via multiple methods:
+
+```bash
+# Via nix run (recommended)
+nix run .#release
+
+# Via make
+make release
+
+# Via direct script
+./scripts/release.sh
+
+# Check current version
+make version
+```
+
+### Release Process
+
+The release tool (`scripts/release.sh`) performs the following:
+
+1. **Shows current state**:
+   - Current version from `flake.nix`
+   - Latest git tag
+   - Uncommitted changes count
+
+2. **Prompts for new version** with suggested options:
+   - Patch bump (e.g., 1.4.0 → 1.4.1) for bugfixes
+   - Minor bump (e.g., 1.4.0 → 1.5.0) for new features
+   - Major bump (e.g., 1.4.0 → 2.0.0) for breaking changes
+   - Custom version input
+
+3. **Updates version**:
+   - Modifies `version` in `flake.nix` (baboon package)
+   - Creates commit: "Bump version to X.Y.Z"
+   - Creates git tag: `vX.Y.Z`
+
+4. **Optionally pushes** (with user confirmation):
+   - Push to `origin main`
+   - Push tag to trigger release workflow
+
+### Automated Release Workflow
+
+Pushing a tag matching `v*` triggers `.github/workflows/release.yml` which:
+
+- Builds binaries for Linux (amd64/arm64), macOS (amd64/arm64), Windows (amd64)
+- Creates DEB packages for Debian/Ubuntu
+- Creates RPM packages for Fedora/RHEL
+- Creates Flatpak bundles
+- Publishes GitHub release with all artifacts attached
+
+### Version Location
+
+The authoritative version is stored in `flake.nix` at the `buildGoModule` block:
+```nix
+packages = {
+  default = pkgs.buildGoModule {
+    pname = "baboon";
+    version = "1.4.0";  # <-- Version defined here
+    ...
+  };
+};
+```
 
 ## Stats File Format
 
