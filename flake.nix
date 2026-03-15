@@ -139,7 +139,7 @@
             pname = "baboon";
             version = "1.4.0";
             src = ./.;
-            vendorHash = null;
+            vendorHash = "sha256-VmiecwzV29OOe668GYD8GGL8IKvnDwngz/N2EIDsVfY=";
 
             meta = with pkgs.lib; {
               description = "A terminal typing practice app with ASCII art";
