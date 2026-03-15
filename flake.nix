@@ -121,6 +121,17 @@
           ${pkgs.asciinema}/bin/asciinema play "$CAST_FILE"
         '';
 
+        # Script to manage releases
+        release = pkgs.writeShellScriptBin "baboon-release" ''
+          #!/usr/bin/env bash
+          PROJECT_DIR="$(pwd)"
+          if [ ! -f "$PROJECT_DIR/scripts/release.sh" ]; then
+            echo "❌ Please run this command from the baboon project root directory."
+            exit 1
+          fi
+          exec "$PROJECT_DIR/scripts/release.sh"
+        '';
+
       in
       {
         packages = {
@@ -146,6 +157,7 @@
           docs-open = docs-open;
           demo-record = demo-record;
           demo-play = demo-play;
+          release = release;
         };
 
         # Apps for `nix run`
@@ -184,6 +196,12 @@
             type = "app";
             program = "${demo-play}/bin/baboon-demo-play";
           };
+
+          # nix run .#release - Version bump and release
+          release = {
+            type = "app";
+            program = "${release}/bin/baboon-release";
+          };
         };
 
         devShells.default = pkgs.mkShell {
@@ -193,7 +211,7 @@
             gotools
             go-tools
             hugo
-            nodejs_20
+            nodejs_22
             asciinema
             asciinema-agg
           ];
@@ -212,6 +230,7 @@
             echo "  nix run .#docs-build  - Build documentation"
             echo "  nix run .#demo-record - Record demo with asciinema"
             echo "  nix run .#demo-play   - Play recorded demo"
+            echo "  nix run .#release     - Version bump and release"
             echo ""
           '';
         };

@@ -31,3 +31,4 @@ PROMPT.log
 # Web frontend
 web/node_modules/
 web/build/
+pkg/

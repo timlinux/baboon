@@ -1,4 +1,4 @@
-.PHONY: all build clean test run server client install help web-install web-dev web-build web-start docs docs-dev docs-build docs-clean docs-open docs-new web-bundle web-serve demo-record demo-play
+.PHONY: all build clean test run server client install help web-install web-dev web-build web-start docs docs-dev docs-build docs-clean docs-open docs-new web-bundle web-serve demo-record demo-play release version
 
 # Default target
 all: build
@@ -127,6 +127,14 @@ demo-record:
 demo-play:
 	nix run .#demo-play
 
+# Release management
+release:
+	nix run .#release
+
+version:
+	@grep -A1 'pname = "baboon";' flake.nix | grep 'version' | sed 's/.*version = "\([^"]*\)".*/Current version: \1/'
+	@echo -n "Latest git tag:  " && (git describe --tags --abbrev=0 2>/dev/null || echo "none")
+
 # Help
 help:
 	@echo "Baboon - Terminal typing practice"
@@ -175,3 +183,7 @@ help:
 	@echo "Demo Recording (asciinema):"
 	@echo "  make demo-record - Record a terminal demo"
 	@echo "  make demo-play   - Play the recorded demo"
+	@echo ""
+	@echo "Release Management:"
+	@echo "  make version     - Show current version and latest tag"
+	@echo "  make release     - Interactive version bump and release"

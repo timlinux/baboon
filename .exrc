@@ -58,6 +58,13 @@ if exists(':WhichKey')
         r = { "<cmd>terminal nix run .#demo-record<cr>", "Record demo" },
         p = { "<cmd>terminal nix run .#demo-play<cr>", "Play demo" },
       },
+
+      -- Release Management
+      e = {
+        name = "Release",
+        r = { "<cmd>terminal nix run .#release<cr>", "Release (bump & tag)" },
+        v = { "<cmd>!make version<cr>", "Show version" },
+      },
     },
   }, { prefix = "<leader>" })
 EOF
@@ -100,4 +107,8 @@ else
   " Demo Recording
   nnoremap <leader>par :terminal nix run .#demo-record<CR>
   nnoremap <leader>pap :terminal nix run .#demo-play<CR>
+
+  " Release Management
+  nnoremap <leader>per :terminal nix run .#release<CR>
+  nnoremap <leader>pev :!make version<CR>
 endif
