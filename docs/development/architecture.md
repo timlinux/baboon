@@ -218,7 +218,7 @@ Located in `words/`, contains the word dictionary.
 
 ~1000 common British English words:
 
-- Lowercase only
+- Stored in lowercase (converted to uppercase for display)
 - Varying lengths (3-10+ characters)
 - No proper nouns
 

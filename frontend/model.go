@@ -13,6 +13,7 @@ type GameState int
 
 const (
 	StateTyping GameState = iota
+	StateCelebration
 	StateResults
 	StateOptions
 )
@@ -22,6 +23,9 @@ type tickMsg time.Time
 
 // animTickMsg is sent to update animations
 type animTickMsg time.Time
+
+// celebrationTickMsg is sent to update celebration animations
+type celebrationTickMsg time.Time
 
 // Model is the Bubble Tea model for the typing game
 type Model struct {
@@ -49,6 +53,9 @@ type Model struct {
 	settings          *settings.Settings
 	optionsCursor     int  // Current selection in options menu
 	optionsFromTyping bool // Whether options was opened from typing screen
+
+	// Celebration state
+	celebrationState *CelebrationState
 }
 
 // NewModel creates a new Model with the given backend API
@@ -101,10 +108,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case celebrationTickMsg:
+		return m.updateCelebration()
+
 	case tea.KeyMsg:
 		switch m.state {
 		case StateTyping:
 			return m.handleTypingInput(msg)
+		case StateCelebration:
+			return m.handleCelebrationInput(msg)
 		case StateResults:
 			return m.handleResultsInput(msg)
 		case StateOptions:
@@ -141,6 +153,9 @@ func (m Model) View() string {
 		gameState.TimerStarted = m.timerStarted
 
 		return m.renderer.RenderTypingScreenAnimated(gameState, m.carouselAnimator, m.settings)
+
+	case StateCelebration:
+		return m.renderer.RenderCelebrationScreen(m.celebrationState)
 
 	case StateResults:
 		return m.renderer.RenderResultsScreen(
@@ -200,19 +215,20 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 		result := m.api.ProcessSpaceWithTiming(seekTimeMs)
 		if result.RoundComplete {
-			// Send final timing to backend
+			// Capture historical bests BEFORE updating stats
+			historical := m.api.GetHistoricalStats()
+			oldBestWPM := historical.BestWPM
+			oldBestAccuracy := historical.BestAccuracy
+			oldBestTime := historical.BestTime
+
+			// Send final timing to backend (this updates historical stats)
 			var durationMs int64
 			if m.timerStarted {
 				durationMs = now.Sub(m.startTime).Milliseconds()
 			}
 			m.api.SubmitTiming(m.startTime, now, durationMs)
 			m.api.SaveStats()
-			m.state = StateResults
-			m.animator = NewAnimator()
-			// Reset timing state
-			m.timerStarted = false
-			m.correctChars = 0
-			return m, animTickCmd()
+			return m.handleRoundComplete(oldBestWPM, oldBestAccuracy, oldBestTime)
 		} else if result.Advanced {
 			// Trigger carousel animation when moving to next word
 			m.carouselAnimator.TriggerTransition()
@@ -264,23 +280,68 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 		// Check if round completed (last correct char of last word)
 		if result.RoundComplete {
-			// Send final timing to backend
+			// Capture historical bests BEFORE updating stats
+			historical := m.api.GetHistoricalStats()
+			oldBestWPM := historical.BestWPM
+			oldBestAccuracy := historical.BestAccuracy
+			oldBestTime := historical.BestTime
+
+			// Send final timing to backend (this updates historical stats)
 			var durationMs int64
 			if m.timerStarted {
 				durationMs = now.Sub(m.startTime).Milliseconds()
 			}
 			m.api.SubmitTiming(m.startTime, now, durationMs)
 			m.api.SaveStats()
-			m.state = StateResults
-			m.animator = NewAnimator()
-			// Reset timing state
-			m.timerStarted = false
-			m.correctChars = 0
-			return m, animTickCmd()
+			return m.handleRoundComplete(oldBestWPM, oldBestAccuracy, oldBestTime)
 		}
 	}
 
 	return m, nil
+}
+
+// handleRoundComplete processes the end of a typing round, checking for personal bests
+// oldBest* parameters contain the historical values BEFORE the session was recorded
+func (m Model) handleRoundComplete(oldBestWPM, oldBestAccuracy, oldBestTime float64) (tea.Model, tea.Cmd) {
+	session := m.api.GetSessionStats()
+
+	// Check for new bests against the OLD historical values (before this session updated them)
+	var bestTypes BestType
+
+	// Check WPM: session WPM > old best WPM
+	if session.WPM > oldBestWPM {
+		bestTypes |= BestWPM
+	}
+
+	// Check Accuracy: session accuracy > old best accuracy
+	if session.Accuracy > oldBestAccuracy {
+		bestTypes |= BestAccuracy
+	}
+
+	// Check Time: session time < old best time (lower is better)
+	// Also triggers if no best time recorded yet (oldBestTime == 0)
+	if oldBestTime == 0 || session.Duration.Seconds() < oldBestTime {
+		bestTypes |= BestTime
+	}
+
+	// Reset timing state
+	m.timerStarted = false
+	m.correctChars = 0
+
+	if bestTypes != 0 {
+		// New best! Start celebration
+		m.celebrationState = NewCelebrationState(
+			m.width, m.height, bestTypes,
+			session.WPM, session.Accuracy, session.Duration.Seconds(),
+		)
+		m.state = StateCelebration
+		return m, celebrationTickCmd()
+	}
+
+	// No new best, go directly to results
+	m.state = StateResults
+	m.animator = NewAnimator()
+	return m, animTickCmd()
 }
 
 // handleResultsInput processes keyboard input on results screen
@@ -393,6 +454,41 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// updateCelebration handles celebration animation updates
+func (m Model) updateCelebration() (tea.Model, tea.Cmd) {
+	if m.celebrationState == nil {
+		m.state = StateResults
+		m.animator = NewAnimator()
+		return m, animTickCmd()
+	}
+
+	dt := time.Since(m.celebrationState.LastUpdate).Seconds()
+	m.celebrationState.Update(dt)
+
+	if m.celebrationState.IsComplete() {
+		m.state = StateResults
+		m.celebrationState = nil
+		m.animator = NewAnimator()
+		return m, animTickCmd()
+	}
+
+	return m, celebrationTickCmd()
+}
+
+// handleCelebrationInput processes keyboard input during celebration
+func (m Model) handleCelebrationInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.Type {
+	case tea.KeyCtrlC:
+		return m, tea.Quit
+	default:
+		// Any other key skips to results
+		m.state = StateResults
+		m.celebrationState = nil
+		m.animator = NewAnimator()
+		return m, animTickCmd()
+	}
+}
+
 // tickCmd returns a command that sends tick messages
 // Using 500ms interval since WPM is displayed as integer (no need for faster updates)
 func tickCmd() tea.Cmd {
@@ -405,5 +501,12 @@ func tickCmd() tea.Cmd {
 func animTickCmd() tea.Cmd {
 	return tea.Tick(GetAnimationInterval(), func(t time.Time) tea.Msg {
 		return animTickMsg(t)
+	})
+}
+
+// celebrationTickCmd returns a command that sends celebration tick messages
+func celebrationTickCmd() tea.Cmd {
+	return tea.Tick(CelebrationTickInterval, func(t time.Time) tea.Msg {
+		return celebrationTickMsg(t)
 	})
 }

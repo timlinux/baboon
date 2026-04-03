@@ -44,8 +44,9 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 		return "Loading..."
 	}
 
-	// Render current word using custom block font
-	letterLines := blockfont.RenderWord(currentWord)
+	// Render current word using custom block font (always uppercase for display)
+	displayWord := strings.ToUpper(currentWord)
+	letterLines := blockfont.RenderWord(displayWord)
 
 	// Build colored output for each line
 	coloredLines := make([]string, blockfont.LetterHeight)
@@ -242,10 +243,7 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
 
 	// Calculate top padding to center main content in available space
-	topPadding := (availableHeight - contentHeight) / 2
-	if topPadding < 0 {
-		topPadding = 0
-	}
+	topPadding := max((availableHeight-contentHeight)/2, 0)
 
 	// Build full screen layout
 	var fullContent strings.Builder
@@ -306,7 +304,7 @@ func (r *Renderer) renderWPMBar(wpm float64) string {
 
 	// Build the empty portion
 	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourEmptyBar))
-	for i := 0; i < emptyWidth; i++ {
+	for range emptyWidth {
 		bar.WriteString(emptyStyle.Render("░"))
 	}
 
@@ -493,10 +491,7 @@ func (r *Renderer) RenderResultsScreen(
 	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
 
 	// Calculate top padding to center main content in available space
-	topPadding := (availableHeight - contentHeight) / 2
-	if topPadding < 0 {
-		topPadding = 0
-	}
+	topPadding := max((availableHeight-contentHeight)/2, 0)
 
 	// Build full screen layout
 	var fullContent strings.Builder
@@ -567,7 +562,7 @@ func (r *Renderer) renderStatBar(value, maxValue float64, width int, isNewBest b
 	}
 
 	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourEmptyBar))
-	for i := 0; i < emptyWidth; i++ {
+	for range emptyWidth {
 		bar.WriteString(emptyStyle.Render("░"))
 	}
 
@@ -607,7 +602,7 @@ func (r *Renderer) renderTimeBar(value, maxValue float64, width int, isNewBest b
 	}
 
 	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(ColourEmptyBar))
-	for i := 0; i < emptyWidth; i++ {
+	for range emptyWidth {
 		bar.WriteString(emptyStyle.Render("░"))
 	}
 
@@ -1148,10 +1143,7 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
 
 	// Calculate top padding to center main content in available space
-	topPadding := (availableHeight - contentHeight) / 2
-	if topPadding < 0 {
-		topPadding = 0
-	}
+	topPadding := max((availableHeight-contentHeight)/2, 0)
 
 	// Build full screen layout
 	var fullContent strings.Builder

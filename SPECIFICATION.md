@@ -50,7 +50,8 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - Words SHALL be displayed centered horizontally and vertically on the terminal screen
 - The word display SHALL show progress indicator: "Word X/30"
 - Letters SHALL change colour in-place as the user types (no separate input display line)
-- All words SHALL be lowercase only (the font only supports a-z)
+- All words SHALL be displayed in UPPERCASE in the block font for maximum readability
+- User input is case-insensitive; lowercase input matches uppercase display
 - Words SHALL be displayed in a carousel layout:
   - The previous word SHALL be displayed ABOVE the current word in dimmed text
   - The next 3 upcoming words SHALL be displayed BELOW the current word in dimmed text
@@ -63,7 +64,7 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - Letters SHALL be constructed using Unicode block elements for smooth edges:
   - █ (full block) for solid letter bodies
   - ◢ ◣ ◤ ◥ (filled triangles) for smooth rounded corners at curved edges
-- The font SHALL support lowercase letters a-z, numbers 0-9, and punctuation: , . ; : ! ? - ' "
+- The font SHALL support letters A-Z (uppercase), numbers 0-9, and punctuation: , . ; : ! ? - ' "
 - Unknown characters SHALL render as spaces
 - Letters SHALL have 1 character spacing between them
 
@@ -356,6 +357,25 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - The ad SHALL be styled to match the application's dark theme
 - Ads SHALL NOT interfere with the typing experience or keyboard input
 
+### FR-030: Personal Best Celebration
+- When the user achieves a new personal best WPM or accuracy, the application SHALL display a celebration animation
+- The celebration SHALL consist of two phases:
+  1. **Fireworks Phase** (8 seconds):
+     - Particle-based fireworks explosions across the screen
+     - Approximately 12 explosions scheduled throughout the phase
+     - Particles use celebratory colours: gold, red, orange, magenta, cyan, green, blue, purple
+     - Each explosion spawns 30-50 radial particles plus sparkle particles
+     - Particles are affected by gravity, bounce off screen boundaries
+     - Text destruction effect: particles colliding with text cells destroy them, spawning debris
+  2. **Message Phase** (2 seconds):
+     - Large block font message displays "PERSONAL BEST" centered on screen
+     - The achieved WPM value is displayed below in green
+     - Decorative sparkles and "Press any key to continue" hint
+- Any keypress during celebration SHALL skip directly to the results screen
+- Ctrl+C during celebration SHALL exit the application
+- Celebration uses 50 FPS (20ms tick interval) for smooth animation
+- After celebration completes, the normal results screen is displayed
+
 ### FR-026: Options Screen
 - The application SHALL provide an options screen accessible via Ctrl+O
 - The options screen SHALL be accessible from typing screen (before timer starts) and results screen
@@ -429,10 +449,16 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - Subsequent sessions only update best if time < current best
 
 ### BR-005: New Best Detection
-- WPM: New best if current >= historical best
-- Accuracy: New best if current >= historical best
+- WPM: New best if current > historical best (strictly greater)
+- Accuracy: New best if current > historical best (strictly greater)
 - Time: New best if current <= historical best (lower is better)
-- First session always counts as "new best" for all metrics
+- First session (when historical best is 0) triggers celebration
+
+### BR-007: Celebration Trigger
+- A celebration is triggered when the user achieves a new personal best WPM OR accuracy
+- The celebration occurs BEFORE the results screen is displayed
+- Users can skip the celebration at any time by pressing any key
+- Only the best WPM value is displayed in the celebration message (even if both WPM and accuracy are new bests)
 
 ### BR-006: Relative Colour Scaling
 - Per-item statistics (fingers, rows, letters) use relative colour scaling
@@ -700,6 +726,8 @@ baboon/
 │   ├── views.go        # Rendering functions
 │   ├── styles.go       # Lipgloss styles
 │   ├── animations.go   # Spring animation logic
+│   ├── celebration.go  # Personal best celebration particle system
+│   ├── celebration_renderer.go  # Celebration screen rendering
 │   └── client.go       # REST API client (implements GameAPI)
 ├── words/
 │   └── words.go        # Dictionary of common words (British English)
@@ -1002,6 +1030,23 @@ The web frontend uses Kartoza's brand colour scheme derived from their wallpaper
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.6.0
+- Personal best celebration feature with fireworks animation
+  - When user achieves a new best WPM or accuracy, a celebration screen is displayed
+  - 8-second fireworks phase with particle explosions across the screen
+  - 2-second message phase displaying "PERSONAL BEST" in block font with achieved WPM
+  - 12 scheduled explosions with 30-50 particles each using celebratory colours
+  - Physics-based particles with gravity, boundary bouncing, and text collision
+  - Text destruction effect: particles destroy screen text creating debris particles
+  - Skip celebration at any time by pressing any key
+- New frontend files:
+  - `celebration.go`: Particle system, physics simulation, explosion scheduling
+  - `celebration_renderer.go`: Screen buffer rendering, particle-to-lipgloss colour mapping
+- Added `StateCelebration` game state and `celebrationTickMsg` for 50 FPS updates
+- Updated BR-005 (New Best Detection) with strict comparison for WPM/accuracy
+- Added BR-007 (Celebration Trigger) business rule
+- Added FR-030 (Personal Best Celebration) functional requirement
 
 ### v1.4.0
 - TUI now uses embedded engine by default (no client-server architecture)

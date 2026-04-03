@@ -34,9 +34,11 @@ This creates smooth, readable letters even in a terminal:
 
 The font supports:
 
-- Lowercase letters a-z
+- Letters A-Z (words are always displayed in uppercase for maximum readability)
 - Punctuation: `, . ; : ! ?`
 - Unknown characters render as spaces
+
+User input is case-insensitive - you can type lowercase letters and they will match the uppercase display.
 
 ## Colour Scheme
 
@@ -59,6 +61,36 @@ The WPM bar and statistics bars use a gradient from red to green:
 ```
 196 → 202 → 208 → 214 → 220 → 226 → 190 → 154 → 118 → 82 → 46 → 47
 ```
+
+## Personal Best Celebration
+
+When you achieve a new personal best WPM or accuracy, Baboon celebrates with a fireworks display!
+
+### Fireworks Phase (8 seconds)
+
+- Particle-based fireworks explosions across the screen
+- 12 scheduled explosions with 30-50 particles each
+- Celebratory colours: gold, red, orange, magenta, cyan, green, blue, purple
+- Physics-based particles with gravity and boundary bouncing
+- Text destruction effect: particles collide with and destroy screen text
+
+### Message Phase (2 seconds)
+
+```
+        ██████  ███████ ██████  ███████  ██████  ███   ██  ██████  ██          ██████  ███████ ███████ ████████
+        ██   ██ ██      ██   ██ ██      ██    ██ ████  ██ ██    ██ ██          ██   ██ ██      ██         ██
+        ██████  █████   ██████  ███████ ██    ██ ██ ██ ██ ███████  ██          ██████  █████   ███████    ██
+        ██      ██      ██   ██      ██ ██    ██ ██  ████ ██    ██ ██          ██   ██ ██           ██    ██
+        ██      ███████ ██   ██ ███████  ██████  ██   ███ ██    ██ ███████     ██████  ███████ ███████    ██
+
+                                                    65 WPM
+
+                                    ✦  ·  ✧  ·  ✦  ·  ✧  ·  ✦
+
+                                    Press any key to continue
+```
+
+You can skip the celebration at any time by pressing any key to go directly to the results screen.
 
 ## Word Carousel Animation
 
