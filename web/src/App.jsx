@@ -169,13 +169,35 @@ function App() {
 
       setLastKeyTime(now);
 
-      // Refresh game state
-      const state = await api.getState();
-      setGameState(state);
+      // Check if round completed (last correct char of last word)
+      if (result.round_complete) {
+        // Submit timing data
+        const durationMs = startTime ? now - startTime : 0;
+        await api.submitTiming(startTime || now, now, durationMs);
+        await api.saveStats();
+
+        // Get final stats
+        const [session, historical] = await Promise.all([
+          api.getSessionStats(),
+          api.getHistoricalStats(),
+        ]);
+        setSessionStats(session);
+        setHistoricalStats(historical);
+
+        // Save historical stats to local storage for persistence
+        setLocalHistoricalStats(historical);
+        saveToStorage(STORAGE_KEYS.HISTORICAL_STATS, historical);
+
+        setScreen('results');
+      } else {
+        // Refresh game state
+        const state = await api.getState();
+        setGameState(state);
+      }
     } catch (e) {
       console.error('Keystroke error:', e);
     }
-  }, [lastKeyTime, timerStarted]);
+  }, [lastKeyTime, timerStarted, startTime]);
 
   const handleBackspace = useCallback(async () => {
     try {

@@ -78,6 +78,10 @@ type KeystrokeResult struct {
 
 	// CharIndex is the position of the character that was typed.
 	CharIndex int
+
+	// RoundComplete indicates whether this keystroke completed the round
+	// (last correct character of last word).
+	RoundComplete bool
 }
 
 // SpaceResult contains the outcome of processing the space key.

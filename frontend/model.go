@@ -250,6 +250,7 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if result.TimerStarted && !m.timerStarted {
 			m.timerStarted = true
 			m.startTime = now
+			m.lastKeyTime = now
 			// Start tick loop for live WPM updates now that timer is running
 			return m, tickCmd()
 		}
@@ -260,6 +261,23 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 
 		m.lastKeyTime = now
+
+		// Check if round completed (last correct char of last word)
+		if result.RoundComplete {
+			// Send final timing to backend
+			var durationMs int64
+			if m.timerStarted {
+				durationMs = now.Sub(m.startTime).Milliseconds()
+			}
+			m.api.SubmitTiming(m.startTime, now, durationMs)
+			m.api.SaveStats()
+			m.state = StateResults
+			m.animator = NewAnimator()
+			// Reset timing state
+			m.timerStarted = false
+			m.correctChars = 0
+			return m, animTickCmd()
+		}
 	}
 
 	return m, nil

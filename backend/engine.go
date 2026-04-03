@@ -225,6 +225,16 @@ func (e *Engine) ProcessKeystrokeWithTiming(char string, seekTimeMs int64) Keyst
 
 			e.lastLetter = expectedLetter
 		}
+
+		// Check if this completes the last word (last correct character of last word)
+		isLastWord := e.wordIdx == len(e.words)-1
+		isLastChar := inputIdx == len(currentWord)-1
+		if isLastWord && isLastChar {
+			// Complete the round immediately without requiring space
+			e.session.WordsCompleted++
+			e.wordIdx++
+			result.RoundComplete = true
+		}
 	} else {
 		e.session.IncorrectChars++
 		// Track error substitution pattern
