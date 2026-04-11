@@ -363,6 +363,7 @@ function App() {
               onBackspace={handleBackspace}
               onSpace={handleSpace}
               onExit={handleBackToMenu}
+              onRestart={handleNewRound}
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
             />

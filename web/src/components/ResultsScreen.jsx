@@ -38,6 +38,21 @@ function getRelativeColor(value, minVal, maxVal) {
   return GRADIENT_COLORS[Math.max(0, idx)];
 }
 
+// Get inverted relative color (for seek time - lower is better)
+function getInvertedRelativeColor(value, minVal, maxVal) {
+  if (maxVal <= minVal) return GRADIENT_COLORS[10];
+  // Invert: lower values get higher (greener) colors
+  const invertedValue = maxVal - value + minVal;
+  return getRelativeColor(invertedValue, minVal, maxVal);
+}
+
+// Get frequency color (high frequency = red = needs more practice)
+function getFrequencyColor(frequency) {
+  // Invert: higher frequency = red (more exposure = lower index)
+  const idx = Math.min(Math.floor((1 - frequency) * 11), 11);
+  return GRADIENT_COLORS[Math.max(0, idx)];
+}
+
 // Get gradient color at position
 function getGradientColor(position) {
   const idx = Math.min(Math.floor(position * (GRADIENT_COLORS.length - 1)), GRADIENT_COLORS.length - 1);
@@ -197,6 +212,36 @@ function ResultsScreen({
   errors.sort((a, b) => b.count - a.count);
   const topErrors = errors.slice(0, 5);
 
+  // Per-letter stats
+  const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+  // Calculate letter accuracies with min/max for relative coloring
+  const letterAccuracies = letters.map(letter => {
+    const stats = historicalStats?.letter_accuracy?.[letter];
+    if (!stats || stats.presented === 0) return null;
+    return (stats.correct / stats.presented) * 100;
+  });
+  const validAccuracies = letterAccuracies.filter(a => a !== null);
+  const minLetterAcc = validAccuracies.length > 0 ? Math.min(...validAccuracies) : 0;
+  const maxLetterAcc = validAccuracies.length > 0 ? Math.max(...validAccuracies) : 100;
+
+  // Calculate letter frequencies with max for relative coloring
+  const letterFrequencies = letters.map(letter => {
+    const stats = historicalStats?.letter_accuracy?.[letter];
+    return stats?.presented || 0;
+  });
+  const maxFrequency = Math.max(...letterFrequencies, 1);
+
+  // Calculate letter seek times with min/max for relative coloring
+  const letterSeekTimes = letters.map(letter => {
+    const stats = historicalStats?.letter_seek_time?.[letter];
+    if (!stats || stats.count === 0) return null;
+    return stats.total_time_ms / stats.count;
+  });
+  const validSeekTimes = letterSeekTimes.filter(t => t !== null);
+  const minSeekTime = validSeekTimes.length > 0 ? Math.min(...validSeekTimes) : 0;
+  const maxSeekTime = validSeekTimes.length > 0 ? Math.max(...validSeekTimes) : 1000;
+
   return (
     <Flex minH="100vh" direction="column" p={{ base: 2, md: 4 }}>
       {/* Header */}
@@ -312,6 +357,83 @@ function ResultsScreen({
           </HStack>
         </AnimatedStatRow>
 
+        {/* Per-Letter Stats Matrix */}
+        <Box h={{ base: 2, md: 4 }} />
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <Text
+            color="cyan.400"
+            fontFamily="'Fira Code', monospace"
+            fontSize={smallFontSize}
+            fontWeight="bold"
+            textAlign="center"
+          >
+            Per-Key Statistics
+          </Text>
+        </AnimatedStatRow>
+
+        {/* Letter Headers */}
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize={{ base: '2xs', md: 'xs', lg: 'sm' }} justify="center" flexWrap="wrap">
+            {letters.map(letter => (
+              <Text key={letter} color="white" fontWeight="bold" w={{ base: '10px', md: '14px', lg: '16px' }} textAlign="center">
+                {letter.toUpperCase()}
+              </Text>
+            ))}
+          </HStack>
+        </AnimatedStatRow>
+
+        {/* Letter Accuracy Row */}
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} justify="center" align="center" flexWrap="wrap">
+            <Text color="gray.500" fontSize={{ base: '2xs', md: 'xs' }} w={{ base: '30px', md: '40px' }} textAlign="right" mr={1}>Acc</Text>
+            {letters.map((letter, i) => {
+              const acc = letterAccuracies[i];
+              const color = acc === null ? 'gray.700' : getRelativeColor(acc, minLetterAcc, maxLetterAcc);
+              return (
+                <Text key={letter} color={color} w={{ base: '10px', md: '14px', lg: '16px' }} textAlign="center">●</Text>
+              );
+            })}
+          </HStack>
+        </AnimatedStatRow>
+
+        {/* Letter Frequency Row */}
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} justify="center" align="center" flexWrap="wrap">
+            <Text color="gray.500" fontSize={{ base: '2xs', md: 'xs' }} w={{ base: '30px', md: '40px' }} textAlign="right" mr={1}>Freq</Text>
+            {letters.map((letter, i) => {
+              const freq = letterFrequencies[i];
+              const normalizedFreq = freq / maxFrequency;
+              const color = freq === 0 ? 'gray.700' : getFrequencyColor(normalizedFreq);
+              return (
+                <Text key={letter} color={color} w={{ base: '10px', md: '14px', lg: '16px' }} textAlign="center">●</Text>
+              );
+            })}
+          </HStack>
+        </AnimatedStatRow>
+
+        {/* Letter Seek Time Row */}
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} justify="center" align="center" flexWrap="wrap">
+            <Text color="gray.500" fontSize={{ base: '2xs', md: 'xs' }} w={{ base: '30px', md: '40px' }} textAlign="right" mr={1}>Time</Text>
+            {letters.map((letter, i) => {
+              const seekTime = letterSeekTimes[i];
+              const color = seekTime === null ? 'gray.700' : getInvertedRelativeColor(seekTime, minSeekTime, maxSeekTime);
+              return (
+                <Text key={letter} color={color} w={{ base: '10px', md: '14px', lg: '16px' }} textAlign="center">●</Text>
+              );
+            })}
+          </HStack>
+        </AnimatedStatRow>
+
+        {/* Legend for letter stats */}
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={4} fontFamily="'Fira Code', monospace" fontSize={{ base: '2xs', md: 'xs' }} justify="center" color="gray.600">
+            <Text>Acc: accuracy (green=good)</Text>
+            <Text>Freq: exposure (red=high)</Text>
+            <Text>Time: speed (green=fast)</Text>
+          </HStack>
+        </AnimatedStatRow>
+
         {/* Finger Stats */}
         <Box h={{ base: 1, md: 2 }} />
         <AnimatedStatRow delay={animIdx++ * 0.03}>
@@ -416,7 +538,7 @@ function ResultsScreen({
 
       {/* Keyboard hint */}
       <Text color="gray.600" fontSize={smallFontSize} textAlign="center" pb={2} fontFamily="'Fira Code', monospace">
-        ENTER = new round | ESC = quit
+        TAB or ENTER = new round | ESC = quit
       </Text>
 
       {/* Kartoza branding */}

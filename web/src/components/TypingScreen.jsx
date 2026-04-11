@@ -123,6 +123,7 @@ function TypingScreen({
   onBackspace,
   onSpace,
   onExit,
+  onRestart,
   adsenseEnabled,
   adsenseKey,
 }) {
@@ -162,6 +163,12 @@ function TypingScreen({
         return;
       }
 
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        onRestart();
+        return;
+      }
+
       if (e.key === 'Backspace') {
         e.preventDefault();
         onBackspace();
@@ -183,7 +190,7 @@ function TypingScreen({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onKeystroke, onBackspace, onSpace, onExit]);
+  }, [onKeystroke, onBackspace, onSpace, onExit, onRestart]);
 
   const extraChars = currentInput.length > currentWord.length
     ? currentInput.slice(currentWord.length)
@@ -323,7 +330,7 @@ function TypingScreen({
           fontFamily="'Fira Code', monospace"
           textAlign="center"
         >
-          Type to start | SPACE to continue | Last word auto-completes | ESC to quit
+          Type to start | SPACE to continue | TAB to restart | ESC to quit
         </Text>
       </Flex>
 
