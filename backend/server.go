@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/timlinux/baboon/auth"
+	"github.com/timlinux/baboon/database"
 	"github.com/timlinux/baboon/stats"
 )
 
@@ -25,20 +27,60 @@ type Session struct {
 // Server provides a RESTful API for the game engine.
 // It supports multiple concurrent sessions, each with their own game state.
 type Server struct {
-	config    Config
-	sessions  map[string]*Session
-	mu        sync.RWMutex
-	addr      string
-	staticDir string
+	config       Config
+	sessions     map[string]*Session
+	mu           sync.RWMutex
+	addr         string
+	staticDir    string
+	db           *database.DB
+	authService  *auth.Service
+	authHandlers *auth.Handlers
+	authMW       *auth.Middleware
 }
 
 // NewServer creates a new REST API server with the given configuration.
 func NewServer(config Config, addr string) (*Server, error) {
-	return &Server{
+	s := &Server{
 		config:   config,
 		sessions: make(map[string]*Session),
 		addr:     addr,
-	}, nil
+	}
+
+	// Initialize database if configured
+	if config.DatabaseDSN != "" {
+		db, err := database.New(database.Config{DSN: config.DatabaseDSN})
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize database: %w", err)
+		}
+		s.db = db
+
+		// Initialize auth service
+		authCfg := auth.Config{
+			JWTSecret:             config.JWTSecret,
+			BaseURL:               config.BaseURL,
+			AccessTokenExpiry:     auth.DefaultConfig().AccessTokenExpiry,
+			RefreshTokenExpiry:    auth.DefaultConfig().RefreshTokenExpiry,
+			GoogleClientID:        config.GoogleClientID,
+			GoogleClientSecret:    config.GoogleClientSecret,
+			GitHubClientID:        config.GitHubClientID,
+			GitHubClientSecret:    config.GitHubClientSecret,
+			AppleClientID:         config.AppleClientID,
+			AppleClientSecret:     config.AppleClientSecret,
+			MicrosoftClientID:     config.MicrosoftClientID,
+			MicrosoftClientSecret: config.MicrosoftClientSecret,
+		}
+
+		authService, err := auth.NewService(authCfg, db)
+		if err != nil {
+			db.Close()
+			return nil, fmt.Errorf("failed to initialize auth service: %w", err)
+		}
+		s.authService = authService
+		s.authHandlers = auth.NewHandlers(authService)
+		s.authMW = auth.NewMiddleware(authService)
+	}
+
+	return s, nil
 }
 
 // GetAddr returns the server address.
@@ -104,6 +146,25 @@ func (s *Server) Start() error {
 
 	// Configuration endpoint for web frontend
 	mux.HandleFunc("GET /api/config", s.handleConfig)
+
+	// Authentication routes (only if auth is enabled)
+	if s.authService != nil && s.authService.IsEnabled() {
+		// OAuth login and callback
+		mux.HandleFunc("GET /api/auth/{provider}/login", s.authHandlers.HandleLogin)
+		mux.HandleFunc("GET /api/auth/{provider}/callback", s.authHandlers.HandleCallback)
+
+		// Auth management
+		mux.HandleFunc("POST /api/auth/logout", s.authMW.RequireAuthFunc(s.authHandlers.HandleLogout))
+		mux.HandleFunc("POST /api/auth/refresh", s.authHandlers.HandleRefresh)
+		mux.HandleFunc("GET /api/auth/me", s.authMW.RequireAuthFunc(s.authHandlers.HandleMe))
+		mux.HandleFunc("DELETE /api/auth/account", s.authMW.RequireAuthFunc(s.authHandlers.HandleDeleteAccount))
+
+		// User stats (authenticated)
+		mux.HandleFunc("GET /api/user/stats", s.authMW.RequireAuthFunc(s.handleGetUserStats))
+		mux.HandleFunc("POST /api/user/stats/sync", s.authMW.RequireAuthFunc(s.handleSyncUserStats))
+		mux.HandleFunc("DELETE /api/user/stats", s.authMW.RequireAuthFunc(s.handleDeleteUserStats))
+		mux.HandleFunc("GET /api/user/export", s.authMW.RequireAuthFunc(s.handleExportUserData))
+	}
 
 	// Serve static files if directory is configured
 	if s.staticDir != "" {
@@ -203,9 +264,10 @@ type TimingRequest struct {
 
 // KeystrokeResponse is the response body for POST /api/sessions/{id}/keystroke
 type KeystrokeResponse struct {
-	IsCorrect    bool `json:"is_correct"`
-	TimerStarted bool `json:"timer_started"`
-	CharIndex    int  `json:"char_index"`
+	IsCorrect     bool `json:"is_correct"`
+	TimerStarted  bool `json:"timer_started"`
+	CharIndex     int  `json:"char_index"`
+	RoundComplete bool `json:"round_complete"`
 }
 
 // BackspaceResponse is the response body for POST /api/sessions/{id}/backspace
@@ -244,8 +306,10 @@ type HealthResponse struct {
 
 // ConfigResponse is the response body for GET /api/config
 type ConfigResponse struct {
-	AdsenseEnabled bool   `json:"adsense_enabled"`
-	AdsenseKey     string `json:"adsense_key,omitempty"`
+	AdsenseEnabled bool     `json:"adsense_enabled"`
+	AdsenseKey     string   `json:"adsense_key,omitempty"`
+	AuthEnabled    bool     `json:"auth_enabled"`
+	AuthProviders  []string `json:"auth_providers,omitempty"`
 }
 
 // Handler implementations
@@ -358,9 +422,10 @@ func (s *Server) handleKeystroke(w http.ResponseWriter, r *http.Request) {
 	s.mu.Unlock()
 
 	resp := KeystrokeResponse{
-		IsCorrect:    result.IsCorrect,
-		TimerStarted: result.TimerStarted,
-		CharIndex:    result.CharIndex,
+		IsCorrect:     result.IsCorrect,
+		TimerStarted:  result.TimerStarted,
+		CharIndex:     result.CharIndex,
+		RoundComplete: result.RoundComplete,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -558,6 +623,13 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 		AdsenseEnabled: s.config.AdsenseEnabled,
 		AdsenseKey:     s.config.AdsenseKey,
 	}
+
+	// Add auth configuration if auth is enabled
+	if s.authService != nil {
+		resp.AuthEnabled = s.authService.IsEnabled()
+		resp.AuthProviders = s.authService.GetEnabledProviders()
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
@@ -590,4 +662,120 @@ type SessionStatsJSON struct {
 	FingerStats      map[int]stats.FingerStat `json:"finger_stats"`
 	HandStats        map[int]stats.HandStat   `json:"hand_stats"`
 	RowStats         map[int]stats.RowStat    `json:"row_stats"`
+}
+
+// User stats handlers (authenticated)
+
+// SyncStatsRequest is the request body for POST /api/user/stats/sync
+type SyncStatsRequest struct {
+	LocalStats *stats.HistoricalStats `json:"local_stats"`
+}
+
+// handleGetUserStats returns the authenticated user's stats.
+// GET /api/user/stats
+func (s *Server) handleGetUserStats(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserID(r)
+	if userID == "" {
+		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	userStats, err := s.db.Stats().Get(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userStats)
+}
+
+// handleSyncUserStats merges local stats with server stats.
+// POST /api/user/stats/sync
+func (s *Server) handleSyncUserStats(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserID(r)
+	if userID == "" {
+		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	var req SyncStatsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Get server stats
+	serverStats, err := s.db.Stats().Get(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Merge local stats with server stats
+	mergedStats := database.MergeStats(serverStats, req.LocalStats)
+
+	// Save merged stats
+	if err := s.db.Stats().Save(userID, mergedStats); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "synced",
+		"stats":  mergedStats,
+	})
+}
+
+// handleDeleteUserStats deletes all stats for the authenticated user.
+// DELETE /api/user/stats
+func (s *Server) handleDeleteUserStats(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserID(r)
+	if userID == "" {
+		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	if err := s.db.Stats().Delete(userID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+}
+
+// handleExportUserData exports all user data as JSON (GDPR compliance).
+// GET /api/user/export
+func (s *Server) handleExportUserData(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserID(r)
+	if userID == "" {
+		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	// Get user info
+	user, err := s.db.Users().FindByID(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Get user stats
+	userStats, err := s.db.Stats().Get(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	export := map[string]interface{}{
+		"user":       user,
+		"stats":      userStats,
+		"exported_at": time.Now().UTC().Format(time.RFC3339),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", "attachment; filename=baboon-data-export.json")
+	json.NewEncoder(w).Encode(export)
 }

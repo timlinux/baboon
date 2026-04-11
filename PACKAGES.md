@@ -133,6 +133,106 @@ User configuration persistence.
 - Settings saved to `~/.config/baboon/settings.json`
 - Loaded on startup with sensible defaults
 
+### `auth/` - Authentication System
+
+Authentication package providing OAuth2/OIDC authentication with multiple providers.
+
+#### `auth.go`
+Main authentication service and types.
+
+**Key Types:**
+- `Service` - Main authentication service coordinating OAuth and JWT
+- `Config` - Authentication configuration (JWT secret, OAuth credentials)
+- `TokenPair` - Access and refresh token pair
+- `UserInfo` - User information from OAuth provider
+
+**Responsibilities:**
+- Initialize and manage OAuth providers
+- Coordinate login/logout flows
+- Generate and validate token pairs
+
+#### `jwt.go`
+JWT token generation and validation.
+
+**Functions:**
+- `GenerateAccessToken()` - Create HS256-signed JWT with user ID
+- `ValidateAccessToken()` - Verify JWT signature and expiry
+
+#### `oauth.go`
+OAuth provider configurations.
+
+**Supported Providers:**
+- Google (googleapis.com)
+- GitHub (api.github.com)
+- Apple (appleid.apple.com)
+- Microsoft (graph.microsoft.com)
+
+**Per Provider:**
+- OAuth2 config with scopes
+- User info endpoint
+- Response parser for email, name, avatar
+
+#### `handlers.go`
+HTTP handlers for authentication endpoints.
+
+**Endpoints:**
+- `HandleLogin` - Initiate OAuth flow
+- `HandleCallback` - Process OAuth callback
+- `HandleLogout` - Revoke tokens
+- `HandleRefresh` - Refresh access token
+- `HandleMe` - Get current user info
+
+#### `middleware.go`
+Authentication middleware.
+
+**Middleware:**
+- `RequireAuth` - Require valid access token
+- `OptionalAuth` - Extract user if token present
+
+### `database/` - Database Connectivity
+
+Database package providing SQLite and PostgreSQL support for user data.
+
+#### `database.go`
+Database connection management and migrations.
+
+**Responsibilities:**
+- Detect driver from DSN (SQLite vs PostgreSQL)
+- Run schema migrations
+- Manage connection pool
+
+**Tables Created:**
+- `users` - User accounts
+- `user_stats` - User typing statistics
+- `refresh_tokens` - JWT refresh tokens
+
+#### `users.go`
+User repository for CRUD operations.
+
+**Functions:**
+- `Create()` - Create new user
+- `FindByID()`, `FindByEmail()`, `FindByProvider()` - Lookup users
+- `FindOrCreate()` - Upsert for OAuth login
+- `Update()`, `Delete()` - Modify users
+
+#### `stats.go`
+User stats repository.
+
+**Functions:**
+- `Get()` - Retrieve user's historical stats
+- `Save()` - Upsert stats (JSON columns for complex types)
+- `Delete()` - Remove user's stats
+- `MergeStats()` - Merge local and server stats
+
+#### `tokens.go`
+Refresh token repository.
+
+**Functions:**
+- `Create()` - Generate and store refresh token
+- `Validate()` - Check token validity
+- `Revoke()`, `RevokeAllForUser()` - Invalidate tokens
+- `CleanupExpired()` - Periodic cleanup
+
 ## Web Frontend Packages (`web/`)
 
 ### `src/App.js`
@@ -161,14 +261,37 @@ Chakra UI custom theme with Kartoza brand colours.
 
 ### `src/components/`
 
-#### `WelcomeScreen.js`
-Landing page with animated logo and game options.
+#### `WelcomeScreen.jsx`
+Landing page with animated logo, game options, and login section.
 
-#### `TypingScreen.js`
+#### `TypingScreen.jsx`
 Main typing interface with physics-based block letters.
 
-#### `ResultsScreen.js`
+#### `ResultsScreen.jsx`
 Statistics display with animated stat cards.
+
+#### `LoginButton.jsx`
+OAuth provider login buttons with provider icons.
+
+#### `UserMenu.jsx`
+User profile dropdown menu when authenticated.
+
+#### `SyncDialog.jsx`
+Modal dialog for merging local stats with server on login.
+
+### `src/contexts/`
+
+#### `AuthContext.jsx`
+React context for authentication state management.
+
+**Provides:**
+- `user` - Current authenticated user
+- `isAuthenticated` - Authentication status
+- `authConfig` - Auth configuration (enabled providers)
+- `login()` - Initiate OAuth login
+- `logout()` - Sign out user
+- `syncStats()` - Merge local stats with server
+- `showSyncDialog` - Control sync dialog visibility
 
 ## Web Server Mode
 
@@ -248,6 +371,10 @@ Critical for Baboon as sessions are in-memory:
 - `github.com/charmbracelet/lipgloss` - TUI styling
 - `github.com/charmbracelet/harmonica` - Spring physics animations
 - `github.com/timlinux/blockfont` - Unicode block letter rendering (custom fonts, animations, theming)
+- `github.com/golang-jwt/jwt/v5` - JWT token generation and validation
+- `golang.org/x/oauth2` - OAuth2 client library
+- `github.com/lib/pq` - PostgreSQL driver
+- `github.com/mattn/go-sqlite3` - SQLite driver (requires CGo)
 
 ### Web Dependencies
 - `react` (18.x) - UI framework
@@ -261,7 +388,18 @@ main.go
 ├── backend/
 │   ├── api.go (types)
 │   ├── engine.go → stats/, words/
-│   └── server.go → engine.go
+│   └── server.go → engine.go, auth/, database/
+├── auth/
+│   ├── auth.go → database/
+│   ├── jwt.go
+│   ├── oauth.go
+│   ├── handlers.go
+│   └── middleware.go
+├── database/
+│   ├── database.go
+│   ├── users.go
+│   ├── stats.go → stats/
+│   └── tokens.go
 └── frontend/
     ├── model.go → backend/api, settings/
     ├── views.go → backend/, stats/, settings/, blockfont (external)
@@ -278,4 +416,17 @@ settings/
 
 words/
 └── words.go
+
+web/src/
+├── App.jsx → contexts/, components/, api.js
+├── api.js
+├── contexts/
+│   └── AuthContext.jsx → api.js
+└── components/
+    ├── WelcomeScreen.jsx → LoginButton, UserMenu, AuthContext
+    ├── TypingScreen.jsx
+    ├── ResultsScreen.jsx
+    ├── LoginButton.jsx → AuthContext
+    ├── UserMenu.jsx → AuthContext
+    └── SyncDialog.jsx → AuthContext
 ```

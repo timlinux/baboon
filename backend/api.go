@@ -154,6 +154,37 @@ type Config struct {
 	// When set, real ads will be displayed. When empty but AdsenseEnabled is true,
 	// a preview placeholder is shown.
 	AdsenseKey string
+
+	// Database and authentication configuration
+	// If DatabaseDSN is empty, auth features are disabled and localStorage is used.
+
+	// DatabaseDSN is the database connection string.
+	// For SQLite: path to the database file (e.g., "./baboon.db")
+	// For PostgreSQL: postgres://user:pass@host/dbname
+	DatabaseDSN string
+
+	// JWTSecret is the secret used for signing JWTs.
+	// Required if DatabaseDSN is set.
+	JWTSecret string
+
+	// BaseURL is the base URL of the application (for OAuth callbacks).
+	// Required if OAuth credentials are configured.
+	BaseURL string
+
+	// OAuth Provider Credentials
+	// Only configured providers will be shown in the login UI.
+
+	GoogleClientID     string
+	GoogleClientSecret string
+
+	GitHubClientID     string
+	GitHubClientSecret string
+
+	AppleClientID     string
+	AppleClientSecret string
+
+	MicrosoftClientID     string
+	MicrosoftClientSecret string
 }
 
 // DefaultConfig returns the default game configuration.

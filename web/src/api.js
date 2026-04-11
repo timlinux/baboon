@@ -8,6 +8,24 @@ class BaboonAPI {
     this.baseUrl = API_BASE;
   }
 
+  // Helper to make authenticated requests
+  async _fetch(url, options = {}) {
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include', // Include cookies for auth
+    });
+    return response;
+  }
+
+  async _fetchJSON(url, options = {}) {
+    const response = await this._fetch(url, options);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: response.statusText }));
+      throw new Error(error.error || 'Request failed');
+    }
+    return response.json();
+  }
+
   async createSession(punctuationMode = false) {
     const response = await fetch(`${this.baseUrl}/sessions`, {
       method: 'POST',
@@ -102,6 +120,64 @@ class BaboonAPI {
   async getConfig() {
     const response = await fetch(`${this.baseUrl}/config`);
     return response.json();
+  }
+
+  // Authentication methods
+
+  // Get current authenticated user
+  async getCurrentUser() {
+    return this._fetchJSON(`${this.baseUrl}/auth/me`);
+  }
+
+  // Logout (revoke tokens)
+  async logout() {
+    return this._fetchJSON(`${this.baseUrl}/auth/logout`, {
+      method: 'POST',
+    });
+  }
+
+  // Refresh access token
+  async refreshToken() {
+    return this._fetchJSON(`${this.baseUrl}/auth/refresh`, {
+      method: 'POST',
+    });
+  }
+
+  // Get user stats (authenticated)
+  async getUserStats() {
+    return this._fetchJSON(`${this.baseUrl}/user/stats`);
+  }
+
+  // Sync local stats with server (merge)
+  async syncStats(localStats) {
+    return this._fetchJSON(`${this.baseUrl}/user/stats/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ local_stats: localStats }),
+    });
+  }
+
+  // Delete user stats
+  async deleteUserStats() {
+    return this._fetchJSON(`${this.baseUrl}/user/stats`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Export user data
+  async exportUserData() {
+    const response = await this._fetch(`${this.baseUrl}/user/export`);
+    if (!response.ok) {
+      throw new Error('Export failed');
+    }
+    return response.blob();
+  }
+
+  // Delete user account
+  async deleteAccount() {
+    return this._fetchJSON(`${this.baseUrl}/auth/account`, {
+      method: 'DELETE',
+    });
   }
 }
 

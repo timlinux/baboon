@@ -12,6 +12,8 @@ import api from './api.js';
 import TypingScreen from './components/TypingScreen.jsx';
 import ResultsScreen from './components/ResultsScreen.jsx';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
+import SyncDialog from './components/SyncDialog.jsx';
+import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 
 const MotionBox = motion(Box);
 
@@ -42,6 +44,8 @@ const saveToStorage = (key, value) => {
 };
 
 function App() {
+  const { isAuthenticated, updateLocalStats, localStats: authLocalStats } = useAuth();
+
   const [screen, setScreen] = useState('typing'); // welcome, typing, results (start on typing)
   const [punctuationMode, setPunctuationMode] = useState(() => {
     const settings = loadFromStorage(STORAGE_KEYS.SETTINGS, {});
@@ -184,9 +188,24 @@ function App() {
         setSessionStats(session);
         setHistoricalStats(historical);
 
-        // Save historical stats to local storage for persistence
+        // Save stats to local storage for persistence
         setLocalHistoricalStats(historical);
         saveToStorage(STORAGE_KEYS.HISTORICAL_STATS, historical);
+
+        // Also update auth context's local stats (for sync feature)
+        if (updateLocalStats) {
+          updateLocalStats(historical);
+        }
+
+        // If authenticated, sync to server
+        if (isAuthenticated) {
+          try {
+            await api.syncStats(historical);
+          } catch (e) {
+            console.log('Failed to sync stats to server:', e);
+            // Non-fatal - stats are still saved locally
+          }
+        }
 
         setScreen('results');
       } else {
@@ -197,7 +216,7 @@ function App() {
     } catch (e) {
       console.error('Keystroke error:', e);
     }
-  }, [lastKeyTime, timerStarted, startTime]);
+  }, [lastKeyTime, timerStarted, startTime, isAuthenticated, updateLocalStats]);
 
   const handleBackspace = useCallback(async () => {
     try {
@@ -231,9 +250,24 @@ function App() {
         setSessionStats(session);
         setHistoricalStats(historical);
 
-        // Save historical stats to local storage for persistence
+        // Save stats to local storage for persistence
         setLocalHistoricalStats(historical);
         saveToStorage(STORAGE_KEYS.HISTORICAL_STATS, historical);
+
+        // Also update auth context's local stats (for sync feature)
+        if (updateLocalStats) {
+          updateLocalStats(historical);
+        }
+
+        // If authenticated, sync to server
+        if (isAuthenticated) {
+          try {
+            await api.syncStats(historical);
+          } catch (e) {
+            console.log('Failed to sync stats to server:', e);
+            // Non-fatal - stats are still saved locally
+          }
+        }
 
         setScreen('results');
       } else {
@@ -243,7 +277,7 @@ function App() {
     } catch (e) {
       console.error('Space error:', e);
     }
-  }, [lastKeyTime, startTime]);
+  }, [lastKeyTime, startTime, isAuthenticated, updateLocalStats]);
 
   const handleNewRound = async () => {
     try {
@@ -353,8 +387,20 @@ function App() {
           </MotionBox>
         )}
       </AnimatePresence>
+
+      {/* Sync Dialog for merging local stats with server */}
+      <SyncDialog />
     </Box>
   );
 }
 
-export default App;
+// Wrap App with AuthProvider
+function AppWithAuth() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}
+
+export default AppWithAuth;

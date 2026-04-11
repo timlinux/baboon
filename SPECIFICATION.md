@@ -42,6 +42,16 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 **I want to** practice typing through a beautiful web application
 **So that** I can use any device with a modern browser
 
+### US-007: Cross-Device Stats Synchronisation
+**As a** registered user
+**I want to** have my typing statistics synchronised across devices
+**So that** I can practice on multiple devices and see my overall progress
+
+### US-008: Sign In with SSO
+**As a** user who doesn't want to create yet another account
+**I want to** sign in with my existing Google, GitHub, Apple, or Microsoft account
+**So that** I can quickly start using authenticated features without a new password
+
 ## Functional Requirements
 
 ### FR-001: Word Display
@@ -79,6 +89,10 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - The space key SHALL only advance to the next word when ALL letters have been typed
 - If space is pressed before the word is complete, it SHALL be treated as an incorrect character (red)
 - Extra characters beyond word length SHALL count as incorrect (red)
+- The last word (word 30) SHALL auto-complete when the final character is typed correctly
+  - No space press is required for the final word
+  - The round immediately transitions to results upon correct final character
+  - The word counter SHALL remain at "30/30" (never exceed total words)
 
 ### FR-004: Round Structure
 - Each round SHALL consist of exactly 30 words totalling exactly 150 characters
@@ -341,6 +355,18 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - Ctrl+O SHALL open the options screen before the timer starts (from typing screen) or at any time (from results screen)
 - The application SHALL use alternate screen buffer (fullscreen mode)
 
+### FR-031: Accessibility (Web UI)
+- All interactive elements SHALL have visible focus indicators
+- All buttons SHALL have ARIA labels describing their function and keyboard shortcuts
+- The typing area SHALL include ARIA live regions to announce progress to screen readers
+- Letter status (correct/incorrect) SHALL include visual indicators beyond color:
+  - Correct letters SHALL display a checkmark (✓) indicator
+  - Incorrect letters SHALL display an X (×) indicator
+  - Current letter SHALL display an arrow (▸) indicator
+- Progress and word counter SHALL have descriptive ARIA labels
+- Screen reader announcements SHALL include current word and progress
+- Focus styles SHALL use brand colors with 2px outline offset
+
 ### FR-028: Web Frontend Local Storage
 - The web frontend SHALL store user historical statistics in browser local storage
 - The storage key SHALL be `baboon_historical_stats` for statistics
@@ -348,6 +374,59 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - The welcome screen SHALL display the user's best WPM, best accuracy, and total sessions if available
 - Settings SHALL persist across browser sessions
 - Local storage data SHALL be updated after each completed round
+
+### FR-032: User Authentication System
+- The application SHALL support optional user authentication via OAuth2/OIDC
+- Authentication SHALL be enabled when a database DSN is configured (`BABOON_DATABASE_DSN`)
+- Supported OAuth providers: Google, GitHub, Apple, Microsoft
+- Only configured providers (with client ID and secret) SHALL be shown in the login UI
+- If no database or OAuth providers are configured, authentication features SHALL be hidden
+- Anonymous users SHALL continue using localStorage for stats (no degradation of existing functionality)
+
+### FR-033: OAuth Login Flow
+- Each OAuth provider SHALL have a dedicated login endpoint: `GET /api/auth/{provider}/login`
+- The login endpoint SHALL redirect the user to the OAuth provider's authorization page
+- The OAuth callback endpoint `GET /api/auth/{provider}/callback` SHALL:
+  - Validate the OAuth state parameter to prevent CSRF
+  - Exchange the authorization code for access token
+  - Retrieve user info from the provider
+  - Create or update the user record in the database
+  - Generate JWT access token and refresh token
+  - Set HTTP-only cookies with the tokens
+  - Redirect to the frontend with success or error status
+
+### FR-034: JWT Token Management
+- Access tokens SHALL be JWTs signed with HS256 using a configurable secret
+- Access tokens SHALL expire after 15 minutes by default
+- Refresh tokens SHALL be stored in the database with hashed values
+- Refresh tokens SHALL expire after 7 days by default
+- The refresh endpoint `POST /api/auth/refresh` SHALL:
+  - Validate the current refresh token
+  - Revoke the old refresh token
+  - Generate new access and refresh tokens
+- Access token cookies SHALL be accessible by JavaScript for API calls
+- Refresh token cookies SHALL be HTTP-only for security
+
+### FR-035: User Stats Synchronisation
+- Authenticated users SHALL have their stats stored in the database
+- The sync endpoint `POST /api/user/stats/sync` SHALL:
+  - Accept local stats from the client
+  - Merge with existing server stats using the merge algorithm
+  - Save the merged stats to the database
+  - Return the merged stats
+- Merge algorithm:
+  - Cumulative values (total sessions, total time): ADD both together
+  - Best values (best WPM, best accuracy, best time): Take MAX (or MIN for time)
+  - Map values (letter stats, finger stats): Merge additively
+- When a user logs in with existing local stats, the frontend SHALL offer to sync
+
+### FR-036: User Data Privacy
+- Users SHALL be able to export all their data via `GET /api/user/export`
+- Export SHALL include user profile and all statistics
+- Users SHALL be able to delete all their stats via `DELETE /api/user/stats`
+- Users SHALL be able to delete their account via `DELETE /api/auth/account`
+- Account deletion SHALL cascade delete all user data (stats, tokens)
+- No keystroke logging or raw typing data SHALL be stored - only aggregate statistics
 
 ### FR-029: Google AdSense Integration
 - The web server mode SHALL accept an `-adsense` flag with a Google AdSense publisher ID
@@ -589,6 +668,26 @@ The backend exposes a RESTful API that the frontend communicates with via HTTP. 
 
 **Base URL:** `http://127.0.0.1:8787` (configurable via `-port` flag)
 
+#### Authentication Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/auth/{provider}/login` | Initiate OAuth login (google, github, apple, microsoft) |
+| GET | `/api/auth/{provider}/callback` | OAuth callback from provider |
+| POST | `/api/auth/logout` | Logout (revoke tokens) |
+| POST | `/api/auth/refresh` | Refresh access token |
+| GET | `/api/auth/me` | Get current user info |
+| DELETE | `/api/auth/account` | Delete user account |
+
+#### User Stats Endpoints (Authenticated)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/user/stats` | Get authenticated user's stats |
+| POST | `/api/user/stats/sync` | Merge local stats with server |
+| DELETE | `/api/user/stats` | Delete all user stats |
+| GET | `/api/user/export` | Export all user data as JSON |
+
 #### Session Management
 
 The REST API uses session-based routing. Each frontend client creates a session on startup and receives a unique session ID. All game operations are then scoped to that session.
@@ -717,10 +816,22 @@ baboon/
 ├── go.mod              # Go module definition
 ├── go.sum              # Go module checksums
 ├── main.go             # Entry point - supports server, client, and combined modes
+├── auth/                  # Authentication package
+│   ├── auth.go            # Auth service and types
+│   ├── errors.go          # Error definitions
+│   ├── handlers.go        # HTTP handlers for auth endpoints
+│   ├── jwt.go             # JWT generation and validation
+│   ├── middleware.go      # Auth middleware
+│   └── oauth.go           # OAuth provider configurations
+├── database/              # Database package
+│   ├── database.go        # Connection management and migrations
+│   ├── stats.go           # User stats repository
+│   ├── tokens.go          # Refresh token repository
+│   └── users.go           # User repository
 ├── backend/
-│   ├── api.go          # GameAPI interface and types
+│   ├── api.go          # GameAPI interface and types (includes auth config)
 │   ├── engine.go       # Game engine implementation
-│   └── server.go       # REST API server with session management
+│   └── server.go       # REST API server with session management and auth
 ├── frontend/
 │   ├── model.go        # Bubble Tea model with local timing
 │   ├── views.go        # Rendering functions
@@ -756,7 +867,12 @@ baboon/
 │           ├── WelcomeScreen.jsx  # Landing screen with local stats
 │           ├── TypingScreen.jsx   # Typing practice screen
 │           ├── ResultsScreen.jsx  # Statistics display
-│           └── AdSense.jsx        # Google AdSense component
+│           ├── AdSense.jsx        # Google AdSense component
+│           ├── LoginButton.jsx    # OAuth login buttons
+│           ├── UserMenu.jsx       # User profile dropdown
+│           └── SyncDialog.jsx     # Stats merge confirmation dialog
+│       └── contexts/
+│           └── AuthContext.jsx    # Authentication state management
 ├── Makefile            # Build and run targets
 ├── SPECIFICATION.md    # This file
 ├── README.md           # User documentation
@@ -913,6 +1029,96 @@ packages = {
 };
 ```
 
+## Database Schema (Authentication)
+
+When authentication is enabled via `BABOON_DATABASE_DSN`, the following tables are created:
+
+### Users Table
+```sql
+CREATE TABLE users (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    display_name TEXT,
+    avatar_url TEXT,
+    provider TEXT NOT NULL,      -- google, github, apple, microsoft
+    provider_id TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TIMESTAMP,
+    UNIQUE(provider, provider_id)
+);
+```
+
+### User Stats Table
+```sql
+CREATE TABLE user_stats (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    best_wpm REAL DEFAULT 0,
+    best_accuracy REAL DEFAULT 0,
+    best_time REAL DEFAULT 0,
+    total_wpm REAL DEFAULT 0,
+    total_accuracy REAL DEFAULT 0,
+    total_time REAL DEFAULT 0,
+    total_sessions INTEGER DEFAULT 0,
+    last_session_date TIMESTAMP,
+    -- Complex nested stats as JSON columns
+    letter_accuracy TEXT,       -- JSON
+    letter_seek_time TEXT,      -- JSON
+    bigram_seek_time TEXT,      -- JSON
+    finger_stats TEXT,          -- JSON
+    hand_stats TEXT,            -- JSON
+    row_stats TEXT,             -- JSON
+    error_substitution TEXT,    -- JSON
+    sfb_stats TEXT,             -- JSON
+    hand_alternations INTEGER DEFAULT 0,
+    same_hand_runs INTEGER DEFAULT 0,
+    rhythm_stats TEXT,          -- JSON
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Refresh Tokens Table
+```sql
+CREATE TABLE refresh_tokens (
+    id TEXT PRIMARY KEY,
+    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    revoked BOOLEAN DEFAULT FALSE
+);
+```
+
+## Authentication Configuration
+
+Authentication is configured via environment variables:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `BABOON_DATABASE_DSN` | For auth | Database connection string (SQLite path or PostgreSQL URL) |
+| `BABOON_JWT_SECRET` | For auth | Secret for signing JWTs (256-bit recommended) |
+| `BABOON_BASE_URL` | For OAuth | Base URL for OAuth callbacks (e.g., `https://baboon.example.com`) |
+| `BABOON_OAUTH_GOOGLE_CLIENT_ID` | Optional | Google OAuth client ID |
+| `BABOON_OAUTH_GOOGLE_CLIENT_SECRET` | Optional | Google OAuth client secret |
+| `BABOON_OAUTH_GITHUB_CLIENT_ID` | Optional | GitHub OAuth client ID |
+| `BABOON_OAUTH_GITHUB_CLIENT_SECRET` | Optional | GitHub OAuth client secret |
+| `BABOON_OAUTH_APPLE_CLIENT_ID` | Optional | Apple OAuth client ID |
+| `BABOON_OAUTH_APPLE_CLIENT_SECRET` | Optional | Apple OAuth client secret |
+| `BABOON_OAUTH_MICROSOFT_CLIENT_ID` | Optional | Microsoft OAuth client ID |
+| `BABOON_OAUTH_MICROSOFT_CLIENT_SECRET` | Optional | Microsoft OAuth client secret |
+
+### Graceful Degradation
+
+- **No database configured**: Auth completely disabled, localStorage-only (current behaviour)
+- **Database but no OAuth**: Database available but no login buttons shown
+- **Partial OAuth**: Only configured providers shown (e.g., just Google)
+- **Full OAuth**: All four providers available
+
+### Database Drivers
+
+- **SQLite**: Detected when DSN is a file path (e.g., `./baboon.db`)
+- **PostgreSQL**: Detected when DSN starts with `postgres://` or `postgresql://`
+
 ## Stats File Format
 
 Location: `~/.config/baboon/stats.json`
@@ -1030,6 +1236,35 @@ The web frontend uses Kartoza's brand colour scheme derived from their wallpaper
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.7.0
+- User authentication system with OAuth SSO providers
+  - Support for Google, GitHub, Apple, and Microsoft login
+  - Self-hosted OAuth using `golang.org/x/oauth2` and JWT tokens
+  - Database storage for user accounts and statistics (SQLite or PostgreSQL)
+  - Cross-device stats synchronisation for authenticated users
+- New backend packages:
+  - `auth/`: Authentication service with JWT and OAuth support
+  - `database/`: Database connectivity with SQLite and PostgreSQL drivers
+- Frontend authentication components:
+  - AuthContext for managing authentication state
+  - LoginButton component for SSO provider buttons
+  - UserMenu component for profile dropdown
+  - SyncDialog for merging local stats with server on login
+- Stats merge algorithm when user logs in with existing local stats:
+  - Cumulative values (sessions, time): Added together
+  - Best values (WPM, accuracy): Maximum kept
+  - Map values (letter/finger stats): Merged additively
+- Privacy features:
+  - Data export endpoint for GDPR compliance
+  - Account deletion with cascade delete
+  - No keystroke logging - only aggregate statistics
+- Graceful degradation:
+  - Anonymous users continue using localStorage (no change)
+  - Auth features hidden when not configured
+  - Only configured OAuth providers shown
+- New functional requirements: FR-032 through FR-036
+- New user stories: US-007 (cross-device sync), US-008 (SSO login)
 
 ### v1.6.0
 - Personal best celebration feature with fireworks animation

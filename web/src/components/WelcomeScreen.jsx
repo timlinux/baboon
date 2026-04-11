@@ -18,13 +18,19 @@ import {
   SimpleGrid,
   Link,
   Icon,
+  Divider,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
+import { LoginButtons } from './LoginButton.jsx';
+import UserMenu from './UserMenu.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
 
 function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onStart, isLoading, localStats }) {
+  const { user, isAuthenticated, authConfig } = useAuth();
+
   return (
     <Flex minH="100vh" align="center" justify="center" p={8}>
       <Container maxW="container.md">
@@ -58,22 +64,63 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
             </MotionText>
           </VStack>
 
-          {/* Connection Status */}
+          {/* Connection Status and User Info */}
           <MotionBox
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <Badge
-              colorScheme={isConnected ? 'green' : 'red'}
-              fontSize="md"
-              px={4}
-              py={2}
-              borderRadius="full"
-            >
-              {isConnected ? '● Connected to Backend' : '○ Backend Disconnected'}
-            </Badge>
+            <VStack spacing={4}>
+              <HStack spacing={4}>
+                <Badge
+                  colorScheme={isConnected ? 'green' : 'red'}
+                  fontSize="md"
+                  px={4}
+                  py={2}
+                  borderRadius="full"
+                >
+                  {isConnected ? '● Connected to Backend' : '○ Backend Disconnected'}
+                </Badge>
+
+                {/* Show user menu if authenticated */}
+                {isAuthenticated && user && <UserMenu />}
+              </HStack>
+
+              {/* Show welcome message for authenticated users */}
+              {isAuthenticated && user && (
+                <Text color="gray.400" fontSize="sm">
+                  Welcome back, {user.display_name || user.email.split('@')[0]}!
+                </Text>
+              )}
+            </VStack>
           </MotionBox>
+
+          {/* Login Section (show only if auth is enabled and user is not logged in) */}
+          {authConfig.auth_enabled && !isAuthenticated && (
+            <MotionBox
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.52, type: 'spring' }}
+              w="100%"
+              maxW="400px"
+            >
+              <Box
+                bg="bg.card"
+                borderRadius="3xl"
+                p={6}
+                border="1px solid"
+                borderColor="whiteAlpha.100"
+                boxShadow="0 20px 60px rgba(0, 0, 0, 0.3)"
+              >
+                <VStack spacing={4}>
+                  <Text fontSize="lg" fontWeight="600" color="white">
+                    Sign In
+                  </Text>
+                  <LoginButtons showTitle={true} />
+                </VStack>
+              </Box>
+            </MotionBox>
+          )}
 
           {/* Personal Stats Card (if available) */}
           {localStats && localStats.total_sessions > 0 && (
@@ -178,10 +225,16 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
               isDisabled={!isConnected}
               isLoading={isLoading}
               loadingText="Starting..."
+              aria-label={!isConnected ? "Start Typing (waiting for backend connection)" : "Start Typing"}
               _disabled={{
                 opacity: 0.5,
                 cursor: 'not-allowed',
                 boxShadow: 'none',
+              }}
+              _focus={{
+                outline: '2px solid',
+                outlineColor: 'brand.500',
+                outlineOffset: '2px',
               }}
             >
               Start Typing

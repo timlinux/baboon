@@ -132,14 +132,61 @@
           exec "$PROJECT_DIR/scripts/release.sh"
         '';
 
+        # Script to install web dependencies
+        web-install = pkgs.writeShellScriptBin "baboon-web-install" ''
+          #!/usr/bin/env bash
+          PROJECT_DIR="$(pwd)"
+          if [ ! -f "$PROJECT_DIR/web/package.json" ]; then
+            echo "❌ Please run this command from the baboon project root directory."
+            exit 1
+          fi
+          cd "$PROJECT_DIR/web"
+          ${pkgs.nodejs_22}/bin/npm install
+        '';
+
+        # Script to build web frontend
+        web-build = pkgs.writeShellScriptBin "baboon-web-build" ''
+          #!/usr/bin/env bash
+          PROJECT_DIR="$(pwd)"
+          if [ ! -f "$PROJECT_DIR/web/package.json" ]; then
+            echo "❌ Please run this command from the baboon project root directory."
+            exit 1
+          fi
+          cd "$PROJECT_DIR/web"
+          ${pkgs.nodejs_22}/bin/npm install
+          ${pkgs.nodejs_22}/bin/npm run build
+          # Copy build to dist for server
+          mkdir -p dist
+          cp -r build/* dist/
+          echo "Web frontend built in web/dist/"
+        '';
+
+        # Script to run web dev server
+        web-dev = pkgs.writeShellScriptBin "baboon-web-dev" ''
+          #!/usr/bin/env bash
+          PROJECT_DIR="$(pwd)"
+          if [ ! -f "$PROJECT_DIR/web/package.json" ]; then
+            echo "❌ Please run this command from the baboon project root directory."
+            exit 1
+          fi
+          cd "$PROJECT_DIR/web"
+          ${pkgs.nodejs_22}/bin/npm install
+          ${pkgs.nodejs_22}/bin/npm run dev
+        '';
+
       in
       {
         packages = {
           default = pkgs.buildGoModule {
             pname = "baboon";
-            version = "1.4.0";
+            version = "1.7.0";
             src = ./.;
-            vendorHash = "sha256-T++yxzXs9aQVM7lfu1kA3PYK8IilRGf3vIR4YtDMl1Y=";
+            vendorHash = null; # Will be updated after first build
+
+            # Required for go-sqlite3 CGO driver
+            nativeBuildInputs = [ pkgs.pkg-config ];
+            buildInputs = [ pkgs.sqlite ];
+            CGO_ENABLED = 1;
 
             meta = with pkgs.lib; {
               description = "A terminal typing practice app with ASCII art";
@@ -158,6 +205,10 @@
           demo-record = demo-record;
           demo-play = demo-play;
           release = release;
+          # Web frontend packages
+          web-install = web-install;
+          web-build = web-build;
+          web-dev = web-dev;
         };
 
         # Apps for `nix run`
@@ -202,6 +253,24 @@
             type = "app";
             program = "${release}/bin/baboon-release";
           };
+
+          # nix run .#web-install - Install web dependencies
+          web-install = {
+            type = "app";
+            program = "${web-install}/bin/baboon-web-install";
+          };
+
+          # nix run .#web-build - Build web frontend
+          web-build = {
+            type = "app";
+            program = "${web-build}/bin/baboon-web-build";
+          };
+
+          # nix run .#web-dev - Start web dev server
+          web-dev = {
+            type = "app";
+            program = "${web-dev}/bin/baboon-web-dev";
+          };
         };
 
         devShells.default = pkgs.mkShell {
@@ -214,6 +283,10 @@
             nodejs_22
             asciinema
             asciinema-agg
+            # Required for CGo (SQLite driver)
+            gcc
+            pkg-config
+            sqlite
           ];
 
           shellHook = ''
@@ -226,6 +299,8 @@
             echo "  make docs-build - Build documentation"
             echo ""
             echo "Nix run commands:"
+            echo "  nix run .#web-build   - Build web frontend"
+            echo "  nix run .#web-dev     - Start web dev server"
             echo "  nix run .#docs-serve  - Start Hugo dev server"
             echo "  nix run .#docs-build  - Build documentation"
             echo "  nix run .#demo-record - Record demo with asciinema"
