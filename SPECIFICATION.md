@@ -1192,22 +1192,50 @@ Location: `~/.config/baboon/stats.json`
 | Empty bar | 236 | Dark gray |
 | Gradient | 196→47 | Red through yellow to green |
 
-### Web UI Kartoza Brand Colours
+### Web UI TUI-Style Design
 
-The web frontend uses Kartoza's brand colour scheme derived from their wallpaper artwork.
+The web frontend uses a TUI-consistent design that closely matches the terminal application.
+
+**Design Principles:**
+- Monospace fonts (Fira Code, JetBrains Mono) throughout
+- Unicode block character rendering for word display
+- TUI-style gradient progress bars using █ and ░ characters
+- Terminal-inspired colour scheme with bright greens, reds, and cyan
+
+**Block Font Rendering:**
+- Letters rendered using Unicode block characters (█) matching the TUI
+- Each letter is 6 lines tall with 1 character spacing
+- Letters support A-Z uppercase for maximum readability
+- BlockFont.jsx component provides all block font rendering
+
+**Colour Scheme (TUI-Matching):**
 
 | Colour | Hex Code | Usage |
 |--------|----------|-------|
-| Kartoza Orange (Primary) | #D4922A | Primary brand colour, buttons, current letter highlight, WPM stat |
-| Kartoza Blue (Secondary) | #4A90A4 | Secondary brand colour, hover states, alternation, time stat |
-| Kartoza Gray Light | #C4C4C4 | Light gray accents |
-| Kartoza Gray Medium | #9A9A9A | Medium gray accents |
-| Kartoza Gray Dark | #6A6A6A | Dark gray, pending letters |
-| Green (Correct) | #4CAF50 | Correct keystrokes, high accuracy |
-| Red (Incorrect) | #E53935 | Incorrect keystrokes, errors |
-| Background Primary | #1a2833 | Main background |
-| Background Secondary | #243442 | Secondary background |
-| Background Card | #1f3040 | Card backgrounds |
+| Correct | #00ff00 | Correct keystrokes (ANSI 10) |
+| Incorrect | #ff0000 | Incorrect keystrokes (ANSI 9) |
+| Untyped | #808080 | Characters not yet typed (ANSI 8) |
+| Current | #D4922A | Current letter to type (Kartoza orange) |
+| Cyan | cyan.400 | Headers, titles, links |
+
+**Gradient Progress Bar:**
+The same red-to-green gradient used in the TUI (ANSI colours 196→47):
+- #ff0000 (196), #ff5f00 (202), #ff8700 (208), #ffaf00 (214)
+- #ffd700 (220), #ffff00 (226), #d7ff00 (190), #afff00 (154)
+- #87ff00 (118), #5fff00 (82), #00ff00 (46), #00ff5f (47)
+
+**Results Screen Layout:**
+TUI-style label-value-bar columns with fixed character widths:
+- Labels: 18 characters, right-aligned
+- Values: 8 characters, right-aligned
+- Bars: 30 character gradient bars
+
+**Statistics Display:**
+- Finger accuracy: LP LR LM LI RI RM RR RP with coloured dots
+- Row accuracy: Top Home Bot with coloured dots
+- Hand balance: L:XX% R:XX% with alternation percentage
+- Letter matrix: A-Z header with accuracy/seek-time rows using coloured dots
+- Common errors: expected→typed(count) format
 
 **Brand Colour Palette (Orange)**
 - 50: #fef6e9
@@ -1236,6 +1264,28 @@ The web frontend uses Kartoza's brand colour scheme derived from their wallpaper
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.8.0
+- TUI-style web UI redesign to match terminal application appearance
+  - Block font rendering using Unicode characters (█) via BlockFont.jsx component
+  - Same 6-line tall letters with 1 character spacing as TUI
+  - Monospace font family (Fira Code, JetBrains Mono) throughout
+  - TUI-matching colour scheme: #00ff00 (correct), #ff0000 (incorrect), #808080 (untyped)
+- Results screen redesign matching TUI layout
+  - Label-value-bar columns with fixed character widths (18-8-30)
+  - Gradient progress bars using █ and ░ characters (ANSI 196→47 gradient)
+  - Time bars inverted (lower is better)
+  - Finger/row/hand accuracy displayed with coloured dots
+  - Letter accuracy matrix (A-Z) with coloured dots
+  - Common errors in expected→typed(count) format
+- TypingScreen improvements
+  - Block font word display with smooth carousel animations
+  - TUI-style WPM bar with gradient and scale markers
+  - Decorative separators matching terminal style
+- WelcomeScreen redesign
+  - Block font BABOON title
+  - Terminal-inspired styling with cyan accents
+  - Monospace font for all text
 
 ### v1.7.0
 - User authentication system with OAuth SSO providers

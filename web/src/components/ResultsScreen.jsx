@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   VStack,
@@ -6,362 +6,77 @@ import {
   Text,
   Button,
   Flex,
-  Grid,
-  GridItem,
-  Badge,
-  Tooltip,
   Link,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
+import { GRADIENT_COLORS } from './BlockFont.jsx';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
 
-// Hero stat - big number with comparison inline
-function HeroStat({ label, value, unit, best, avg, isBest, delay = 0, color = 'orange' }) {
-  // Kartoza color scheme
-  const colors = {
-    orange: { bg: 'rgba(212, 146, 42, 0.1)', border: 'brand.500', text: 'brand.500' },
-    blue: { bg: 'rgba(74, 144, 164, 0.1)', border: 'kartoza.blue.500', text: 'kartoza.blue.500' },
-    green: { bg: 'rgba(76, 175, 80, 0.1)', border: 'accent.green', text: 'accent.green' },
-  };
-  const c = colors[color] || colors.orange;
-
-  return (
-    <MotionBox
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, type: 'spring', bounce: 0.4 }}
-      whileHover={{ scale: 1.02 }}
-      flex={1}
-    >
-      <Box
-        bg={c.bg}
-        borderRadius="2xl"
-        p={4}
-        border="2px solid"
-        borderColor={isBest ? 'accent.yellow' : c.border}
-        boxShadow={isBest ? '0 0 20px rgba(255, 204, 0, 0.3)' : 'none'}
-        position="relative"
-        textAlign="center"
-      >
-        {isBest && (
-          <Badge
-            position="absolute"
-            top={2}
-            right={2}
-            colorScheme="yellow"
-            fontSize="xs"
-          >
-            NEW BEST
-          </Badge>
-        )}
-        <Text color="gray.400" fontSize="xs" fontWeight="500" mb={1}>
-          {label}
-        </Text>
-        <HStack justify="center" align="baseline" spacing={1}>
-          <Text fontSize={{ base: '3xl', md: '4xl' }} fontWeight="800" color={c.text}>
-            {typeof value === 'number' ? value.toFixed(1) : value}
-          </Text>
-          <Text color="gray.500" fontSize="md">{unit}</Text>
-        </HStack>
-        <HStack justify="center" spacing={3} mt={1}>
-          <Text color="gray.500" fontSize="xs">
-            Best: <Text as="span" color="accent.green">{best.toFixed(1)}</Text>
-          </Text>
-          <Text color="gray.500" fontSize="xs">
-            Avg: <Text as="span" color="kartoza.blue.500">{avg.toFixed(1)}</Text>
-          </Text>
-        </HStack>
-      </Box>
-    </MotionBox>
-  );
+// Get accuracy color based on value
+function getAccuracyColor(accuracy) {
+  if (accuracy >= 95) return GRADIENT_COLORS[10];
+  if (accuracy >= 90) return GRADIENT_COLORS[9];
+  if (accuracy >= 85) return GRADIENT_COLORS[8];
+  if (accuracy >= 80) return GRADIENT_COLORS[7];
+  if (accuracy >= 75) return GRADIENT_COLORS[6];
+  if (accuracy >= 70) return GRADIENT_COLORS[5];
+  if (accuracy >= 65) return GRADIENT_COLORS[4];
+  if (accuracy >= 60) return GRADIENT_COLORS[3];
+  if (accuracy >= 50) return GRADIENT_COLORS[2];
+  if (accuracy >= 40) return GRADIENT_COLORS[1];
+  return GRADIENT_COLORS[0];
 }
 
-// Compact letter heatmap - keyboard-style layout
-function LetterHeatmap({ letterAccuracy, letterSeekTime, delay = 0 }) {
-  const rows = [
-    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
-    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
-    ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
-  ];
+// Get relative color for values within a range
+function getRelativeColor(value, minVal, maxVal) {
+  if (maxVal <= minVal) return GRADIENT_COLORS[10];
+  const normalized = (value - minVal) / (maxVal - minVal);
+  const idx = Math.min(Math.floor(normalized * 11), 11);
+  return GRADIENT_COLORS[Math.max(0, idx)];
+}
 
-  const getColor = (letter, type) => {
-    // Kartoza color scheme for heatmap
-    if (type === 'accuracy') {
-      const stats = letterAccuracy?.[letter];
-      if (!stats || stats.presented === 0) return 'gray.700';
-      const acc = (stats.correct / stats.presented) * 100;
-      if (acc >= 95) return '#4CAF50'; // Green
-      if (acc >= 85) return '#8BC34A'; // Light green
-      if (acc >= 75) return '#D4922A'; // Kartoza orange
-      if (acc >= 60) return '#E65100'; // Dark orange
-      return '#E53935'; // Red
-    } else {
-      const stats = letterSeekTime?.[letter];
-      if (!stats || stats.count === 0) return 'gray.700';
-      const avg = stats.total_time_ms / stats.count;
-      if (avg <= 150) return '#4CAF50'; // Green
-      if (avg <= 200) return '#8BC34A'; // Light green
-      if (avg <= 250) return '#D4922A'; // Kartoza orange
-      if (avg <= 350) return '#E65100'; // Dark orange
-      return '#E53935'; // Red
-    }
-  };
+// Get gradient color at position
+function getGradientColor(position) {
+  const idx = Math.min(Math.floor(position * (GRADIENT_COLORS.length - 1)), GRADIENT_COLORS.length - 1);
+  return GRADIENT_COLORS[Math.max(0, idx)];
+}
 
-  const getTooltip = (letter, type) => {
-    if (type === 'accuracy') {
-      const stats = letterAccuracy?.[letter];
-      if (!stats || stats.presented === 0) return `${letter.toUpperCase()}: N/A`;
-      return `${letter.toUpperCase()}: ${((stats.correct / stats.presented) * 100).toFixed(0)}%`;
-    } else {
-      const stats = letterSeekTime?.[letter];
-      if (!stats || stats.count === 0) return `${letter.toUpperCase()}: N/A`;
-      return `${letter.toUpperCase()}: ${(stats.total_time_ms / stats.count).toFixed(0)}ms`;
-    }
-  };
+// Responsive gradient bar
+function ResponsiveGradientBar({ value, maxValue, barWidth, showStar = false, inverted = false }) {
+  const fillPercent = inverted
+    ? Math.min(Math.max(1 - (value / maxValue), 0), 1)
+    : Math.min(Math.max(value / maxValue, 0), 1);
+  const filledWidth = Math.floor(barWidth * fillPercent);
+  const emptyWidth = barWidth - filledWidth;
 
-  const KeyboardRow = ({ letters, type, rowDelay }) => (
-    <HStack spacing={1} justify="center">
-      {letters.map((letter, i) => (
-        <MotionBox
-          key={letter}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: rowDelay + i * 0.02 }}
-        >
-          <Tooltip label={getTooltip(letter, type)} placement="top" hasArrow>
-            <Flex
-              w={{ base: '22px', md: '26px' }}
-              h={{ base: '22px', md: '26px' }}
-              align="center"
-              justify="center"
-              bg={getColor(letter, type)}
-              borderRadius="md"
-              opacity={
-                (type === 'accuracy' ? letterAccuracy?.[letter]?.presented : letterSeekTime?.[letter]?.count) > 0
-                  ? 1
-                  : 0.3
-              }
-            >
-              <Text fontSize="xs" fontWeight="bold" color="gray.900">
-                {letter.toUpperCase()}
-              </Text>
-            </Flex>
-          </Tooltip>
-        </MotionBox>
+  return (
+    <HStack spacing={0} display="inline-flex">
+      {Array.from({ length: filledWidth }).map((_, i) => (
+        <Text key={`fill-${i}`} as="span" color={getGradientColor(i / barWidth)}>█</Text>
       ))}
+      {Array.from({ length: emptyWidth }).map((_, i) => (
+        <Text key={`empty-${i}`} as="span" color="gray.700">░</Text>
+      ))}
+      {showStar && (
+        <Text as="span" color="yellow.400" fontWeight="bold" ml={1}>*</Text>
+      )}
     </HStack>
   );
-
-  return (
-    <MotionBox
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay }}
-    >
-      <HStack spacing={6} align="start">
-        {/* Accuracy keyboard */}
-        <VStack spacing={1}>
-          <Text color="gray.400" fontSize="xs" fontWeight="500" mb={1}>Accuracy</Text>
-          {rows.map((row, idx) => (
-            <Box key={idx} pl={idx === 1 ? 2 : idx === 2 ? 4 : 0}>
-              <KeyboardRow letters={row} type="accuracy" rowDelay={delay + idx * 0.1} />
-            </Box>
-          ))}
-        </VStack>
-
-        {/* Speed keyboard */}
-        <VStack spacing={1}>
-          <Text color="gray.400" fontSize="xs" fontWeight="500" mb={1}>Speed</Text>
-          {rows.map((row, idx) => (
-            <Box key={idx} pl={idx === 1 ? 2 : idx === 2 ? 4 : 0}>
-              <KeyboardRow letters={row} type="speed" rowDelay={delay + 0.3 + idx * 0.1} />
-            </Box>
-          ))}
-        </VStack>
-      </HStack>
-    </MotionBox>
-  );
 }
 
-// Compact finger stats - inline display
-function CompactFingerStats({ fingerStats, delay = 0 }) {
-  const fingers = [
-    { id: 0, label: 'LP' },
-    { id: 1, label: 'LR' },
-    { id: 2, label: 'LM' },
-    { id: 3, label: 'LI' },
-    { id: 6, label: 'RI' },
-    { id: 7, label: 'RM' },
-    { id: 8, label: 'RR' },
-    { id: 9, label: 'RP' },
-  ];
-
-  const getColor = (finger) => {
-    const stats = fingerStats?.[finger];
-    if (!stats || stats.presented === 0) return 'gray.600';
-    const acc = (stats.correct / stats.presented) * 100;
-    if (acc >= 95) return 'accent.green';
-    if (acc >= 85) return 'kartoza.blue.500';
-    if (acc >= 75) return 'brand.500'; // Kartoza orange
-    return 'red.400';
-  };
-
+// Animated stat row wrapper
+function AnimatedStatRow({ children, delay = 0 }) {
   return (
     <MotionBox
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay }}
+      transition={{ delay, type: 'spring', stiffness: 200, damping: 20 }}
+      w="100%"
     >
-      <VStack align="stretch" spacing={2}>
-        <Text color="gray.400" fontSize="xs" fontWeight="500">Finger Accuracy</Text>
-        <HStack spacing={1} justify="center">
-          {fingers.map((f, i) => {
-            const stats = fingerStats?.[f.id];
-            const acc = stats && stats.presented > 0
-              ? ((stats.correct / stats.presented) * 100).toFixed(0)
-              : '-';
-            return (
-              <MotionBox
-                key={f.id}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: delay + i * 0.03, type: 'spring' }}
-              >
-                <VStack spacing={0}>
-                  <Text fontSize="2xs" color="gray.500">{f.label}</Text>
-                  <Flex
-                    w="28px"
-                    h="28px"
-                    align="center"
-                    justify="center"
-                    bg="bg.tertiary"
-                    borderRadius="lg"
-                    border="2px solid"
-                    borderColor={getColor(f.id)}
-                  >
-                    <Text fontSize="xs" fontWeight="bold" color={getColor(f.id)}>
-                      {acc}
-                    </Text>
-                  </Flex>
-                </VStack>
-              </MotionBox>
-            );
-          })}
-        </HStack>
-      </VStack>
-    </MotionBox>
-  );
-}
-
-// Compact hand balance
-function CompactHandBalance({ handStats, handAlternations, sameHandRuns, delay = 0 }) {
-  const leftStats = handStats?.[0] || { presented: 0 };
-  const rightStats = handStats?.[1] || { presented: 0 };
-  const total = leftStats.presented + rightStats.presented;
-  const leftPct = total > 0 ? (leftStats.presented / total) * 100 : 50;
-  const rightPct = 100 - leftPct;
-
-  const totalTransitions = (handAlternations || 0) + (sameHandRuns || 0);
-  const alternationRate = totalTransitions > 0
-    ? ((handAlternations || 0) / totalTransitions) * 100
-    : 0;
-
-  return (
-    <MotionBox
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay }}
-    >
-      <VStack align="stretch" spacing={2}>
-        <Text color="gray.400" fontSize="xs" fontWeight="500">Hand Balance</Text>
-        <HStack spacing={2}>
-          <Text color="brand.500" fontSize="sm" fontWeight="bold" w="40px">
-            L {leftPct.toFixed(0)}%
-          </Text>
-          <Box flex={1} h="10px" bg="bg.tertiary" borderRadius="full" overflow="hidden">
-            <Flex h="100%">
-              <MotionBox
-                h="100%"
-                bg="brand.500"
-                initial={{ width: 0 }}
-                animate={{ width: `${leftPct}%` }}
-                transition={{ delay: delay + 0.1, type: 'spring' }}
-              />
-              <MotionBox
-                h="100%"
-                bg="kartoza.blue.500"
-                initial={{ width: 0 }}
-                animate={{ width: `${rightPct}%` }}
-                transition={{ delay: delay + 0.2, type: 'spring' }}
-              />
-            </Flex>
-          </Box>
-          <Text color="kartoza.blue.500" fontSize="sm" fontWeight="bold" w="40px" textAlign="right">
-            R {rightPct.toFixed(0)}%
-          </Text>
-        </HStack>
-        <HStack justify="center">
-          <Text color="gray.500" fontSize="xs">
-            Alternation: <Text as="span" color="accent.green" fontWeight="bold">{alternationRate.toFixed(0)}%</Text>
-          </Text>
-        </HStack>
-      </VStack>
-    </MotionBox>
-  );
-}
-
-// Compact common errors
-function CompactErrors({ errorSubstitution, delay = 0 }) {
-  const errors = [];
-  if (errorSubstitution) {
-    Object.entries(errorSubstitution).forEach(([expected, typed]) => {
-      Object.entries(typed).forEach(([typedChar, count]) => {
-        errors.push({ expected, typed: typedChar, count });
-      });
-    });
-  }
-  errors.sort((a, b) => b.count - a.count);
-  const topErrors = errors.slice(0, 4);
-
-  return (
-    <MotionBox
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay }}
-    >
-      <VStack align="stretch" spacing={2}>
-        <Text color="gray.400" fontSize="xs" fontWeight="500">Common Errors</Text>
-        {topErrors.length === 0 ? (
-          <Text color="gray.600" fontSize="xs" textAlign="center">No errors</Text>
-        ) : (
-          <HStack spacing={1} flexWrap="wrap" justify="center">
-            {topErrors.map((error, i) => (
-              <MotionBox
-                key={`${error.expected}-${error.typed}`}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: delay + i * 0.05, type: 'spring' }}
-              >
-                <Box
-                  px={2}
-                  py={1}
-                  bg="rgba(255, 68, 102, 0.15)"
-                  borderRadius="md"
-                  border="1px solid"
-                  borderColor="accent.red"
-                >
-                  <Text fontSize="xs" color="accent.red" fontWeight="500">
-                    {error.expected}→{error.typed}
-                    <Text as="span" color="gray.500" ml={1}>({error.count})</Text>
-                  </Text>
-                </Box>
-              </MotionBox>
-            ))}
-          </HStack>
-        )}
-      </VStack>
+      {children}
     </MotionBox>
   );
 }
@@ -395,10 +110,18 @@ function ResultsScreen({
   const isNewBestAccuracy = accuracy >= bestAccuracy && historicalStats?.total_sessions > 0;
   const isNewBestTime = (bestTime === 0 || duration <= bestTime) && historicalStats?.total_sessions > 0;
 
+  // Responsive sizing
+  const fontSize = useBreakpointValue({ base: 'md', md: 'lg', lg: 'xl', xl: '2xl' });
+  const smallFontSize = useBreakpointValue({ base: 'sm', md: 'md', lg: 'lg', xl: 'xl' });
+  const titleSize = useBreakpointValue({ base: '2xl', md: '4xl', lg: '5xl', xl: '6xl' });
+  const barWidth = useBreakpointValue({ base: 20, md: 30, lg: 40, xl: 50 });
+  const labelWidth = useBreakpointValue({ base: '16ch', md: '18ch', lg: '20ch', xl: '22ch' });
+  const valueWidth = useBreakpointValue({ base: '8ch', md: '10ch', lg: '12ch' });
+
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Tab') {
+      if (e.key === 'Enter' || e.key === 'Tab') {
         e.preventDefault();
         if (!isLoading) {
           onNewRound();
@@ -412,192 +135,305 @@ function ResultsScreen({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onNewRound, onBackToMenu, isLoading]);
 
+  const maxWpmDisplay = 120;
+  const maxTimeDisplay = 180;
+  const maxAccuracyDisplay = 100;
+
+  let animIdx = 0;
+
+  // Stat row component
+  const StatRow = ({ label, value, bar }) => (
+    <HStack spacing={2} fontFamily="'Fira Code', monospace" fontSize={fontSize} justify="center" w="100%">
+      <Text color="gray.400" w={labelWidth} textAlign="right" whiteSpace="nowrap">
+        {label}
+      </Text>
+      <Text color="white" w={valueWidth} textAlign="right" whiteSpace="nowrap">
+        {value}
+      </Text>
+      {bar}
+    </HStack>
+  );
+
+  // Finger stats
+  const fingers = [
+    { id: 0, label: 'LP' },
+    { id: 1, label: 'LR' },
+    { id: 2, label: 'LM' },
+    { id: 3, label: 'LI' },
+    { id: 6, label: 'RI' },
+    { id: 7, label: 'RM' },
+    { id: 8, label: 'RR' },
+    { id: 9, label: 'RP' },
+  ];
+
+  let minFingerAcc = 100, maxFingerAcc = 0;
+  const fingerAccuracies = fingers.map(f => {
+    const stats = historicalStats?.finger_stats?.[f.id];
+    if (!stats || stats.presented === 0) return -1;
+    const acc = (stats.correct / stats.presented) * 100;
+    if (acc < minFingerAcc) minFingerAcc = acc;
+    if (acc > maxFingerAcc) maxFingerAcc = acc;
+    return acc;
+  });
+
+  // Hand stats
+  const leftStats = historicalStats?.hand_stats?.[0] || { correct: 0 };
+  const rightStats = historicalStats?.hand_stats?.[1] || { correct: 0 };
+  const totalHand = leftStats.correct + rightStats.correct;
+  const leftPct = totalHand > 0 ? (leftStats.correct / totalHand) * 100 : 50;
+  const rightPct = 100 - leftPct;
+  const totalTransitions = (historicalStats?.hand_alternations || 0) + (historicalStats?.same_hand_runs || 0);
+  const altRate = totalTransitions > 0 ? ((historicalStats?.hand_alternations || 0) / totalTransitions) * 100 : 0;
+
+  // Common errors
+  const errors = [];
+  if (historicalStats?.error_substitution) {
+    Object.entries(historicalStats.error_substitution).forEach(([expected, typed]) => {
+      Object.entries(typed).forEach(([typedChar, count]) => {
+        errors.push({ expected, typed: typedChar, count });
+      });
+    });
+  }
+  errors.sort((a, b) => b.count - a.count);
+  const topErrors = errors.slice(0, 5);
+
   return (
-    <Flex minH="100vh" direction="column" p={4}>
+    <Flex minH="100vh" direction="column" p={{ base: 2, md: 4 }}>
       {/* Header */}
+      <Flex justify="center" py={2}>
+        <Text
+          color="cyan.400"
+          fontSize={smallFontSize}
+          fontWeight="bold"
+          fontFamily="'Fira Code', monospace"
+        >
+          BABOON - Typing Practice
+        </Text>
+      </Flex>
+
+      {/* Title */}
       <MotionBox
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', bounce: 0.4 }}
         textAlign="center"
-        py={2}
+        py={{ base: 2, md: 4 }}
       >
         <Text
-          fontSize={{ base: '3xl', md: '5xl' }}
-          fontWeight="800"
-          bgGradient="linear(to-r, brand.500, kartoza.blue.500)"
-          bgClip="text"
+          fontSize={titleSize}
+          fontWeight="bold"
+          color="cyan.400"
+          fontFamily="'Fira Code', monospace"
         >
           Round Complete!
         </Text>
-        <Text color="gray.500" fontSize="sm">
-          Session #{historicalStats?.total_sessions || 1}
-        </Text>
       </MotionBox>
 
-      {/* Hero Stats Row */}
-      <HStack spacing={4} py={4} px={{ base: 0, md: 8 }}>
-        <HeroStat
-          label="Words Per Minute"
-          value={wpm}
-          unit="WPM"
-          best={bestWpm}
-          avg={avgWpm}
-          isBest={isNewBestWpm}
-          color="orange"
-          delay={0.1}
-        />
-        <HeroStat
-          label="Accuracy"
-          value={accuracy}
-          unit="%"
-          best={bestAccuracy}
-          avg={avgAccuracy}
-          isBest={isNewBestAccuracy}
-          color="green"
-          delay={0.15}
-        />
-        <HeroStat
-          label="Time"
-          value={duration}
-          unit="s"
-          best={bestTime}
-          avg={avgTime}
-          isBest={isNewBestTime}
-          color="blue"
-          delay={0.2}
-        />
-      </HStack>
+      {/* Stats */}
+      <VStack spacing={{ base: 1, md: 2 }} align="center" flex={1} overflow="auto" pb={4}>
+        {/* WPM Section */}
+        <Box h={{ base: 1, md: 2 }} />
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="WPM this run:"
+            value={wpm.toFixed(1)}
+            bar={<ResponsiveGradientBar value={wpm} maxValue={maxWpmDisplay} barWidth={barWidth} showStar={isNewBestWpm} />}
+          />
+        </AnimatedStatRow>
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="WPM best:"
+            value={bestWpm.toFixed(1)}
+            bar={<ResponsiveGradientBar value={bestWpm} maxValue={maxWpmDisplay} barWidth={barWidth} />}
+          />
+        </AnimatedStatRow>
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="WPM average:"
+            value={avgWpm.toFixed(1)}
+            bar={<ResponsiveGradientBar value={avgWpm} maxValue={maxWpmDisplay} barWidth={barWidth} />}
+          />
+        </AnimatedStatRow>
 
-      {/* Main Content - Two Column Grid */}
-      <Grid
-        templateColumns={{ base: '1fr', lg: '1fr 1fr' }}
-        gap={4}
-        flex={1}
-        px={{ base: 0, md: 8 }}
-      >
-        {/* Left Column - Letter Heatmaps */}
-        <GridItem>
-          <Box
-            bg="bg.card"
-            borderRadius="2xl"
-            p={4}
-            border="1px solid"
-            borderColor="whiteAlpha.100"
-            h="100%"
-          >
-            <Text color="gray.300" fontSize="sm" fontWeight="600" mb={3}>
-              Letter Performance
+        {/* Time Section */}
+        <Box h={{ base: 1, md: 2 }} />
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="Time this run:"
+            value={`${duration.toFixed(1)}s`}
+            bar={<ResponsiveGradientBar value={duration} maxValue={maxTimeDisplay} barWidth={barWidth} showStar={isNewBestTime} inverted />}
+          />
+        </AnimatedStatRow>
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="Time best:"
+            value={`${bestTime.toFixed(1)}s`}
+            bar={<ResponsiveGradientBar value={bestTime} maxValue={maxTimeDisplay} barWidth={barWidth} inverted />}
+          />
+        </AnimatedStatRow>
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="Time average:"
+            value={`${avgTime.toFixed(1)}s`}
+            bar={<ResponsiveGradientBar value={avgTime} maxValue={maxTimeDisplay} barWidth={barWidth} inverted />}
+          />
+        </AnimatedStatRow>
+
+        {/* Accuracy Section */}
+        <Box h={{ base: 1, md: 2 }} />
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="Accuracy this run:"
+            value={`${accuracy.toFixed(1)}%`}
+            bar={<ResponsiveGradientBar value={accuracy} maxValue={maxAccuracyDisplay} barWidth={barWidth} showStar={isNewBestAccuracy} />}
+          />
+        </AnimatedStatRow>
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="Accuracy best:"
+            value={`${bestAccuracy.toFixed(1)}%`}
+            bar={<ResponsiveGradientBar value={bestAccuracy} maxValue={maxAccuracyDisplay} barWidth={barWidth} />}
+          />
+        </AnimatedStatRow>
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <StatRow
+            label="Accuracy average:"
+            value={`${avgAccuracy.toFixed(1)}%`}
+            bar={<ResponsiveGradientBar value={avgAccuracy} maxValue={maxAccuracyDisplay} barWidth={barWidth} />}
+          />
+        </AnimatedStatRow>
+
+        {/* Sessions */}
+        <Box h={{ base: 1, md: 2 }} />
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={2} fontFamily="'Fira Code', monospace" fontSize={fontSize} justify="center">
+            <Text color="cyan.400" w={labelWidth} textAlign="right">Total sessions:</Text>
+            <Text color="white">{historicalStats?.total_sessions || 1}</Text>
+          </HStack>
+        </AnimatedStatRow>
+
+        {/* Finger Stats */}
+        <Box h={{ base: 1, md: 2 }} />
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={2} fontFamily="'Fira Code', monospace" fontSize={smallFontSize} justify="center" flexWrap="wrap">
+            <Text color="gray.400" w={labelWidth} textAlign="right">Finger accuracy:</Text>
+            <HStack spacing={{ base: 1, md: 2 }}>
+              {fingers.map((f, i) => {
+                const acc = fingerAccuracies[i];
+                const color = acc < 0 ? 'gray.600' : getRelativeColor(acc, minFingerAcc, maxFingerAcc);
+                return (
+                  <HStack key={f.id} spacing={0}>
+                    <Text color="gray.500" fontSize={smallFontSize}>{f.label}</Text>
+                    <Text color={color} fontSize={fontSize}>●</Text>
+                  </HStack>
+                );
+              })}
+            </HStack>
+          </HStack>
+        </AnimatedStatRow>
+
+        {/* Hand Stats */}
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={2} fontFamily="'Fira Code', monospace" fontSize={fontSize} justify="center">
+            <Text color="gray.400" w={labelWidth} textAlign="right">Hand balance:</Text>
+            <Text color="white">L:{leftPct.toFixed(0)}% R:{rightPct.toFixed(0)}%</Text>
+            <Text color="gray.400">Alt:</Text>
+            <Text color={getAccuracyColor(altRate)}>{altRate.toFixed(0)}%</Text>
+          </HStack>
+        </AnimatedStatRow>
+
+        {/* Common Errors */}
+        <AnimatedStatRow delay={animIdx++ * 0.03}>
+          <HStack spacing={2} fontFamily="'Fira Code', monospace" fontSize={smallFontSize} justify="center" flexWrap="wrap">
+            <Text color="gray.400" w={labelWidth} textAlign="right">Common errors:</Text>
+            {topErrors.length === 0 ? (
+              <Text color="gray.600">none</Text>
+            ) : (
+              topErrors.map((e) => (
+                <HStack key={`${e.expected}-${e.typed}`} spacing={0}>
+                  <Text color="red.400">{e.expected}→{e.typed}</Text>
+                  <Text color="gray.600">({e.count})</Text>
+                </HStack>
+              ))
+            )}
+          </HStack>
+        </AnimatedStatRow>
+
+        {/* New best legend */}
+        {(isNewBestWpm || isNewBestTime || isNewBestAccuracy) && (
+          <AnimatedStatRow delay={animIdx++ * 0.03}>
+            <Text color="yellow.400" fontFamily="'Fira Code', monospace" fontSize={fontSize} fontWeight="bold" mt={2} textAlign="center">
+              * = New personal best!
             </Text>
-            <LetterHeatmap
-              letterAccuracy={historicalStats?.letter_accuracy}
-              letterSeekTime={historicalStats?.letter_seek_time}
-              delay={0.3}
-            />
-          </Box>
-        </GridItem>
+          </AnimatedStatRow>
+        )}
+      </VStack>
 
-        {/* Right Column - Typing Analysis */}
-        <GridItem>
-          <Box
-            bg="bg.card"
-            borderRadius="2xl"
-            p={4}
-            border="1px solid"
-            borderColor="whiteAlpha.100"
-            h="100%"
-          >
-            <Text color="gray.300" fontSize="sm" fontWeight="600" mb={3}>
-              Typing Analysis
-            </Text>
-            <VStack spacing={4} align="stretch">
-              <CompactFingerStats
-                fingerStats={historicalStats?.finger_stats}
-                delay={0.4}
-              />
-              <CompactHandBalance
-                handStats={historicalStats?.hand_stats}
-                handAlternations={historicalStats?.hand_alternations}
-                sameHandRuns={historicalStats?.same_hand_runs}
-                delay={0.5}
-              />
-              <CompactErrors
-                errorSubstitution={historicalStats?.error_substitution}
-                delay={0.6}
-              />
-            </VStack>
-          </Box>
-        </GridItem>
-      </Grid>
-
-      {/* Action Buttons - Fixed at bottom */}
+      {/* Action Buttons */}
       <MotionFlex
         gap={4}
         justify="center"
         py={4}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7, type: 'spring' }}
+        transition={{ delay: 0.4, type: 'spring' }}
       >
         <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
-            size="lg"
-            variant="glow"
+            size={{ base: 'md', md: 'lg' }}
+            variant="outline"
             onClick={onNewRound}
             isLoading={isLoading}
-            px={8}
+            px={{ base: 6, md: 8 }}
+            fontFamily="'Fira Code', monospace"
+            fontSize={fontSize}
+            borderColor="#00ff00"
+            color="#00ff00"
+            _hover={{
+              bg: 'rgba(0, 255, 0, 0.1)',
+              boxShadow: '0 0 20px rgba(0, 255, 0, 0.3)',
+            }}
           >
-            New Round
+            [ NEW ROUND ]
           </Button>
         </MotionBox>
 
         <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
-            size="lg"
+            size={{ base: 'md', md: 'lg' }}
             variant="ghost"
             onClick={onBackToMenu}
-            px={8}
+            px={{ base: 6, md: 8 }}
+            fontFamily="'Fira Code', monospace"
+            fontSize={smallFontSize}
+            color="gray.400"
+            _hover={{ color: 'white' }}
           >
-            Back to Menu
+            [ MENU ]
           </Button>
         </MotionBox>
       </MotionFlex>
 
       {/* Keyboard hint */}
-      <Text color="gray.600" fontSize="xs" textAlign="center" pb={2}>
-        Press TAB for new round • ESC to exit
+      <Text color="gray.600" fontSize={smallFontSize} textAlign="center" pb={2} fontFamily="'Fira Code', monospace">
+        ENTER = new round | ESC = quit
       </Text>
 
       {/* Kartoza branding */}
       <Flex justify="center" pb={4}>
-        <HStack spacing={2} color="gray.600" fontSize="xs">
+        <HStack spacing={2} color="gray.600" fontSize={smallFontSize} fontFamily="'Fira Code', monospace">
           <Text>Made with</Text>
           <Text color="red.400">♥</Text>
           <Text>by</Text>
-          <Link
-            href="https://kartoza.com"
-            isExternal
-            color="brand.500"
-            _hover={{ color: 'brand.400' }}
-          >
+          <Link href="https://kartoza.com" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
             Kartoza
           </Link>
           <Text>|</Text>
-          <Link
-            href="https://github.com/sponsors/timlinux"
-            isExternal
-            color="kartoza.blue.500"
-            _hover={{ color: 'kartoza.blue.400' }}
-          >
+          <Link href="https://github.com/sponsors/timlinux" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
             Donate!
           </Link>
           <Text>|</Text>
-          <Link
-            href="https://github.com/timlinux/baboon"
-            isExternal
-            color="gray.500"
-            _hover={{ color: 'gray.400' }}
-          >
+          <Link href="https://github.com/timlinux/baboon" isExternal color="gray.500" _hover={{ color: 'gray.400' }}>
             GitHub
           </Link>
         </HStack>

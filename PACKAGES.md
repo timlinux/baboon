@@ -261,14 +261,39 @@ Chakra UI custom theme with Kartoza brand colours.
 
 ### `src/components/`
 
+#### `BlockFont.jsx`
+TUI-style block font rendering system matching the terminal application.
+
+**Exports:**
+- `BlockFontWord` - Renders a word using Unicode block characters (█)
+- `AnimatedBlockFontWord` - Animated version with spring physics
+- `GradientBar` - TUI-style gradient progress bar (█░ characters)
+- `TimeBar` - Inverted gradient bar for time (lower is better)
+- `StatRow` - TUI-style label-value-bar row
+- `WpmBar` - Live WPM display with gradient bar
+- `GRADIENT_COLORS` - Red-to-green gradient array (ANSI 196→47)
+- `getGradientColor()` - Get colour at position in gradient
+
+**Block Letter Format:**
+- 6 lines tall per character
+- Uses █ (full block) and spaces
+- 1 character spacing between letters
+- Supports A-Z uppercase
+
+**Colours:**
+- Correct: #00ff00 (ANSI 10)
+- Incorrect: #ff0000 (ANSI 9)
+- Untyped: #808080 (ANSI 8)
+- Current: #D4922A (Kartoza orange)
+
 #### `WelcomeScreen.jsx`
-Landing page with animated logo, game options, and login section.
+Landing page with block font title, game options, and login section.
 
 #### `TypingScreen.jsx`
-Main typing interface with physics-based block letters.
+Main typing interface with TUI-style block font letters and gradient WPM bar.
 
 #### `ResultsScreen.jsx`
-Statistics display with animated stat cards.
+TUI-style statistics display with label-value-bar columns and coloured dot matrices.
 
 #### `LoginButton.jsx`
 OAuth provider login buttons with provider icons.

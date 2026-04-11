@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Box, Text, Flex } from '@chakra-ui/react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Box, Text, Flex, Skeleton } from '@chakra-ui/react';
 
 /**
  * Google AdSense component that displays an ad unit.
@@ -9,10 +9,13 @@ import { Box, Text, Flex } from '@chakra-ui/react';
 function AdSense({ publisherId, slot = 'auto', format = 'auto', responsive = true, showPreview = true }) {
   const adRef = useRef(null);
   const isLoaded = useRef(false);
+  const [isLoading, setIsLoading] = useState(!!publisherId);
 
   useEffect(() => {
     // Only load if we have a publisher ID and haven't loaded yet
     if (!publisherId || isLoaded.current) return;
+
+    setIsLoading(true);
 
     // Check if the AdSense script is already loaded
     const existingScript = document.querySelector(
@@ -29,9 +32,15 @@ function AdSense({ publisherId, slot = 'auto', format = 'auto', responsive = tru
 
       script.onload = () => {
         pushAd();
+        setIsLoading(false);
+      };
+
+      script.onerror = () => {
+        setIsLoading(false);
       };
     } else {
       pushAd();
+      setIsLoading(false);
     }
 
     isLoaded.current = true;
@@ -72,19 +81,23 @@ function AdSense({ publisherId, slot = 'auto', format = 'auto', responsive = tru
         borderColor={publisherId ? 'transparent' : 'gray.600'}
       >
         {publisherId ? (
-          <ins
-            ref={adRef}
-            className="adsbygoogle"
-            style={{
-              display: 'block',
-              minWidth: '300px',
-              minHeight: '90px',
-            }}
-            data-ad-client={publisherId}
-            data-ad-slot={slot}
-            data-ad-format={format}
-            data-full-width-responsive={responsive ? 'true' : 'false'}
-          />
+          isLoading ? (
+            <Skeleton height="90px" borderRadius="lg" />
+          ) : (
+            <ins
+              ref={adRef}
+              className="adsbygoogle"
+              style={{
+                display: 'block',
+                minWidth: '300px',
+                minHeight: '90px',
+              }}
+              data-ad-client={publisherId}
+              data-ad-slot={slot}
+              data-ad-format={format}
+              data-full-width-responsive={responsive ? 'true' : 'false'}
+            />
+          )
         ) : (
           <Flex
             align="center"

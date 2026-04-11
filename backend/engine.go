@@ -328,13 +328,16 @@ func (e *Engine) SubmitTiming(startTime, endTime time.Time, durationMs int64) {
 
 // GetGameState returns a snapshot of the current game state.
 func (e *Engine) GetGameState() GameState {
+	// Cap word number at total words to prevent "31 / 30" display when round is complete
+	wordNumber := min(e.wordIdx+1, len(e.words))
+
 	state := GameState{
 		Words:           e.words,
 		CurrentWordIdx:  e.wordIdx,
 		CurrentInput:    e.input,
 		TimerStarted:    e.started,
 		PunctuationMode: e.config.PunctuationMode,
-		WordNumber:      e.wordIdx + 1,
+		WordNumber:      wordNumber,
 		TotalWords:      len(e.words),
 	}
 
