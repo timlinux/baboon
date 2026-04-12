@@ -121,12 +121,70 @@ func (db *DB) migrate() error {
 		db.migrateUsers(),
 		db.migrateUserStats(),
 		db.migrateRefreshTokens(),
+		db.migrateLeaderboard(),
 	}
 
 	for _, migration := range migrations {
 		if _, err := db.conn.Exec(migration); err != nil {
 			return fmt.Errorf("migration failed: %w", err)
 		}
+	}
+
+	// Run V2 migration for leaderboard (adds username and score columns)
+	if err := db.migrateLeaderboardV2Columns(); err != nil {
+		return fmt.Errorf("leaderboard v2 migration failed: %w", err)
+	}
+
+	return nil
+}
+
+// migrateLeaderboardV2Columns adds username and score columns to existing leaderboard_entries table.
+func (db *DB) migrateLeaderboardV2Columns() error {
+	// Check if the columns exist by trying to add them
+	// SQLite and PostgreSQL both ignore duplicate column errors differently
+
+	if db.driver == "postgres" {
+		// PostgreSQL supports IF NOT EXISTS
+		_, _ = db.conn.Exec(`ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS username TEXT DEFAULT 'ANON'`)
+		_, _ = db.conn.Exec(`ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS score DOUBLE PRECISION`)
+		// Update existing rows
+		_, _ = db.conn.Exec(`UPDATE leaderboard_entries SET score = wpm * accuracy / 100 WHERE score IS NULL`)
+		_, _ = db.conn.Exec(`UPDATE leaderboard_entries SET username = 'ANON' WHERE username IS NULL`)
+	} else {
+		// SQLite - check if column exists first
+		rows, err := db.conn.Query(`PRAGMA table_info(leaderboard_entries)`)
+		if err != nil {
+			return nil // Table might not exist yet
+		}
+		defer rows.Close()
+
+		hasUsername := false
+		hasScore := false
+		for rows.Next() {
+			var cid int
+			var name, colType string
+			var notNull, pk int
+			var dfltValue interface{}
+			if err := rows.Scan(&cid, &name, &colType, &notNull, &dfltValue, &pk); err != nil {
+				continue
+			}
+			if name == "username" {
+				hasUsername = true
+			}
+			if name == "score" {
+				hasScore = true
+			}
+		}
+
+		if !hasUsername {
+			_, _ = db.conn.Exec(`ALTER TABLE leaderboard_entries ADD COLUMN username TEXT DEFAULT 'ANON'`)
+		}
+		if !hasScore {
+			_, _ = db.conn.Exec(`ALTER TABLE leaderboard_entries ADD COLUMN score REAL`)
+		}
+		// Update existing rows
+		_, _ = db.conn.Exec(`UPDATE leaderboard_entries SET score = wpm * accuracy / 100 WHERE score IS NULL`)
+		_, _ = db.conn.Exec(`UPDATE leaderboard_entries SET username = 'ANON' WHERE username IS NULL`)
 	}
 
 	return nil

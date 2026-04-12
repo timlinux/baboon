@@ -1172,3 +1172,137 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 
 	return fullContent.String()
 }
+
+// RenderAboutScreen renders the "Why We Made This" informational screen
+func (r *Renderer) RenderAboutScreen() string {
+	// Title using block font
+	titleLines := blockfont.RenderWord("WHY")
+	titleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true)
+
+	var titleBuilder strings.Builder
+	for _, line := range titleLines {
+		for _, letterLine := range line {
+			titleBuilder.WriteString(titleStyle.Render(letterLine))
+		}
+		titleBuilder.WriteString("\n")
+	}
+	title := titleBuilder.String()
+
+	// Content sections
+	sectionTitle := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true)
+	sectionText := lipgloss.NewStyle().Foreground(lipgloss.Color("252"))
+	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("214")).Bold(true)
+	link := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
+
+	// Section 1: AI Era
+	section1 := lipgloss.JoinVertical(lipgloss.Left,
+		sectionTitle.Render("In the Age of AI, Typing Matters More Than Ever"),
+		"",
+		sectionText.Render("We live in an AI-centric world where tools like ChatGPT, Claude, and"),
+		sectionText.Render("countless other AI assistants are transforming how we work."),
+		"",
+		sectionText.Render("The faster and more accurately you type, the more efficiently you can"),
+		sectionText.Render("iterate with AI, refine your prompts, and turn ideas into reality."),
+	)
+
+	// Section 2: Inspiration
+	section2 := lipgloss.JoinVertical(lipgloss.Left,
+		highlight.Render("Standing on the Shoulders of Giants"),
+		"",
+		sectionText.Render("We were inspired by amazing typing practice sites like ")+
+			link.Render("Monkeytype")+" "+sectionText.Render("and ")+link.Render("Keybr")+sectionText.Render("."),
+		"",
+		sectionText.Render("But we wanted to add something new: a fun, competitive,"),
+		sectionText.Render("retro-styled speed typing game for quick practice sessions."),
+	)
+
+	// Section 3: Features
+	bullet := lipgloss.NewStyle().Foreground(lipgloss.Color("226")).Render("*")
+	featureLabel := lipgloss.NewStyle().Foreground(lipgloss.Color("14"))
+
+	section3 := lipgloss.JoinVertical(lipgloss.Left,
+		lipgloss.NewStyle().Foreground(lipgloss.Color("46")).Bold(true).Render("What Makes Baboon Different"),
+		"",
+		bullet+" "+featureLabel.Render("Monthly Leaderboards")+" - Compete with others",
+		bullet+" "+featureLabel.Render("Arcade-Style Name Entry")+" - Like classic 80s games",
+		bullet+" "+featureLabel.Render("Shareable Badges")+" - Brag on social media",
+		bullet+" "+featureLabel.Render("Retro Terminal Aesthetic")+" - Beautiful TUI and web",
+		bullet+" "+featureLabel.Render("Quick Sessions")+" - 30 words per round",
+		bullet+" "+featureLabel.Render("Deep Statistics")+" - Per-key accuracy, finger stats",
+	)
+
+	// Main content
+	aboutContent := lipgloss.JoinVertical(
+		lipgloss.Center,
+		title,
+		"",
+		section1,
+		"",
+		section2,
+		"",
+		section3,
+	)
+
+	// Fixed header at top
+	headerStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("14")).
+		Bold(true)
+	header := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
+		headerStyle.Render("BABOON - Why We Made This"))
+
+	// Footer
+	helpText := "Press ESC or ENTER to return | Ctrl+C to quit"
+
+	// Kartoza branding
+	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
+	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
+	kartozaLine := kartozaStyle.Render("Made with ") +
+		heartStyle.Render("♥") +
+		kartozaStyle.Render(" by ") +
+		linkStyle.Render("Kartoza") +
+		kartozaStyle.Render(" | ") +
+		linkStyle.Render("github.com/timlinux/baboon")
+
+	aboutFooter := lipgloss.JoinVertical(lipgloss.Center,
+		r.styles.Help.Render(helpText),
+		kartozaLine,
+	)
+	aboutFooter = lipgloss.PlaceHorizontal(r.width, lipgloss.Center, aboutFooter)
+
+	// Calculate heights
+	aboutHeaderHeight := 1
+	aboutFooterHeight := 2
+	aboutContentHeight := strings.Count(aboutContent, "\n") + 1
+	aboutAvailableHeight := r.height - aboutHeaderHeight - aboutFooterHeight - 2
+
+	// Calculate top padding to center main content
+	aboutTopPadding := max((aboutAvailableHeight-aboutContentHeight)/2, 0)
+
+	// Build full screen layout
+	var aboutFullContent strings.Builder
+
+	// Header at top
+	aboutFullContent.WriteString(header)
+	aboutFullContent.WriteString("\n")
+
+	// Top padding
+	for i := 0; i < aboutTopPadding; i++ {
+		aboutFullContent.WriteString("\n")
+	}
+
+	// Main content (centered)
+	aboutCenteredMain := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, aboutContent)
+	aboutFullContent.WriteString(aboutCenteredMain)
+
+	// Bottom padding
+	aboutCurrentHeight := aboutHeaderHeight + 1 + aboutTopPadding + aboutContentHeight
+	for i := aboutCurrentHeight; i < r.height-aboutFooterHeight; i++ {
+		aboutFullContent.WriteString("\n")
+	}
+
+	// Footer at bottom
+	aboutFullContent.WriteString(aboutFooter)
+
+	return aboutFullContent.String()
+}

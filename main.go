@@ -97,6 +97,9 @@ func runServerOnly(addr string, punctuationMode bool) {
 	config := backend.DefaultConfig()
 	config.PunctuationMode = punctuationMode
 
+	// Load database and auth configuration from environment
+	loadConfigFromEnv(&config)
+
 	server, err := backend.NewServer(config, addr)
 	if err != nil {
 		fmt.Printf("Error creating server: %v\n", err)
@@ -186,6 +189,9 @@ func runWebCommand(args []string) {
 	config := backend.DefaultConfig()
 	config.PunctuationMode = *punctuationMode
 
+	// Load database and auth configuration from environment
+	loadConfigFromEnv(&config)
+
 	// Handle adsense flag: "preview" shows placeholder, actual key shows real ads
 	if *adsenseKey == "preview" {
 		config.AdsenseEnabled = true
@@ -249,4 +255,48 @@ func getPIDFilePath() string {
 		runDir = "/tmp"
 	}
 	return filepath.Join(runDir, "baboon.pid")
+}
+
+// loadConfigFromEnv loads configuration from environment variables.
+func loadConfigFromEnv(config *backend.Config) {
+	// Database configuration
+	if dsn := os.Getenv("BABOON_DATABASE_DSN"); dsn != "" {
+		config.DatabaseDSN = dsn
+	}
+
+	// JWT secret for authentication
+	if secret := os.Getenv("BABOON_JWT_SECRET"); secret != "" {
+		config.JWTSecret = secret
+	}
+
+	// Base URL for OAuth callbacks
+	if baseURL := os.Getenv("BABOON_BASE_URL"); baseURL != "" {
+		config.BaseURL = baseURL
+	}
+
+	// OAuth providers
+	if id := os.Getenv("BABOON_GOOGLE_CLIENT_ID"); id != "" {
+		config.GoogleClientID = id
+	}
+	if secret := os.Getenv("BABOON_GOOGLE_CLIENT_SECRET"); secret != "" {
+		config.GoogleClientSecret = secret
+	}
+	if id := os.Getenv("BABOON_GITHUB_CLIENT_ID"); id != "" {
+		config.GitHubClientID = id
+	}
+	if secret := os.Getenv("BABOON_GITHUB_CLIENT_SECRET"); secret != "" {
+		config.GitHubClientSecret = secret
+	}
+	if id := os.Getenv("BABOON_APPLE_CLIENT_ID"); id != "" {
+		config.AppleClientID = id
+	}
+	if secret := os.Getenv("BABOON_APPLE_CLIENT_SECRET"); secret != "" {
+		config.AppleClientSecret = secret
+	}
+	if id := os.Getenv("BABOON_MICROSOFT_CLIENT_ID"); id != "" {
+		config.MicrosoftClientID = id
+	}
+	if secret := os.Getenv("BABOON_MICROSOFT_CLIENT_SECRET"); secret != "" {
+		config.MicrosoftClientSecret = secret
+	}
 }

@@ -1,16 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   VStack,
   HStack,
   Text,
   Button,
-  Switch,
-  FormControl,
-  FormLabel,
   Container,
   Flex,
-  Badge,
   Stat,
   StatLabel,
   StatNumber,
@@ -22,12 +18,25 @@ import { LoginButtons } from './LoginButton.jsx';
 import UserMenu from './UserMenu.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { BlockFontWord } from './BlockFont.jsx';
+import AdSense from './AdSense.jsx';
 
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
 
-function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onStart, isLoading, localStats }) {
+function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, isLoading, localStats, adsenseEnabled, adsenseKey }) {
   const { user, isAuthenticated, authConfig } = useAuth();
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' && isConnected && !isLoading) {
+        e.preventDefault();
+        onStart();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isConnected, isLoading, onStart]);
 
   return (
     <Flex minH="100vh" align="center" justify="center" p={8}>
@@ -46,49 +55,33 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              fontSize="lg"
+              fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}
               color="gray.500"
               textAlign="center"
               fontFamily="'Fira Code', monospace"
             >
-              Terminal-style typing practice
+              Typing Practice Made Fun!
             </MotionText>
           </VStack>
 
-          {/* Connection Status and User Info */}
-          <MotionBox
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <VStack spacing={4}>
-              <HStack spacing={4}>
-                <Badge
-                  colorScheme={isConnected ? 'green' : 'red'}
-                  fontSize="md"
-                  px={4}
-                  py={2}
-                  borderRadius="full"
-                  fontFamily="'Fira Code', monospace"
-                >
-                  {isConnected ? '● Connected' : '○ Disconnected'}
-                </Badge>
-
-                {/* Show user menu if authenticated */}
-                {isAuthenticated && user && <UserMenu />}
-              </HStack>
-
-              {/* Show welcome message for authenticated users */}
-              {isAuthenticated && user && (
-                <Text color="gray.400" fontSize="sm" fontFamily="'Fira Code', monospace">
+          {/* User Info */}
+          {isAuthenticated && user && (
+            <MotionBox
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <VStack spacing={4}>
+                <UserMenu />
+                <Text color="gray.400" fontSize={{ base: 'lg', md: 'xl', lg: '2xl' }} fontFamily="'Fira Code', monospace">
                   Welcome back, {user.display_name || user.email.split('@')[0]}!
                 </Text>
-              )}
-            </VStack>
-          </MotionBox>
+              </VStack>
+            </MotionBox>
+          )}
 
-          {/* Login Section (show only if auth is enabled and user is not logged in) */}
-          {authConfig.auth_enabled && !isAuthenticated && (
+          {/* Login Section (show only if auth is enabled with providers and user is not logged in) */}
+          {authConfig.auth_enabled && authConfig.providers?.length > 0 && !isAuthenticated && (
             <MotionBox
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -104,8 +97,8 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
                 borderColor="gray.700"
               >
                 <VStack spacing={4}>
-                  <Text fontSize="lg" fontWeight="600" color="cyan.400" fontFamily="'Fira Code', monospace">
-                    Sign In
+                  <Text fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }} fontWeight="600" color="cyan.400" fontFamily="'Fira Code', monospace">
+                    SIGN IN
                   </Text>
                   <LoginButtons showTitle={true} />
                 </VStack>
@@ -130,74 +123,33 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
                 borderColor="gray.700"
               >
                 <VStack spacing={4}>
-                  <Text fontSize="lg" fontWeight="600" color="cyan.400" fontFamily="'Fira Code', monospace">
+                  <Text fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }} fontWeight="600" color="cyan.400" fontFamily="'Fira Code', monospace">
                     Your Progress
                   </Text>
                   <SimpleGrid columns={3} spacing={4} w="100%">
                     <Stat textAlign="center">
-                      <StatNumber fontSize="2xl" color="#00ff00" fontFamily="'Fira Code', monospace">
+                      <StatNumber fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }} color="#00ff00" fontFamily="'Fira Code', monospace">
                         {localStats.best_wpm?.toFixed(0) || 0}
                       </StatNumber>
-                      <StatLabel color="gray.500" fontSize="xs" fontFamily="'Fira Code', monospace">Best WPM</StatLabel>
+                      <StatLabel color="gray.500" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">Best WPM</StatLabel>
                     </Stat>
                     <Stat textAlign="center">
-                      <StatNumber fontSize="2xl" color="#00ff00" fontFamily="'Fira Code', monospace">
+                      <StatNumber fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }} color="#00ff00" fontFamily="'Fira Code', monospace">
                         {localStats.best_accuracy?.toFixed(0) || 0}%
                       </StatNumber>
-                      <StatLabel color="gray.500" fontSize="xs" fontFamily="'Fira Code', monospace">Best Acc</StatLabel>
+                      <StatLabel color="gray.500" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">Best Acc</StatLabel>
                     </Stat>
                     <Stat textAlign="center">
-                      <StatNumber fontSize="2xl" color="cyan.400" fontFamily="'Fira Code', monospace">
+                      <StatNumber fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }} color="cyan.400" fontFamily="'Fira Code', monospace">
                         {localStats.total_sessions || 0}
                       </StatNumber>
-                      <StatLabel color="gray.500" fontSize="xs" fontFamily="'Fira Code', monospace">Sessions</StatLabel>
+                      <StatLabel color="gray.500" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">Sessions</StatLabel>
                     </Stat>
                   </SimpleGrid>
                 </VStack>
               </Box>
             </MotionBox>
           )}
-
-          {/* Options Card */}
-          <MotionBox
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, type: 'spring' }}
-            w="100%"
-            maxW="400px"
-          >
-            <Box
-              bg="gray.900"
-              borderRadius="xl"
-              p={6}
-              border="1px solid"
-              borderColor="gray.700"
-            >
-              <VStack spacing={6}>
-                <Text fontSize="lg" fontWeight="bold" color="cyan.400" fontFamily="'Fira Code', monospace">
-                  Options
-                </Text>
-
-                <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                  <FormLabel mb="0" fontSize="md" color="gray.300" fontFamily="'Fira Code', monospace">
-                    Punctuation
-                  </FormLabel>
-                  <Switch
-                    size="lg"
-                    colorScheme="green"
-                    isChecked={punctuationMode}
-                    onChange={(e) => setPunctuationMode(e.target.checked)}
-                  />
-                </FormControl>
-
-                <Text fontSize="xs" color="gray.600" textAlign="center" fontFamily="'Fira Code', monospace">
-                  {punctuationMode
-                    ? 'Words include punctuation marks'
-                    : 'Standard word-by-word practice'}
-                </Text>
-              </VStack>
-            </Box>
-          </MotionBox>
 
           {/* Start Button */}
           <MotionBox
@@ -214,9 +166,9 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
               isDisabled={!isConnected}
               isLoading={isLoading}
               loadingText="Starting..."
-              px={12}
-              py={6}
-              fontSize="xl"
+              px={{ base: 12, md: 16, lg: 20 }}
+              py={{ base: 6, md: 8, lg: 10 }}
+              fontSize={{ base: '2xl', md: '3xl', lg: '4xl' }}
               fontFamily="'Fira Code', monospace"
               fontWeight="bold"
               borderColor="#00ff00"
@@ -239,7 +191,7 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
               }}
               aria-label={!isConnected ? "Start Typing (waiting for backend connection)" : "Start Typing"}
             >
-              [ START ]
+              START
             </Button>
           </MotionBox>
 
@@ -249,11 +201,9 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
           >
-            <VStack spacing={1} color="gray.600" fontSize="xs" fontFamily="'Fira Code', monospace">
-              <Text>Type the words as they appear</Text>
-              <Text>Press SPACE to advance | Last word auto-completes</Text>
-              <Text>Press ESC to exit</Text>
-            </VStack>
+            <Text color="gray.600" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">
+              Enter to start, Esc to return here, Tab restart
+            </Text>
           </MotionBox>
 
           {/* Navigation Links */}
@@ -262,21 +212,45 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
             animate={{ opacity: 1 }}
             transition={{ delay: 1.1 }}
           >
-            <HStack spacing={6} color="gray.500" fontSize="sm" fontFamily="'Fira Code', monospace">
+            <HStack spacing={{ base: 4, md: 8, lg: 10 }} color="gray.500" fontSize={{ base: 'lg', md: 'xl', lg: '2xl' }} fontFamily="'Fira Code', monospace" flexWrap="wrap" justify="center">
+              {onShowLeaderboard && (
+                <Link
+                  as="button"
+                  onClick={onShowLeaderboard}
+                  color="yellow.400"
+                  fontWeight="bold"
+                  _hover={{ color: 'yellow.300', textDecoration: 'underline' }}
+                >
+                  LEADERBOARD
+                </Link>
+              )}
+              {onShowAbout && (
+                <Link
+                  as="button"
+                  onClick={onShowAbout}
+                  color="#D4922A"
+                  fontWeight="bold"
+                  _hover={{ color: '#E5A33B', textDecoration: 'underline' }}
+                >
+                  ABOUT
+                </Link>
+              )}
               <Link
                 href="/docs/"
                 color="cyan.500"
+                fontWeight="bold"
                 _hover={{ color: 'cyan.400', textDecoration: 'underline' }}
               >
-                Documentation
+                DOCS
               </Link>
               <Link
                 href="https://github.com/timlinux/baboon"
                 isExternal
                 color="gray.500"
-                _hover={{ color: 'gray.400' }}
+                fontWeight="bold"
+                _hover={{ color: 'gray.400', textDecoration: 'underline' }}
               >
-                GitHub
+                GITHUB
               </Link>
             </HStack>
           </MotionBox>
@@ -287,7 +261,7 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
           >
-            <HStack spacing={2} color="gray.600" fontSize="xs" fontFamily="'Fira Code', monospace">
+            <HStack spacing={2} color="gray.600" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">
               <Text>Made with</Text>
               <Text color="red.400">♥</Text>
               <Text>by</Text>
@@ -310,6 +284,11 @@ function WelcomeScreen({ isConnected, punctuationMode, setPunctuationMode, onSta
               </Link>
             </HStack>
           </MotionBox>
+
+          {/* AdSense ad */}
+          <Box pb={4}>
+            <AdSense publisherId={adsenseKey} showPreview={true} />
+          </Box>
         </VStack>
       </Container>
     </Flex>

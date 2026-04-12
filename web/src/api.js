@@ -179,6 +179,49 @@ class BaboonAPI {
       method: 'DELETE',
     });
   }
+
+  // Leaderboard methods
+
+  // Get leaderboard entries for a month (default: current month)
+  async getLeaderboard(monthYear = null) {
+    const params = monthYear ? `?month=${monthYear}` : '';
+    return this._fetchJSON(`${this.baseUrl}/v1/leaderboard${params}`);
+  }
+
+  // Get available months with leaderboard entries
+  async getLeaderboardMonths() {
+    return this._fetchJSON(`${this.baseUrl}/v1/leaderboard/months`);
+  }
+
+  // Check if a WPM and accuracy would qualify for top 10
+  // Score is calculated as WPM * (accuracy/100)
+  async checkLeaderboardQualification(wpm, accuracy = 100) {
+    return this._fetchJSON(`${this.baseUrl}/v1/leaderboard/check?wpm=${wpm}&accuracy=${accuracy}`);
+  }
+
+  // Submit a leaderboard entry (requires authentication)
+  async submitLeaderboardEntry(displayName, wpm, accuracy, durationSeconds) {
+    return this._fetchJSON(`${this.baseUrl}/v1/leaderboard/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        display_name: displayName,
+        wpm,
+        accuracy,
+        duration_seconds: durationSeconds,
+      }),
+    });
+  }
+
+  // Validate a display name for profanity
+  async validateDisplayName(name) {
+    return this._fetchJSON(`${this.baseUrl}/v1/leaderboard/validate?name=${encodeURIComponent(name)}`);
+  }
+
+  // Get badge URL for a leaderboard entry
+  getBadgeUrl(entryId) {
+    return `${this.baseUrl}/v1/leaderboard/badge/${entryId}.svg`;
+  }
 }
 
 export const api = new BaboonAPI();

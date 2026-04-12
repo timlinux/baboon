@@ -16,6 +16,7 @@ const (
 	StateCelebration
 	StateResults
 	StateOptions
+	StateAbout
 )
 
 // tickMsg is sent periodically to update the WPM display
@@ -121,6 +122,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.handleResultsInput(msg)
 		case StateOptions:
 			return m.handleOptionsInput(msg)
+		case StateAbout:
+			return m.handleAboutInput(msg)
 		}
 
 	case tea.WindowSizeMsg:
@@ -165,6 +168,8 @@ func (m Model) View() string {
 		)
 	case StateOptions:
 		return m.renderer.RenderOptionsScreen(m.settings, m.optionsCursor)
+	case StateAbout:
+		return m.renderer.RenderAboutScreen()
 	}
 	return ""
 }
@@ -248,6 +253,13 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.state = StateOptions
 			m.optionsCursor = 0
 			m.optionsFromTyping = true
+			return m, nil
+		}
+
+	case tea.KeyCtrlA:
+		// Open about screen with Ctrl+A (only before timer starts)
+		if !m.timerStarted {
+			m.state = StateAbout
 			return m, nil
 		}
 
@@ -487,6 +499,19 @@ func (m Model) handleCelebrationInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.animator = NewAnimator()
 		return m, animTickCmd()
 	}
+}
+
+// handleAboutInput processes keyboard input on about screen
+func (m Model) handleAboutInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.Type {
+	case tea.KeyCtrlC:
+		return m, tea.Quit
+	case tea.KeyEsc, tea.KeyEnter, tea.KeySpace:
+		// Return to typing screen
+		m.state = StateTyping
+		return m, nil
+	}
+	return m, nil
 }
 
 // tickCmd returns a command that sends tick messages

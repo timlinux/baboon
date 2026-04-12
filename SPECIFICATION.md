@@ -52,6 +52,21 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 **I want to** sign in with my existing Google, GitHub, Apple, or Microsoft account
 **So that** I can quickly start using authenticated features without a new password
 
+### US-009: Compete on Monthly Leaderboard
+**As a** competitive typist
+**I want to** see my ranking on a monthly leaderboard
+**So that** I can compete with other users and track my standing
+
+### US-010: Enter Arcade Name for Leaderboard
+**As a** user who achieves a top 10 score
+**I want to** enter a classic arcade-style name (up to 10 characters)
+**So that** my achievement is displayed prominently on the leaderboard
+
+### US-011: Share My Leaderboard Achievement
+**As a** proud user who made the leaderboard
+**I want to** share a badge image showing my score and rank
+**So that** I can share my achievement on social media
+
 ## Functional Requirements
 
 ### FR-001: Word Display
@@ -472,6 +487,57 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - Settings SHALL be persisted to `~/.config/baboon/settings.json`
 - Settings SHALL be loaded on application startup
 - Help text in typing screen SHALL dynamically reflect the configured advance key
+
+### FR-037: Monthly Leaderboard
+- The application SHALL maintain a leaderboard showing the top 10 scores per month
+- Leaderboard entries SHALL be partitioned by month in "YYYY-MM" format
+- Each user SHALL have at most one entry per month (best score replaces existing entry)
+- The leaderboard screen SHALL display:
+  - Rank (1-10) with gold/silver/bronze styling for top 3
+  - Display name (up to 10 characters)
+  - WPM with gradient colour bar
+  - Accuracy percentage
+  - Share button
+- Users SHALL be able to browse previous months via dropdown
+- Current month SHALL be shown by default
+- The leaderboard SHALL be accessible from welcome screen and results screen
+- ESC key SHALL return to previous screen
+
+### FR-038: Arcade Name Entry
+- When an authenticated user achieves a top 10 score, they SHALL be prompted to enter a name
+- The name entry screen SHALL appear after round completion but before results
+- Names SHALL be limited to 10 characters
+- Allowed characters: A-Z, 0-9, space, underscore, hyphen
+- Character slots SHALL display arcade-style visual feedback:
+  - Empty slots: grey with underscore
+  - Typed valid chars: green background and text
+  - Invalid chars (profanity detected): red background and text
+  - Current slot: Kartoza orange border with glow
+- Real-time profanity validation SHALL highlight problematic characters
+- ENTER key SHALL submit the name
+- ESC key SHALL skip leaderboard entry and proceed to results
+- Profanity filter SHALL detect:
+  - Direct matches from blocklist
+  - Leetspeak variants (e.g., "4" for "a", "3" for "e")
+
+### FR-039: Leaderboard Badge Sharing
+- Each leaderboard entry SHALL have a shareable SVG badge
+- Badge SHALL display:
+  - Simplified baboon mascot with keyboard
+  - Player display name
+  - WPM score
+  - Accuracy percentage
+  - Rank with star indicator (gold for #1, orange for #2-3)
+  - Month/year
+  - Site URL (baboon.kartoza.com)
+  - Kartoza branding footer
+- Badge dimensions: 400x200 pixels
+- Share modal SHALL provide:
+  - Badge preview
+  - Copy Link button
+  - Download SVG button
+  - Share on X (Twitter) button
+- Share URL format: `https://baboon.kartoza.com/leaderboard?highlight={id}`
 
 ## Technical Requirements
 

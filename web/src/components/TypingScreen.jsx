@@ -175,7 +175,7 @@ function TypingScreen({
         return;
       }
 
-      if (e.key === ' ') {
+      if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         onSpace();
         return;
@@ -330,7 +330,7 @@ function TypingScreen({
           fontFamily="'Fira Code', monospace"
           textAlign="center"
         >
-          Type to start | SPACE to continue | TAB to restart | ESC to quit
+          Type to start | SPACE/ENTER to continue | TAB to restart | ESC to quit
         </Text>
       </Flex>
 

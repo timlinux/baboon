@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/timlinux/baboon/auth"
+	"github.com/timlinux/baboon/badge"
 	"github.com/timlinux/baboon/database"
+	"github.com/timlinux/baboon/filter"
 	"github.com/timlinux/baboon/stats"
 )
 
@@ -164,6 +166,17 @@ func (s *Server) Start() error {
 		mux.HandleFunc("POST /api/user/stats/sync", s.authMW.RequireAuthFunc(s.handleSyncUserStats))
 		mux.HandleFunc("DELETE /api/user/stats", s.authMW.RequireAuthFunc(s.handleDeleteUserStats))
 		mux.HandleFunc("GET /api/user/export", s.authMW.RequireAuthFunc(s.handleExportUserData))
+
+	}
+
+	// Leaderboard routes (v1 API) - available when database is configured
+	if s.db != nil && s.db.IsConfigured() {
+		mux.HandleFunc("GET /api/v1/leaderboard", s.handleGetLeaderboard)
+		mux.HandleFunc("GET /api/v1/leaderboard/months", s.handleGetLeaderboardMonths)
+		mux.HandleFunc("GET /api/v1/leaderboard/check", s.handleCheckLeaderboard)
+		mux.HandleFunc("POST /api/v1/leaderboard/submit", s.handleSubmitLeaderboard)
+		mux.HandleFunc("GET /api/v1/leaderboard/validate", s.handleValidateName)
+		mux.HandleFunc("GET /api/v1/leaderboard/badge/{id}", s.handleGetBadgeSVG)
 	}
 
 	// Serve static files if directory is configured
@@ -778,4 +791,260 @@ func (s *Server) handleExportUserData(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Content-Disposition", "attachment; filename=baboon-data-export.json")
 	json.NewEncoder(w).Encode(export)
+}
+
+// Leaderboard handlers
+
+// LeaderboardResponse is the response for GET /api/v1/leaderboard
+type LeaderboardResponse struct {
+	Entries   []database.LeaderboardEntry `json:"entries"`
+	MonthYear string                      `json:"month_year"`
+}
+
+// LeaderboardCheckResponse is the response for GET /api/v1/leaderboard/check
+type LeaderboardCheckResponse struct {
+	Qualifies bool `json:"qualifies"`
+	Rank      int  `json:"rank,omitempty"`
+}
+
+// LeaderboardSubmitRequest is the request for POST /api/v1/leaderboard/submit
+type LeaderboardSubmitRequest struct {
+	DisplayName     string  `json:"display_name"`
+	WPM             float64 `json:"wpm"`
+	Accuracy        float64 `json:"accuracy"`
+	DurationSeconds float64 `json:"duration_seconds"`
+}
+
+// handleGetLeaderboard returns the top 10 for a given month.
+// GET /api/v1/leaderboard?month=2026-04
+func (s *Server) handleGetLeaderboard(w http.ResponseWriter, r *http.Request) {
+	monthYear := r.URL.Query().Get("month")
+	if monthYear == "" {
+		// Default to current month
+		monthYear = time.Now().Format("2006-01")
+	}
+
+	entries, err := s.db.Leaderboard().GetTop10(monthYear)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := LeaderboardResponse{
+		Entries:   entries,
+		MonthYear: monthYear,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+// handleGetLeaderboardMonths returns available months with leaderboard entries.
+// GET /api/v1/leaderboard/months
+func (s *Server) handleGetLeaderboardMonths(w http.ResponseWriter, r *http.Request) {
+	months, err := s.db.Leaderboard().GetAvailableMonths()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Always include current month even if no entries
+	currentMonth := time.Now().Format("2006-01")
+	found := false
+	for _, m := range months {
+		if m == currentMonth {
+			found = true
+			break
+		}
+	}
+	if !found {
+		months = append([]string{currentMonth}, months...)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string][]string{"months": months})
+}
+
+// handleCheckLeaderboard checks if a WPM and accuracy would qualify for top 10.
+// GET /api/v1/leaderboard/check?wpm=75.5&accuracy=98.5
+// Score is calculated as WPM * (Accuracy/100).
+func (s *Server) handleCheckLeaderboard(w http.ResponseWriter, r *http.Request) {
+	wpmStr := r.URL.Query().Get("wpm")
+	if wpmStr == "" {
+		http.Error(w, "wpm parameter required", http.StatusBadRequest)
+		return
+	}
+
+	var wpm float64
+	if _, err := fmt.Sscanf(wpmStr, "%f", &wpm); err != nil {
+		http.Error(w, "invalid wpm value", http.StatusBadRequest)
+		return
+	}
+
+	// Get accuracy parameter (default to 100 for backwards compatibility)
+	accuracy := 100.0
+	if accStr := r.URL.Query().Get("accuracy"); accStr != "" {
+		if _, err := fmt.Sscanf(accStr, "%f", &accuracy); err != nil {
+			http.Error(w, "invalid accuracy value", http.StatusBadRequest)
+			return
+		}
+	}
+
+	monthYear := time.Now().Format("2006-01")
+	qualifies, rank, err := s.db.Leaderboard().CheckQualifies(monthYear, wpm, accuracy)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := LeaderboardCheckResponse{
+		Qualifies: qualifies,
+		Rank:      rank,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+// handleSubmitLeaderboard creates or updates a leaderboard entry.
+// POST /api/v1/leaderboard/submit
+// Supports both authenticated and anonymous submissions.
+// Username is set from auth provider or "ANON" for anonymous users.
+// DisplayName is the user's custom message.
+func (s *Server) handleSubmitLeaderboard(w http.ResponseWriter, r *http.Request) {
+	var req LeaderboardSubmitRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Get user ID and username if authenticated, otherwise generate anonymous ID
+	userID := auth.GetUserID(r)
+	username := "ANON"
+	displayName := req.DisplayName
+
+	if userID == "" {
+		// Anonymous user - generate a session-based ID
+		// Use a combination of timestamp and random to create uniqueness
+		userID = fmt.Sprintf("anon-%d", time.Now().UnixNano())
+	} else {
+		// Authenticated user - get their platform display name as username
+		if s.db != nil {
+			if user, err := s.db.Users().FindByID(userID); err == nil && user.DisplayName != "" {
+				username = user.DisplayName
+			}
+		}
+		// Still "ANON"? Use their email prefix
+		if username == "ANON" {
+			if user, err := s.db.Users().FindByID(userID); err == nil && user.Email != "" {
+				parts := strings.Split(user.Email, "@")
+				if len(parts) > 0 && parts[0] != "" {
+					username = strings.ToUpper(parts[0])
+					if len(username) > 10 {
+						username = username[:10]
+					}
+				}
+			}
+		}
+	}
+
+	// If no custom message provided, use a default
+	if displayName == "" {
+		displayName = "HELLO WORLD"
+	}
+
+	// Validate display name (the message)
+	validation := filter.Validate(displayName)
+	if !validation.Valid {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error":         validation.Reason,
+			"invalid_chars": validation.InvalidChars,
+		})
+		return
+	}
+
+	entry := &database.LeaderboardEntry{
+		UserID:          userID,
+		Username:        username,
+		DisplayName:     displayName,
+		WPM:             req.WPM,
+		Accuracy:        req.Accuracy,
+		DurationSeconds: req.DurationSeconds,
+		MonthYear:       time.Now().Format("2006-01"),
+	}
+
+	submitted, err := s.db.Leaderboard().Submit(entry)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Generate badge URL
+	baseURL := s.config.BaseURL
+	if baseURL == "" {
+		baseURL = "https://baboon.kartoza.com"
+	}
+	submitted.BadgeImageURL = fmt.Sprintf("%s/api/v1/leaderboard/badge/%s", baseURL, submitted.ID)
+
+	// Update badge URL in database
+	s.db.Leaderboard().UpdateBadgeURL(submitted.ID, submitted.BadgeImageURL)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(submitted)
+}
+
+// handleValidateName validates a display name for profanity.
+// GET /api/v1/leaderboard/validate?name=PLAYERNAME
+func (s *Server) handleValidateName(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	if name == "" {
+		http.Error(w, "name parameter required", http.StatusBadRequest)
+		return
+	}
+
+	validation := filter.Validate(name)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(validation)
+}
+
+// handleGetBadgeSVG generates and returns a badge SVG for a leaderboard entry.
+// GET /api/v1/leaderboard/badge/{id}
+func (s *Server) handleGetBadgeSVG(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	// Remove .svg extension if present
+	id = strings.TrimSuffix(id, ".svg")
+
+	entry, err := s.db.Leaderboard().GetByID(id)
+	if err != nil {
+		if err == database.ErrUserNotFound {
+			http.Error(w, "entry not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	baseURL := s.config.BaseURL
+	if baseURL == "" {
+		baseURL = "https://baboon.kartoza.com"
+	}
+
+	badgeEntry := badge.Entry{
+		DisplayName: entry.DisplayName,
+		WPM:         entry.WPM,
+		Accuracy:    entry.Accuracy,
+		Rank:        entry.Rank,
+		MonthYear:   entry.MonthYear,
+		SiteURL:     strings.TrimPrefix(strings.TrimPrefix(baseURL, "https://"), "http://"),
+	}
+
+	svg := badge.GenerateSVG(badgeEntry)
+
+	w.Header().Set("Content-Type", "image/svg+xml")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	w.Write([]byte(svg))
 }

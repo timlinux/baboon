@@ -380,7 +380,7 @@ export function GradientBar({ value, maxValue, width = 30, showStar = false }) {
         key={`fill-${i}`}
         as="span"
         color={color}
-        fontFamily="monospace"
+        fontFamily="'Fira Code', monospace"
         fontSize="md"
       >
         █
@@ -395,7 +395,7 @@ export function GradientBar({ value, maxValue, width = 30, showStar = false }) {
         key={`empty-${i}`}
         as="span"
         color="gray.700"
-        fontFamily="monospace"
+        fontFamily="'Fira Code', monospace"
         fontSize="md"
       >
         ░
@@ -410,7 +410,7 @@ export function GradientBar({ value, maxValue, width = 30, showStar = false }) {
         key="star"
         as="span"
         color="yellow.400"
-        fontFamily="monospace"
+        fontFamily="'Fira Code', monospace"
         fontSize="md"
         fontWeight="bold"
         ml={1}
@@ -445,7 +445,7 @@ export function TimeBar({ value, maxValue, width = 30, showStar = false }) {
         key={`fill-${i}`}
         as="span"
         color={color}
-        fontFamily="monospace"
+        fontFamily="'Fira Code', monospace"
         fontSize="md"
       >
         █
@@ -460,7 +460,7 @@ export function TimeBar({ value, maxValue, width = 30, showStar = false }) {
         key={`empty-${i}`}
         as="span"
         color="gray.700"
-        fontFamily="monospace"
+        fontFamily="'Fira Code', monospace"
         fontSize="md"
       >
         ░
@@ -475,7 +475,7 @@ export function TimeBar({ value, maxValue, width = 30, showStar = false }) {
         key="star"
         as="span"
         color="yellow.400"
-        fontFamily="monospace"
+        fontFamily="'Fira Code', monospace"
         fontSize="md"
         fontWeight="bold"
         ml={1}
@@ -495,7 +495,7 @@ export function TimeBar({ value, maxValue, width = 30, showStar = false }) {
 // TUI-style stat row with label, value, and gradient bar
 export function StatRow({ label, value, bar, labelWidth = 18, valueWidth = 8 }) {
   return (
-    <HStack spacing={2} fontFamily="monospace" fontSize="sm">
+    <HStack spacing={2} fontFamily="'Fira Code', monospace" fontSize="sm">
       <Text
         color="gray.400"
         w={`${labelWidth}ch`}
@@ -536,7 +536,7 @@ export function WpmBar({ wpm, maxWpm = 120 }) {
 
   return (
     <VStack spacing={1}>
-      <HStack spacing={0} fontFamily="monospace" fontSize="md">
+      <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize="md">
         {/* Filled portion with gradient */}
         {Array.from({ length: filledWidth }).map((_, i) => {
           const position = i / barWidth;
@@ -560,7 +560,7 @@ export function WpmBar({ wpm, maxWpm = 120 }) {
         </Text>
       </HStack>
       {/* Scale */}
-      <Text color="gray.600" fontSize="xs" fontFamily="monospace">
+      <Text color="gray.600" fontSize="xs" fontFamily="'Fira Code', monospace">
         0                        60                       120
       </Text>
     </VStack>

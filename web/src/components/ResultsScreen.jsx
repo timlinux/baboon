@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { GRADIENT_COLORS } from './BlockFont.jsx';
+import AdSense from './AdSense.jsx';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -101,7 +102,10 @@ function ResultsScreen({
   historicalStats,
   onNewRound,
   onBackToMenu,
+  onShowLeaderboard,
   isLoading,
+  adsenseEnabled,
+  adsenseKey,
 }) {
   const wpm = sessionStats?.wpm || 0;
   const accuracy = sessionStats?.accuracy || 0;
@@ -371,58 +375,72 @@ function ResultsScreen({
           </Text>
         </AnimatedStatRow>
 
-        {/* Letter Headers */}
+        {/* Letter Stats Table - using HTML table for proper alignment */}
         <AnimatedStatRow delay={animIdx++ * 0.03}>
-          <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize={{ base: '2xs', md: 'xs', lg: 'sm' }} justify="center" flexWrap="wrap">
-            {letters.map(letter => (
-              <Text key={letter} color="white" fontWeight="bold" w={{ base: '10px', md: '14px', lg: '16px' }} textAlign="center">
-                {letter.toUpperCase()}
-              </Text>
-            ))}
-          </HStack>
-        </AnimatedStatRow>
+          <Box
+            as="table"
+            fontFamily="'Fira Code', monospace"
+            fontSize={{ base: 'xs', md: 'sm', lg: 'md' }}
+            mx="auto"
+            sx={{ borderCollapse: 'collapse' }}
+          >
+            <Box as="tbody">
+              {/* Header row */}
+              <Box as="tr">
+                <Box as="td" w={{ base: '40px', md: '50px' }} />
+                {letters.map(letter => (
+                  <Box
+                    as="td"
+                    key={`hdr-${letter}`}
+                    color="white"
+                    fontWeight="bold"
+                    textAlign="center"
+                    w={{ base: '14px', md: '18px', lg: '22px' }}
+                    px="1px"
+                  >
+                    {letter.toUpperCase()}
+                  </Box>
+                ))}
+              </Box>
 
-        {/* Letter Accuracy Row */}
-        <AnimatedStatRow delay={animIdx++ * 0.03}>
-          <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} justify="center" align="center" flexWrap="wrap">
-            <Text color="gray.500" fontSize={{ base: '2xs', md: 'xs' }} w={{ base: '30px', md: '40px' }} textAlign="right" mr={1}>Acc</Text>
-            {letters.map((letter, i) => {
-              const acc = letterAccuracies[i];
-              const color = acc === null ? 'gray.700' : getRelativeColor(acc, minLetterAcc, maxLetterAcc);
-              return (
-                <Text key={letter} color={color} w={{ base: '10px', md: '14px', lg: '16px' }} textAlign="center">●</Text>
-              );
-            })}
-          </HStack>
-        </AnimatedStatRow>
+              {/* Accuracy row */}
+              <Box as="tr">
+                <Box as="td" color="gray.500" textAlign="right" pr={1}>Acc</Box>
+                {letters.map((letter, i) => {
+                  const acc = letterAccuracies[i];
+                  const color = acc === null ? 'gray.700' : getRelativeColor(acc, minLetterAcc, maxLetterAcc);
+                  return (
+                    <Box as="td" key={`acc-${letter}`} color={color} textAlign="center">●</Box>
+                  );
+                })}
+              </Box>
 
-        {/* Letter Frequency Row */}
-        <AnimatedStatRow delay={animIdx++ * 0.03}>
-          <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} justify="center" align="center" flexWrap="wrap">
-            <Text color="gray.500" fontSize={{ base: '2xs', md: 'xs' }} w={{ base: '30px', md: '40px' }} textAlign="right" mr={1}>Freq</Text>
-            {letters.map((letter, i) => {
-              const freq = letterFrequencies[i];
-              const normalizedFreq = freq / maxFrequency;
-              const color = freq === 0 ? 'gray.700' : getFrequencyColor(normalizedFreq);
-              return (
-                <Text key={letter} color={color} w={{ base: '10px', md: '14px', lg: '16px' }} textAlign="center">●</Text>
-              );
-            })}
-          </HStack>
-        </AnimatedStatRow>
+              {/* Frequency row */}
+              <Box as="tr">
+                <Box as="td" color="gray.500" textAlign="right" pr={1}>Freq</Box>
+                {letters.map((letter, i) => {
+                  const freq = letterFrequencies[i];
+                  const normalizedFreq = freq / maxFrequency;
+                  const color = freq === 0 ? 'gray.700' : getFrequencyColor(normalizedFreq);
+                  return (
+                    <Box as="td" key={`freq-${letter}`} color={color} textAlign="center">●</Box>
+                  );
+                })}
+              </Box>
 
-        {/* Letter Seek Time Row */}
-        <AnimatedStatRow delay={animIdx++ * 0.03}>
-          <HStack spacing={0} fontFamily="'Fira Code', monospace" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} justify="center" align="center" flexWrap="wrap">
-            <Text color="gray.500" fontSize={{ base: '2xs', md: 'xs' }} w={{ base: '30px', md: '40px' }} textAlign="right" mr={1}>Time</Text>
-            {letters.map((letter, i) => {
-              const seekTime = letterSeekTimes[i];
-              const color = seekTime === null ? 'gray.700' : getInvertedRelativeColor(seekTime, minSeekTime, maxSeekTime);
-              return (
-                <Text key={letter} color={color} w={{ base: '10px', md: '14px', lg: '16px' }} textAlign="center">●</Text>
-              );
-            })}
-          </HStack>
+              {/* Seek Time row */}
+              <Box as="tr">
+                <Box as="td" color="gray.500" textAlign="right" pr={1}>Time</Box>
+                {letters.map((letter, i) => {
+                  const seekTime = letterSeekTimes[i];
+                  const color = seekTime === null ? 'gray.700' : getInvertedRelativeColor(seekTime, minSeekTime, maxSeekTime);
+                  return (
+                    <Box as="td" key={`time-${letter}`} color={color} textAlign="center">●</Box>
+                  );
+                })}
+              </Box>
+            </Box>
+          </Box>
         </AnimatedStatRow>
 
         {/* Legend for letter stats */}
@@ -516,9 +534,30 @@ function ResultsScreen({
               boxShadow: '0 0 20px rgba(0, 255, 0, 0.3)',
             }}
           >
-            [ NEW ROUND ]
+            NEW ROUND
           </Button>
         </MotionBox>
+
+        {onShowLeaderboard && (
+          <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              size={{ base: 'md', md: 'lg' }}
+              variant="outline"
+              onClick={onShowLeaderboard}
+              px={{ base: 6, md: 8 }}
+              fontFamily="'Fira Code', monospace"
+              fontSize={smallFontSize}
+              borderColor="yellow.500"
+              color="yellow.400"
+              _hover={{
+                bg: 'rgba(255, 215, 0, 0.1)',
+                boxShadow: '0 0 20px rgba(255, 215, 0, 0.3)',
+              }}
+            >
+              LEADERBOARD
+            </Button>
+          </MotionBox>
+        )}
 
         <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
@@ -531,7 +570,7 @@ function ResultsScreen({
             color="gray.400"
             _hover={{ color: 'white' }}
           >
-            [ MENU ]
+            MENU
           </Button>
         </MotionBox>
       </MotionFlex>
@@ -560,6 +599,11 @@ function ResultsScreen({
           </Link>
         </HStack>
       </Flex>
+
+      {/* AdSense ad */}
+      <Box pb={4}>
+        <AdSense publisherId={adsenseKey} showPreview={true} />
+      </Box>
     </Flex>
   );
 }

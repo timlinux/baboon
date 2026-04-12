@@ -12,6 +12,9 @@ import api from './api.js';
 import TypingScreen from './components/TypingScreen.jsx';
 import ResultsScreen from './components/ResultsScreen.jsx';
 import WelcomeScreen from './components/WelcomeScreen.jsx';
+import LeaderboardScreen from './components/LeaderboardScreen.jsx';
+import NameEntryScreen from './components/NameEntryScreen.jsx';
+import AboutScreen from './components/AboutScreen.jsx';
 import SyncDialog from './components/SyncDialog.jsx';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 
@@ -20,7 +23,6 @@ const MotionBox = motion(Box);
 // Local storage keys
 const STORAGE_KEYS = {
   HISTORICAL_STATS: 'baboon_historical_stats',
-  SETTINGS: 'baboon_settings',
 };
 
 // Load data from local storage
@@ -44,13 +46,11 @@ const saveToStorage = (key, value) => {
 };
 
 function App() {
-  const { isAuthenticated, updateLocalStats, localStats: authLocalStats } = useAuth();
+  const { isAuthenticated, user, updateLocalStats, localStats: authLocalStats } = useAuth();
 
-  const [screen, setScreen] = useState('typing'); // welcome, typing, results (start on typing)
-  const [punctuationMode, setPunctuationMode] = useState(() => {
-    const settings = loadFromStorage(STORAGE_KEYS.SETTINGS, {});
-    return settings.punctuationMode || false;
-  });
+  const [screen, setScreen] = useState('typing'); // welcome, typing, results, leaderboard, nameEntry
+  const [leaderboardRank, setLeaderboardRank] = useState(null);
+  const [pendingSubmission, setPendingSubmission] = useState(null); // Store session data for name entry
   const [gameState, setGameState] = useState(null);
   const [sessionStats, setSessionStats] = useState(null);
   const [historicalStats, setHistoricalStats] = useState(null);
@@ -71,11 +71,6 @@ function App() {
   const toast = useToast();
   const wpmIntervalRef = useRef(null);
 
-  // Save punctuation mode preference
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.SETTINGS, { punctuationMode });
-  }, [punctuationMode]);
-
   // Check backend health, fetch config, and auto-start game
   useEffect(() => {
     const init = async () => {
@@ -92,7 +87,7 @@ function App() {
         }
 
         // Auto-start the game immediately
-        await api.createSession(punctuationMode);
+        await api.createSession(false);
         await api.startRound();
         const state = await api.getState();
         setGameState(state);
@@ -110,7 +105,7 @@ function App() {
       setIsLoading(false);
     };
     init();
-  }, [toast, punctuationMode]);
+  }, [toast]);
 
   // Live WPM calculation
   useEffect(() => {
@@ -134,7 +129,7 @@ function App() {
   const startGame = async () => {
     try {
       setIsLoading(true);
-      await api.createSession(punctuationMode);
+      await api.createSession(false);
       await api.startRound();
       const state = await api.getState();
       setGameState(state);
@@ -153,6 +148,64 @@ function App() {
     }
     setIsLoading(false);
   };
+
+  // Common function to handle round completion
+  const handleRoundComplete = useCallback(async (now) => {
+    // Submit timing data
+    const durationMs = startTime ? now - startTime : 0;
+    await api.submitTiming(startTime || now, now, durationMs);
+    await api.saveStats();
+
+    // Get final stats
+    const [session, historical] = await Promise.all([
+      api.getSessionStats(),
+      api.getHistoricalStats(),
+    ]);
+    setSessionStats(session);
+    setHistoricalStats(historical);
+
+    // Save stats to local storage for persistence
+    setLocalHistoricalStats(historical);
+    saveToStorage(STORAGE_KEYS.HISTORICAL_STATS, historical);
+
+    // Also update auth context's local stats (for sync feature)
+    if (updateLocalStats) {
+      updateLocalStats(historical);
+    }
+
+    // If authenticated, sync to server
+    if (isAuthenticated) {
+      try {
+        await api.syncStats(historical);
+      } catch (e) {
+        console.log('Failed to sync stats to server:', e);
+        // Non-fatal - stats are still saved locally
+      }
+    }
+
+    // Check if this score qualifies for the leaderboard (works for everyone)
+    // Score is calculated as WPM * (accuracy/100)
+    try {
+      const wpm = session.wpm;
+      const accuracy = session.accuracy;
+      const qualification = await api.checkLeaderboardQualification(wpm, accuracy);
+      if (qualification.qualifies) {
+        setLeaderboardRank(qualification.rank);
+        setPendingSubmission({
+          wpm: session.wpm,
+          accuracy: session.accuracy,
+          duration: session.duration ? session.duration / 1e9 : 0,
+        });
+        setScreen('nameEntry');
+        return;
+      }
+    } catch (e) {
+      console.log('Failed to check leaderboard qualification:', e);
+      // Non-fatal - continue to results (leaderboard may not be configured)
+    }
+
+    setScreen('results');
+  }, [startTime, isAuthenticated, updateLocalStats]);
 
   const handleKeystroke = useCallback(async (char) => {
     const now = Date.now();
@@ -175,39 +228,7 @@ function App() {
 
       // Check if round completed (last correct char of last word)
       if (result.round_complete) {
-        // Submit timing data
-        const durationMs = startTime ? now - startTime : 0;
-        await api.submitTiming(startTime || now, now, durationMs);
-        await api.saveStats();
-
-        // Get final stats
-        const [session, historical] = await Promise.all([
-          api.getSessionStats(),
-          api.getHistoricalStats(),
-        ]);
-        setSessionStats(session);
-        setHistoricalStats(historical);
-
-        // Save stats to local storage for persistence
-        setLocalHistoricalStats(historical);
-        saveToStorage(STORAGE_KEYS.HISTORICAL_STATS, historical);
-
-        // Also update auth context's local stats (for sync feature)
-        if (updateLocalStats) {
-          updateLocalStats(historical);
-        }
-
-        // If authenticated, sync to server
-        if (isAuthenticated) {
-          try {
-            await api.syncStats(historical);
-          } catch (e) {
-            console.log('Failed to sync stats to server:', e);
-            // Non-fatal - stats are still saved locally
-          }
-        }
-
-        setScreen('results');
+        await handleRoundComplete(now);
       } else {
         // Refresh game state
         const state = await api.getState();
@@ -216,7 +237,7 @@ function App() {
     } catch (e) {
       console.error('Keystroke error:', e);
     }
-  }, [lastKeyTime, timerStarted, startTime, isAuthenticated, updateLocalStats]);
+  }, [lastKeyTime, timerStarted, handleRoundComplete]);
 
   const handleBackspace = useCallback(async () => {
     try {
@@ -237,39 +258,7 @@ function App() {
       setLastKeyTime(now);
 
       if (result.round_complete) {
-        // Submit timing data
-        const durationMs = startTime ? now - startTime : 0;
-        await api.submitTiming(startTime, now, durationMs);
-        await api.saveStats();
-
-        // Get final stats
-        const [session, historical] = await Promise.all([
-          api.getSessionStats(),
-          api.getHistoricalStats(),
-        ]);
-        setSessionStats(session);
-        setHistoricalStats(historical);
-
-        // Save stats to local storage for persistence
-        setLocalHistoricalStats(historical);
-        saveToStorage(STORAGE_KEYS.HISTORICAL_STATS, historical);
-
-        // Also update auth context's local stats (for sync feature)
-        if (updateLocalStats) {
-          updateLocalStats(historical);
-        }
-
-        // If authenticated, sync to server
-        if (isAuthenticated) {
-          try {
-            await api.syncStats(historical);
-          } catch (e) {
-            console.log('Failed to sync stats to server:', e);
-            // Non-fatal - stats are still saved locally
-          }
-        }
-
-        setScreen('results');
+        await handleRoundComplete(now);
       } else {
         const state = await api.getState();
         setGameState(state);
@@ -277,7 +266,7 @@ function App() {
     } catch (e) {
       console.error('Space error:', e);
     }
-  }, [lastKeyTime, startTime, isAuthenticated, updateLocalStats]);
+  }, [lastKeyTime, handleRoundComplete]);
 
   const handleNewRound = async () => {
     try {
@@ -307,14 +296,42 @@ function App() {
     setGameState(null);
     setSessionStats(null);
     setHistoricalStats(null);
+    setLeaderboardRank(null);
+    setPendingSubmission(null);
   };
 
-  if (isLoading && screen === 'welcome') {
+  const handleLeaderboardSubmit = async (displayName) => {
+    if (!pendingSubmission) return;
+
+    await api.submitLeaderboardEntry(
+      displayName,
+      pendingSubmission.wpm,
+      pendingSubmission.accuracy,
+      pendingSubmission.duration
+    );
+    setPendingSubmission(null);
+    setScreen('results');
+  };
+
+  const handleSkipLeaderboard = () => {
+    setPendingSubmission(null);
+    setScreen('results');
+  };
+
+  const handleShowLeaderboard = () => {
+    setScreen('leaderboard');
+  };
+
+  const handleShowAbout = () => {
+    setScreen('about');
+  };
+
+  if (isLoading || (screen === 'typing' && !gameState)) {
     return (
       <Flex h="100vh" align="center" justify="center" bg="bg.primary">
         <VStack spacing={4}>
           <Spinner size="xl" color="accent.cyan" thickness="4px" />
-          <Text color="gray.400">Connecting to backend...</Text>
+          <Text color="gray.400" fontFamily="'Fira Code', monospace" fontSize={{ base: 'lg', md: 'xl' }}>Connecting to backend...</Text>
         </VStack>
       </Flex>
     );
@@ -338,11 +355,13 @@ function App() {
           >
             <WelcomeScreen
               isConnected={isConnected}
-              punctuationMode={punctuationMode}
-              setPunctuationMode={setPunctuationMode}
               onStart={startGame}
+              onShowLeaderboard={handleShowLeaderboard}
+              onShowAbout={handleShowAbout}
               isLoading={isLoading}
               localStats={localHistoricalStats}
+              adsenseEnabled={config.adsense_enabled}
+              adsenseKey={config.adsense_key}
             />
           </MotionBox>
         )}
@@ -383,7 +402,62 @@ function App() {
               historicalStats={historicalStats}
               onNewRound={handleNewRound}
               onBackToMenu={handleBackToMenu}
+              onShowLeaderboard={handleShowLeaderboard}
               isLoading={isLoading}
+              adsenseEnabled={config.adsense_enabled}
+              adsenseKey={config.adsense_key}
+            />
+          </MotionBox>
+        )}
+
+        {screen === 'nameEntry' && pendingSubmission && (
+          <MotionBox
+            key="nameEntry"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            transition={{ duration: 0.4, type: 'spring', bounce: 0.3 }}
+          >
+            <NameEntryScreen
+              wpm={pendingSubmission.wpm}
+              accuracy={pendingSubmission.accuracy}
+              rank={leaderboardRank}
+              onSubmit={handleLeaderboardSubmit}
+              onSkip={handleSkipLeaderboard}
+              adsenseEnabled={config.adsense_enabled}
+              adsenseKey={config.adsense_key}
+            />
+          </MotionBox>
+        )}
+
+        {screen === 'leaderboard' && (
+          <MotionBox
+            key="leaderboard"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.4 }}
+          >
+            <LeaderboardScreen
+              onBack={() => setScreen(sessionStats ? 'results' : 'welcome')}
+              adsenseEnabled={config.adsense_enabled}
+              adsenseKey={config.adsense_key}
+            />
+          </MotionBox>
+        )}
+
+        {screen === 'about' && (
+          <MotionBox
+            key="about"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
+            transition={{ duration: 0.4 }}
+          >
+            <AboutScreen
+              onBack={() => setScreen('welcome')}
+              adsenseEnabled={config.adsense_enabled}
+              adsenseKey={config.adsense_key}
             />
           </MotionBox>
         )}
