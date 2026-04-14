@@ -28,6 +28,7 @@
   <a href="#installation">Installation</a> •
   <a href="#usage">Usage</a> •
   <a href="#statistics">Statistics</a> •
+  <a href="https://timlinux.github.io/baboon/">Documentation</a> •
   <a href="#support-baboon">Support</a>
 </p>
 
