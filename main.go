@@ -257,11 +257,36 @@ func getPIDFilePath() string {
 	return filepath.Join(runDir, "baboon.pid")
 }
 
+// getDefaultDatabasePath returns the default database path in the config directory.
+func getDefaultDatabasePath() string {
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+	if configDir == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			// Fallback to current directory
+			return "./baboon.db"
+		}
+		configDir = filepath.Join(home, ".config")
+	}
+	baboonDir := filepath.Join(configDir, "baboon")
+
+	// Ensure the directory exists
+	if err := os.MkdirAll(baboonDir, 0755); err != nil {
+		fmt.Printf("Warning: could not create config directory: %v\n", err)
+		return "./baboon.db"
+	}
+
+	return filepath.Join(baboonDir, "baboon.db")
+}
+
 // loadConfigFromEnv loads configuration from environment variables.
 func loadConfigFromEnv(config *backend.Config) {
-	// Database configuration
+	// Database configuration - use default path if not specified
 	if dsn := os.Getenv("BABOON_DATABASE_DSN"); dsn != "" {
 		config.DatabaseDSN = dsn
+	} else {
+		// Set default database path for automatic creation
+		config.DatabaseDSN = getDefaultDatabasePath()
 	}
 
 	// JWT secret for authentication

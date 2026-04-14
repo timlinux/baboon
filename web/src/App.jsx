@@ -48,7 +48,7 @@ const saveToStorage = (key, value) => {
 function App() {
   const { isAuthenticated, user, updateLocalStats, localStats: authLocalStats } = useAuth();
 
-  const [screen, setScreen] = useState('typing'); // welcome, typing, results, leaderboard, nameEntry
+  const [screen, setScreen] = useState('welcome'); // welcome, typing, results, leaderboard, nameEntry
   const [leaderboardRank, setLeaderboardRank] = useState(null);
   const [pendingSubmission, setPendingSubmission] = useState(null); // Store session data for name entry
   const [gameState, setGameState] = useState(null);
@@ -71,7 +71,7 @@ function App() {
   const toast = useToast();
   const wpmIntervalRef = useRef(null);
 
-  // Check backend health, fetch config, and auto-start game
+  // Check backend health and fetch config (show menu first, don't auto-start game)
   useEffect(() => {
     const init = async () => {
       try {
@@ -85,13 +85,6 @@ function App() {
         } catch (e) {
           console.log('Config endpoint not available, using defaults');
         }
-
-        // Auto-start the game immediately
-        await api.createSession(false);
-        await api.startRound();
-        const state = await api.getState();
-        setGameState(state);
-        setScreen('typing');
       } catch (e) {
         toast({
           title: 'Backend not available',
@@ -100,7 +93,6 @@ function App() {
           duration: null,
           isClosable: true,
         });
-        setScreen('welcome');
       }
       setIsLoading(false);
     };

@@ -680,7 +680,7 @@ The TUI frontend handles all rendering, user input, and visual presentation. It 
 - `animations.go` - Spring-based animation logic
 
 ### Web Frontend (`web/`)
-The web frontend is a React application that provides the same functionality as the TUI but with a beautiful, modern web interface.
+The web frontend is a React application that provides the same functionality as the TUI but with a beautiful, modern web interface. The entry point is the Welcome screen (menu), allowing users to navigate to the game, leaderboard, or about pages.
 
 **Technology Stack:**
 - **React 18**: Modern React with hooks for state management
@@ -689,12 +689,12 @@ The web frontend is a React application that provides the same functionality as 
 - **Custom Theme**: Dark theme with Kartoza brand colours (orange #D4922A and blue #4A90A4)
 
 **Key Components:**
-- `App.js` - Main application component with state management and screen routing
+- `App.jsx` - Main application component with state management and screen routing
 - `api.js` - REST API client for backend communication
 - `theme.js` - Custom Chakra UI theme with dark mode and chunky button styles
-- `components/WelcomeScreen.js` - Landing page with animated logo and game options
-- `components/TypingScreen.js` - Main typing interface with BlockLetter physics and live WPM bar
-- `components/ResultsScreen.js` - Statistics display with all typing theory metrics
+- `components/WelcomeScreen.jsx` - Landing page (entry point) with animated logo and game options
+- `components/TypingScreen.jsx` - Main typing interface with BlockLetter physics and live WPM bar
+- `components/ResultsScreen.jsx` - Statistics display with all typing theory metrics
 
 **Features:**
 - Large chunky block letters with spring-based physics animations
@@ -1097,7 +1097,9 @@ packages = {
 
 ## Database Schema (Authentication)
 
-When authentication is enabled via `BABOON_DATABASE_DSN`, the following tables are created:
+The database is created automatically on first run. By default, the database is stored at `~/.config/baboon/baboon.db`. This can be overridden by setting the `BABOON_DATABASE_DSN` environment variable.
+
+The following tables are created automatically via migrations:
 
 ### Users Table
 ```sql
@@ -1330,6 +1332,16 @@ TUI-style label-value-bar columns with fixed character widths:
 The Kartoza wallpaper (`web/public/kartoza-wallpaper.png`) is included in the project assets for reference.
 
 ## Version History
+
+### v1.9.1
+- Database auto-creation on first run
+  - Database automatically created at `~/.config/baboon/baboon.db` if not specified
+  - Config directory created automatically if it doesn't exist
+  - Can be overridden with `BABOON_DATABASE_DSN` environment variable
+- Web UI entry point changed to Welcome screen (menu)
+  - Application now starts at menu instead of auto-starting the game
+  - Users navigate to game, leaderboard, or about from the menu
+- Documentation link added to README.md pointing to GitHub Pages
 
 ### v1.8.0
 - TUI-style web UI redesign to match terminal application appearance

@@ -179,6 +179,15 @@ func (s *Server) Start() error {
 		mux.HandleFunc("GET /api/v1/leaderboard/badge/{id}", s.handleGetBadgeSVG)
 	}
 
+	// Catch-all for undefined API routes - return JSON 404 instead of HTML
+	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "API endpoint not found. The database may not be configured.",
+		})
+	})
+
 	// Serve static files if directory is configured
 	if s.staticDir != "" {
 		// Serve static files for all non-API routes

@@ -19,10 +19,26 @@ class BaboonAPI {
 
   async _fetchJSON(url, options = {}) {
     const response = await this._fetch(url, options);
+
+    // Check content-type to ensure we're getting JSON
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType && contentType.includes('application/json');
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: response.statusText }));
-      throw new Error(error.error || 'Request failed');
+      if (isJson) {
+        const error = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(error.error || 'Request failed');
+      } else {
+        // Non-JSON error response (e.g., HTML 404 page)
+        throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+      }
     }
+
+    // Ensure response is JSON before parsing
+    if (!isJson) {
+      throw new Error('Server returned non-JSON response. The API may not be available.');
+    }
+
     return response.json();
   }
 
