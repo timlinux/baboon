@@ -562,13 +562,18 @@ function ResultsScreen({
         <MotionBox whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
             size={{ base: 'md', md: 'lg' }}
-            variant="ghost"
+            variant="outline"
             onClick={onBackToMenu}
             px={{ base: 6, md: 8 }}
             fontFamily="'Fira Code', monospace"
             fontSize={smallFontSize}
+            borderColor="gray.500"
             color="gray.400"
-            _hover={{ color: 'white' }}
+            _hover={{
+              bg: 'rgba(128, 128, 128, 0.1)',
+              boxShadow: '0 0 20px rgba(128, 128, 128, 0.3)',
+              color: 'white',
+            }}
           >
             MENU
           </Button>
@@ -590,7 +595,7 @@ function ResultsScreen({
             Kartoza
           </Link>
           <Text>|</Text>
-          <Link href="https://github.com/sponsors/timlinux" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
+          <Link href="https://github.com/sponsors/kartoza" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
             Donate!
           </Link>
           <Text>|</Text>

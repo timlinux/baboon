@@ -41,7 +41,7 @@
 Baboon is **free and open source**, built with love during nights and weekends.
 Your support keeps the project alive and growing!
 
-<a href="https://github.com/sponsors/timlinux">
+<a href="https://github.com/sponsors/kartoza">
   <img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor on GitHub">
 </a>
 <a href="https://ko-fi.com/timlinux">
@@ -324,7 +324,7 @@ If Baboon has helped improve your typing skills, consider supporting its creator
 
 <br>
 
-<a href="https://github.com/sponsors/timlinux">
+<a href="https://github.com/sponsors/kartoza">
   <img src="https://img.shields.io/badge/GitHub_Sponsors-%E2%9D%A4_Become_a_Sponsor-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor on GitHub">
 </a>
 
@@ -360,5 +360,5 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 <p align="center">
   Made with love for typists everywhere<br>
-  <sub>If you love it too, <a href="https://github.com/sponsors/timlinux">show some support</a></sub>
+  <sub>If you love it too, <a href="https://github.com/sponsors/kartoza">show some support</a></sub>
 </p>

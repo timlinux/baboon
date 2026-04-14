@@ -236,7 +236,8 @@ function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, i
                 </Link>
               )}
               <Link
-                href="/docs/"
+                href="https://timlinux.github.io/baboon/"
+                isExternal
                 color="cyan.500"
                 fontWeight="bold"
                 _hover={{ color: 'cyan.400', textDecoration: 'underline' }}
@@ -275,7 +276,7 @@ function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, i
               </Link>
               <Text>|</Text>
               <Link
-                href="https://github.com/sponsors/timlinux"
+                href="https://github.com/sponsors/kartoza"
                 isExternal
                 color="cyan.500"
                 _hover={{ color: 'cyan.400' }}

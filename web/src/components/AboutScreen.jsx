@@ -260,7 +260,7 @@ function AboutScreen({ onBack, adsenseEnabled, adsenseKey }) {
                   Kartoza
                 </Link>
                 <Text>|</Text>
-                <Link href="https://github.com/sponsors/timlinux" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
+                <Link href="https://github.com/sponsors/kartoza" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
                   Donate!
                 </Link>
                 <Text>|</Text>
