@@ -28,7 +28,13 @@
       "Bash(ss:*)",
       "Bash(git pull:*)",
       "Bash(git stash:*)",
-      "Bash(gh release:*)"
+      "Bash(gh release:*)",
+      "Bash(make:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(find:*)",
+      "Bash(git -C /home/timlinux/dev/go/baboon add vendor/github.com/timlinux/blockfont vendor/modules.txt)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(go build:*)"
     ],
     "deny": [],
     "ask": []

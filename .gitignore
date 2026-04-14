@@ -32,3 +32,6 @@ PROMPT.log
 web/node_modules/
 web/build/
 pkg/
+.claude/settings.local.json
+package-lock.json
+baboon.db
