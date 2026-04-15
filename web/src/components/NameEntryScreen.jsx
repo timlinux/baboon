@@ -145,12 +145,14 @@ function NameEntryScreen({ wpm, accuracy, rank, onSubmit, onSkip, adsenseEnabled
         if (name.length > 0) {
           const newName = name.slice(0, -1);
           setName(newName);
+          // Clear validation error immediately when user corrects input
+          setValidationError('');
+          updateSlotStates(newName, []);
           // Debounce validation
           if (validationTimeoutRef.current) {
             clearTimeout(validationTimeoutRef.current);
           }
           validationTimeoutRef.current = setTimeout(() => validateName(newName), 200);
-          updateSlotStates(newName, []);
         }
         return;
       }
@@ -165,13 +167,15 @@ function NameEntryScreen({ wpm, accuracy, rank, onSubmit, onSkip, adsenseEnabled
       e.preventDefault();
       const newName = name + char.toUpperCase();
       setName(newName);
+      // Clear validation error immediately when user corrects input
+      setValidationError('');
+      updateSlotStates(newName, []);
 
       // Debounce validation
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current);
       }
       validationTimeoutRef.current = setTimeout(() => validateName(newName), 200);
-      updateSlotStates(newName, []);
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -341,7 +345,7 @@ function NameEntryScreen({ wpm, accuracy, rank, onSubmit, onSkip, adsenseEnabled
             Kartoza
           </Link>
           <Text>|</Text>
-          <Link href="https://github.com/sponsors/timlinux" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
+          <Link href="https://github.com/sponsors/kartoza" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
             Donate!
           </Link>
         </HStack>

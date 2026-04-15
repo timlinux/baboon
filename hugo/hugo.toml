@@ -14,7 +14,7 @@ enableGitInfo = true
 
   # Kartoza branding
   kartoza_url = "https://kartoza.com"
-  sponsor_url = "https://github.com/sponsors/timlinux"
+  sponsor_url = "https://github.com/sponsors/kartoza"
   kofi_url = "https://ko-fi.com/timlinux"
 
   # Brand colors (matching web app)

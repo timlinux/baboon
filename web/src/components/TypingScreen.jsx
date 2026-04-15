@@ -37,7 +37,7 @@ function useBlockFontSize(wordLength) {
 }
 
 // Preview word (smaller, faded) for carousel
-function PreviewWord({ word, position, fontSize }) {
+function PreviewWord({ word, position }) {
   const isPrevious = position === 'previous';
 
   const previewSize = useBreakpointValue({
@@ -68,8 +68,51 @@ function PreviewWord({ word, position, fontSize }) {
         textTransform="lowercase"
         letterSpacing="0.2em"
       >
-        {isPrevious ? `· · · ${word} · · ·` : `▼  ${word}  ▼`}
+        · · · {word} · · ·
       </Text>
+    </MotionBox>
+  );
+}
+
+// Multiple upcoming words preview
+function UpcomingWords({ words }) {
+  const previewSize = useBreakpointValue({
+    base: 'md',
+    md: 'lg',
+    lg: 'xl',
+    xl: '2xl',
+  });
+
+  if (!words || words.length === 0) return null;
+
+  return (
+    <MotionBox
+      position="absolute"
+      bottom="8%"
+      initial={{ opacity: 0, y: -30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 30 }}
+      transition={{
+        type: 'spring',
+        stiffness: 200,
+        damping: 25,
+      }}
+    >
+      <VStack spacing={1}>
+        {words.map((word, index) => (
+          <Text
+            key={`next-${index}-${word}`}
+            fontFamily="'Fira Code', 'JetBrains Mono', monospace"
+            fontSize={previewSize}
+            color={index === 0 ? 'gray.400' : index === 1 ? 'gray.500' : 'gray.600'}
+            textTransform="lowercase"
+            letterSpacing="0.15em"
+            opacity={1 - index * 0.2}
+          >
+            {index === 0 ? `▼  ${word}  ▼` : word}
+          </Text>
+        ))}
+      </VStack>
     </MotionBox>
   );
 }
@@ -130,7 +173,7 @@ function TypingScreen({
   const currentWord = gameState?.current_word || '';
   const currentInput = gameState?.current_input || '';
   const previousWord = gameState?.previous_word || '';
-  const nextWord = gameState?.next_word || '';
+  const nextWords = gameState?.next_words || [];
   const wordNumber = gameState?.word_number || 1;
   const totalWords = gameState?.total_words || 30;
 
@@ -290,10 +333,10 @@ function TypingScreen({
           </AnimatePresence>
         </VStack>
 
-        {/* Next word */}
+        {/* Next words (up to 3) */}
         <AnimatePresence mode="wait">
-          {nextWord && (
-            <PreviewWord key={`next-${wordKey}`} word={nextWord} position="next" />
+          {nextWords.length > 0 && (
+            <UpcomingWords key={`next-${wordKey}`} words={nextWords} />
           )}
         </AnimatePresence>
 
@@ -350,7 +393,7 @@ function TypingScreen({
           </Link>
           <Text>|</Text>
           <Link
-            href="https://github.com/sponsors/timlinux"
+            href="https://github.com/sponsors/kartoza"
             isExternal
             color="cyan.500"
             _hover={{ color: 'cyan.400' }}

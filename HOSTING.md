@@ -584,4 +584,4 @@ journalctl -u baboon
 
 ---
 
-Made with ♥ by [Kartoza](https://kartoza.com) | [Donate](https://github.com/sponsors/timlinux) | [GitHub](https://github.com/timlinux/baboon)
+Made with ♥ by [Kartoza](https://kartoza.com) | [Donate](https://github.com/sponsors/kartoza) | [GitHub](https://github.com/timlinux/baboon)

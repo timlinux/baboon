@@ -149,7 +149,7 @@ Baboon represents **hundreds of hours** of passionate development. It's yours to
 
 <div class="donation-buttons-hero" markdown>
 
-[:material-heart: Sponsor on GitHub](https://github.com/sponsors/timlinux){ .md-button .md-button--primary }
+[:material-heart: Sponsor on GitHub](https://github.com/sponsors/kartoza){ .md-button .md-button--primary }
 [:material-coffee: Ko-fi](https://ko-fi.com/timlinux){ .md-button }
 [:fontawesome-brands-stripe: Donate via Kartoza](https://kartoza.com/donate){ .md-button }
 
