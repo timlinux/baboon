@@ -32,6 +32,14 @@ import (
 	"github.com/timlinux/baboon/frontend"
 )
 
+// Version information set by ldflags during build
+var (
+	// Version is the semantic version (e.g., "1.11.0")
+	Version = "dev"
+	// GitCommit is the short git commit hash (e.g., "abc1234")
+	GitCommit = "unknown"
+)
+
 // runEmbedded runs the TUI with the engine embedded directly (default mode).
 // This is a single-binary mode with no client-server architecture.
 func runEmbedded(punctuationMode bool) {
@@ -281,6 +289,10 @@ func getDefaultDatabasePath() string {
 
 // loadConfigFromEnv loads configuration from environment variables.
 func loadConfigFromEnv(config *backend.Config) {
+	// Set version information from build-time ldflags
+	config.Version = Version
+	config.GitCommit = GitCommit
+
 	// Database configuration - use default path if not specified
 	if dsn := os.Getenv("BABOON_DATABASE_DSN"); dsn != "" {
 		config.DatabaseDSN = dsn

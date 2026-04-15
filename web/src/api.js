@@ -138,6 +138,11 @@ class BaboonAPI {
     return response.json();
   }
 
+  async getVersion() {
+    const response = await fetch(`${this.baseUrl}/version`);
+    return response.json();
+  }
+
   // Authentication methods
 
   // Get current authenticated user

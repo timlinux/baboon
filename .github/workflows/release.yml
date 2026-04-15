@@ -19,35 +19,43 @@ jobs:
         with:
           go-version: '1.21'
 
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          COMMIT=$(git rev-parse --short HEAD)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "COMMIT=$COMMIT" >> $GITHUB_OUTPUT
+
       - name: Build Linux AMD64
         env:
           GOOS: linux
           GOARCH: amd64
-        run: go build -ldflags="-s -w" -o dist/baboon-linux-amd64 .
+        run: go build -ldflags="-s -w -X main.Version=${{ steps.version.outputs.VERSION }} -X main.GitCommit=${{ steps.version.outputs.COMMIT }}" -o dist/baboon-linux-amd64 .
 
       - name: Build Linux ARM64
         env:
           GOOS: linux
           GOARCH: arm64
-        run: go build -ldflags="-s -w" -o dist/baboon-linux-arm64 .
+        run: go build -ldflags="-s -w -X main.Version=${{ steps.version.outputs.VERSION }} -X main.GitCommit=${{ steps.version.outputs.COMMIT }}" -o dist/baboon-linux-arm64 .
 
       - name: Build macOS AMD64
         env:
           GOOS: darwin
           GOARCH: amd64
-        run: go build -ldflags="-s -w" -o dist/baboon-darwin-amd64 .
+        run: go build -ldflags="-s -w -X main.Version=${{ steps.version.outputs.VERSION }} -X main.GitCommit=${{ steps.version.outputs.COMMIT }}" -o dist/baboon-darwin-amd64 .
 
       - name: Build macOS ARM64
         env:
           GOOS: darwin
           GOARCH: arm64
-        run: go build -ldflags="-s -w" -o dist/baboon-darwin-arm64 .
+        run: go build -ldflags="-s -w -X main.Version=${{ steps.version.outputs.VERSION }} -X main.GitCommit=${{ steps.version.outputs.COMMIT }}" -o dist/baboon-darwin-arm64 .
 
       - name: Build Windows AMD64
         env:
           GOOS: windows
           GOARCH: amd64
-        run: go build -ldflags="-s -w" -o dist/baboon-windows-amd64.exe .
+        run: go build -ldflags="-s -w -X main.Version=${{ steps.version.outputs.VERSION }} -X main.GitCommit=${{ steps.version.outputs.COMMIT }}" -o dist/baboon-windows-amd64.exe .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

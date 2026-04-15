@@ -185,6 +185,10 @@ type Config struct {
 
 	MicrosoftClientID     string
 	MicrosoftClientSecret string
+
+	// Version information (set at build time)
+	Version   string
+	GitCommit string
 }
 
 // DefaultConfig returns the default game configuration.
