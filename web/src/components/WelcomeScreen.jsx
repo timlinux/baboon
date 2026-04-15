@@ -23,7 +23,7 @@ import AdSense from './AdSense.jsx';
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
 
-function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, isLoading, localStats, adsenseEnabled, adsenseKey }) {
+function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, isLoading, localStats, adsenseEnabled, adsenseKey, versionInfo }) {
   const { user, isAuthenticated, authConfig } = useAuth();
 
   // Handle keyboard shortcuts
@@ -262,28 +262,56 @@ function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, i
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
           >
-            <HStack spacing={2} color="gray.600" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">
-              <Text>Made with</Text>
-              <Text color="red.400">♥</Text>
-              <Text>by</Text>
-              <Link
-                href="https://kartoza.com"
-                isExternal
-                color="cyan.500"
-                _hover={{ color: 'cyan.400' }}
-              >
-                Kartoza
-              </Link>
-              <Text>|</Text>
-              <Link
-                href="https://github.com/sponsors/kartoza"
-                isExternal
-                color="cyan.500"
-                _hover={{ color: 'cyan.400' }}
-              >
-                Donate!
-              </Link>
-            </HStack>
+            <VStack spacing={2}>
+              <HStack spacing={2} color="gray.600" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">
+                <Text>Made with</Text>
+                <Text color="red.400">♥</Text>
+                <Text>by</Text>
+                <Link
+                  href="https://kartoza.com"
+                  isExternal
+                  color="cyan.500"
+                  _hover={{ color: 'cyan.400' }}
+                >
+                  Kartoza
+                </Link>
+                <Text>|</Text>
+                <Link
+                  href="https://github.com/sponsors/kartoza"
+                  isExternal
+                  color="cyan.500"
+                  _hover={{ color: 'cyan.400' }}
+                >
+                  Donate!
+                </Link>
+              </HStack>
+              {/* Version info */}
+              {versionInfo?.version && (
+                <HStack spacing={2} color="gray.500" fontSize={{ base: 'xs', md: 'sm' }} fontFamily="'Fira Code', monospace">
+                  <Link
+                    href={`https://github.com/timlinux/baboon/releases/tag/v${versionInfo.version}`}
+                    isExternal
+                    color="gray.500"
+                    _hover={{ color: 'cyan.400' }}
+                  >
+                    v{versionInfo.version}
+                  </Link>
+                  {versionInfo?.git_commit && versionInfo.git_commit !== 'unknown' && (
+                    <>
+                      <Text>•</Text>
+                      <Link
+                        href={`https://github.com/timlinux/baboon/commit/${versionInfo.git_commit}`}
+                        isExternal
+                        color="gray.500"
+                        _hover={{ color: 'cyan.400' }}
+                      >
+                        {versionInfo.git_commit}
+                      </Link>
+                    </>
+                  )}
+                </HStack>
+              )}
+            </VStack>
           </MotionBox>
 
           {/* AdSense ad */}

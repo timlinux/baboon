@@ -60,6 +60,7 @@ function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [config, setConfig] = useState({ adsense_enabled: false, adsense_key: '' });
+  const [versionInfo, setVersionInfo] = useState({ version: '', git_commit: '' });
 
   // Timing state (tracked on frontend to avoid latency)
   const [timerStarted, setTimerStarted] = useState(false);
@@ -84,6 +85,14 @@ function App() {
           setConfig(serverConfig);
         } catch (e) {
           console.log('Config endpoint not available, using defaults');
+        }
+
+        // Fetch version info
+        try {
+          const version = await api.getVersion();
+          setVersionInfo(version);
+        } catch (e) {
+          console.log('Version endpoint not available');
         }
       } catch (e) {
         toast({
@@ -354,6 +363,7 @@ function App() {
               localStats={localHistoricalStats}
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
+              versionInfo={versionInfo}
             />
           </MotionBox>
         )}

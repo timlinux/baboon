@@ -146,6 +146,9 @@ func (s *Server) Start() error {
 	// Health check
 	mux.HandleFunc("GET /api/health", s.handleHealth)
 
+	// Version info
+	mux.HandleFunc("GET /api/version", s.handleVersion)
+
 	// Configuration endpoint for web frontend
 	mux.HandleFunc("GET /api/config", s.handleConfig)
 
@@ -332,6 +335,12 @@ type ConfigResponse struct {
 	AdsenseKey     string   `json:"adsense_key,omitempty"`
 	AuthEnabled    bool     `json:"auth_enabled"`
 	AuthProviders  []string `json:"auth_providers,omitempty"`
+}
+
+// VersionResponse is the response body for GET /api/version
+type VersionResponse struct {
+	Version   string `json:"version"`
+	GitCommit string `json:"git_commit"`
 }
 
 // Handler implementations
@@ -635,6 +644,15 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	resp := HealthResponse{
 		Status:         "healthy",
 		ActiveSessions: activeCount,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func (s *Server) handleVersion(w http.ResponseWriter, r *http.Request) {
+	resp := VersionResponse{
+		Version:   s.config.Version,
+		GitCommit: s.config.GitCommit,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
