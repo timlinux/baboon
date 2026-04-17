@@ -213,10 +213,18 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	if s != nil {
 		advanceKeyHint = s.AdvanceKey.KeyHint()
 	}
+
+	// Perfect mode indicator
+	perfectModeIndicator := ""
+	if s != nil && s.PerfectMode {
+		perfectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Bold(true)
+		perfectModeIndicator = perfectStyle.Render(" [PERFECT MODE]")
+	}
+
 	if !state.TimerStarted {
-		helpText = "Type the first letter to start | Tab to restart | Ctrl+O for options | ESC to quit"
+		helpText = "Type the first letter to start | Tab to restart | Ctrl+O for options | ESC to quit" + perfectModeIndicator
 	} else {
-		helpText = fmt.Sprintf("Press %s to continue | Ctrl+W to clear word | Tab to restart | ESC to quit", advanceKeyHint)
+		helpText = fmt.Sprintf("Press %s to continue | Ctrl+W to clear word | Tab to restart | ESC to quit", advanceKeyHint) + perfectModeIndicator
 	}
 
 	// Kartoza branding
@@ -1102,6 +1110,69 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 		optionLines = append(optionLines, line.String())
 	}
 
+	// Perfect Mode toggle section
+	optionLines = append(optionLines, "")
+	optionLines = append(optionLines, r.styles.SessionLabel.Render("Perfect Mode:"))
+	optionLines = append(optionLines, "")
+
+	// Perfect mode toggle slider
+	perfectModeOptions := []struct {
+		enabled     bool
+		label       string
+		description string
+	}{
+		{false, "Off", "Normal mode - mistakes don't reset the round"},
+		{true, "On", "Any mistake immediately restarts the round"},
+	}
+
+	for i, opt := range perfectModeOptions {
+		var line strings.Builder
+
+		// Number prefix (continuing from advance key options: 4, 5)
+		numStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+		line.WriteString(numStyle.Render(fmt.Sprintf(" %d. ", i+4)))
+
+		// Selection indicator and label
+		isSelected := s.PerfectMode == opt.enabled
+		isCursor := cursor == i+3 // Offset by 3 (advance key options)
+
+		var labelStyle lipgloss.Style
+		if isCursor {
+			// Cursor position - highlighted
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("0")).
+				Background(lipgloss.Color("39")).
+				Bold(true).
+				Padding(0, 1)
+		} else if isSelected {
+			// Currently selected option
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("46")).
+				Bold(true)
+		} else {
+			// Normal option
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("252"))
+		}
+
+		// Checkmark for selected option
+		if isSelected {
+			checkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("46")).Bold(true)
+			line.WriteString(checkStyle.Render("✓ "))
+		} else {
+			line.WriteString("  ")
+		}
+
+		line.WriteString(labelStyle.Render(opt.label))
+
+		// Description
+		descStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Italic(true)
+		line.WriteString("  ")
+		line.WriteString(descStyle.Render(opt.description))
+
+		optionLines = append(optionLines, line.String())
+	}
+
 	// Main content (title + options)
 	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
@@ -1117,7 +1188,7 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 		headerStyle.Render("🐒 BABOON - Typing Practice"))
 
 	// Fixed footer at bottom (help text + Kartoza branding)
-	helpText := "↑/↓ to navigate | Enter/Space to select | 1-3 quick select | ESC to go back"
+	helpText := "↑/↓ to navigate | Enter/Space to select | 1-5 quick select | ESC to go back"
 
 	// Kartoza branding
 	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))

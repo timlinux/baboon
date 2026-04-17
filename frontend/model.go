@@ -286,6 +286,15 @@ func (m Model) handleTypingInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		// Track correct chars for local live WPM
 		if result.IsCorrect {
 			m.correctChars++
+		} else if m.settings.PerfectMode && m.timerStarted {
+			// Perfect mode: restart round on first mistake
+			m.api.StartRound()
+			m.carouselAnimator = NewCarouselAnimator()
+			m.timerStarted = false
+			m.startTime = time.Time{}
+			m.lastKeyTime = time.Time{}
+			m.correctChars = 0
+			return m, nil
 		}
 
 		m.lastKeyTime = now
@@ -387,6 +396,8 @@ func (m Model) handleResultsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 // handleOptionsInput processes keyboard input on options screen
 func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	const totalOptions = 5 // 3 advance key options + 2 perfect mode options
+
 	switch msg.Type {
 	case tea.KeyCtrlC:
 		return m, tea.Quit
@@ -405,20 +416,26 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.optionsCursor > 0 {
 			m.optionsCursor--
 		} else {
-			m.optionsCursor = 2 // Wrap to last option (3 options: 0, 1, 2)
+			m.optionsCursor = totalOptions - 1 // Wrap to last option
 		}
 
 	case tea.KeyDown, tea.KeyTab:
 		// Move cursor down (wrap around)
-		if m.optionsCursor < 2 {
+		if m.optionsCursor < totalOptions-1 {
 			m.optionsCursor++
 		} else {
 			m.optionsCursor = 0 // Wrap to first option
 		}
 
 	case tea.KeyEnter, tea.KeySpace:
-		// Select current option
-		m.settings.AdvanceKey = settings.AdvanceKey(m.optionsCursor)
+		// Select current option based on cursor position
+		if m.optionsCursor < 3 {
+			// Advance key options (0, 1, 2)
+			m.settings.AdvanceKey = settings.AdvanceKey(m.optionsCursor)
+		} else {
+			// Perfect mode options (3 = Off, 4 = On)
+			m.settings.PerfectMode = m.optionsCursor == 4
+		}
 		// Save settings
 		_ = m.settings.Save()
 		// Return to previous screen
@@ -453,6 +470,24 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "3":
 			m.settings.AdvanceKey = settings.AdvanceKeyEither
+			_ = m.settings.Save()
+			if m.optionsFromTyping {
+				m.state = StateTyping
+			} else {
+				m.state = StateResults
+			}
+			return m, nil
+		case "4":
+			m.settings.PerfectMode = false
+			_ = m.settings.Save()
+			if m.optionsFromTyping {
+				m.state = StateTyping
+			} else {
+				m.state = StateResults
+			}
+			return m, nil
+		case "5":
+			m.settings.PerfectMode = true
 			_ = m.settings.Save()
 			if m.optionsFromTyping {
 				m.state = StateTyping
