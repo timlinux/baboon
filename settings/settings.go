@@ -45,13 +45,15 @@ func (a AdvanceKey) KeyHint() string {
 
 // Settings holds user preferences
 type Settings struct {
-	AdvanceKey AdvanceKey `json:"advance_key"`
+	AdvanceKey  AdvanceKey `json:"advance_key"`
+	PerfectMode bool       `json:"perfect_mode"`
 }
 
 // DefaultSettings returns the default settings
 func DefaultSettings() *Settings {
 	return &Settings{
-		AdvanceKey: AdvanceKeySpace,
+		AdvanceKey:  AdvanceKeySpace,
+		PerfectMode: false,
 	}
 }
 

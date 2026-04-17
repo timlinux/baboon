@@ -67,6 +67,11 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 **I want to** share a badge image showing my score and rank
 **So that** I can share my achievement on social media
 
+### US-012: Practice Perfect Typing
+**As a** user who wants to develop flawless typing habits
+**I want to** enable a mode that restarts the round on any mistake
+**So that** I can train myself to type with 100% accuracy
+
 ## Functional Requirements
 
 ### FR-001: Word Display
@@ -477,16 +482,32 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
   - **Space** (default): Press Space to advance to the next word
   - **Enter**: Press Enter to advance to the next word
   - **Either**: Press Space or Enter to advance to the next word
+- The options screen SHALL allow configuring Perfect Mode:
+  - **Off** (default): Normal mode - mistakes don't reset the round
+  - **On**: Any mistake immediately restarts the round
 - Navigation in options screen:
   - ↑/↓ or Tab/Shift+Tab SHALL move the cursor between options
   - Enter or Space SHALL select the highlighted option
-  - Number keys (1-3) SHALL quick-select the corresponding option
+  - Number keys (1-5) SHALL quick-select the corresponding option
   - ESC SHALL return to the previous screen without changes
 - The currently selected option SHALL be indicated with a green checkmark (✓)
 - The cursor position SHALL be highlighted with a contrasting background colour
 - Settings SHALL be persisted to `~/.config/baboon/settings.json`
 - Settings SHALL be loaded on application startup
 - Help text in typing screen SHALL dynamically reflect the configured advance key
+- When Perfect Mode is enabled, a red "[PERFECT MODE]" indicator SHALL be displayed in the help text
+
+### FR-040: Perfect Mode
+- When Perfect Mode is enabled, the round SHALL restart immediately upon the first typing mistake
+- A mistake is defined as typing any character that does not match the expected character
+- The restart SHALL occur silently (no confirmation or notification)
+- The round restart SHALL reset:
+  - The timer back to not started
+  - The word list to a new set of 30 words
+  - All progress (correct characters, current word index)
+- Perfect Mode SHALL be disabled by default
+- Perfect Mode SHALL only trigger on mistakes after the timer has started (first correct character typed)
+- When Perfect Mode triggers a restart, no statistics SHALL be recorded for the incomplete round
 
 ### FR-037: Monthly Leaderboard
 - The application SHALL maintain a leaderboard showing the top 10 scores per month

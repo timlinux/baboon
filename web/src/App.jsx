@@ -23,6 +23,12 @@ const MotionBox = motion(Box);
 // Local storage keys
 const STORAGE_KEYS = {
   HISTORICAL_STATS: 'baboon_historical_stats',
+  SETTINGS: 'baboon_settings',
+};
+
+// Default settings
+const DEFAULT_SETTINGS = {
+  perfectMode: false,
 };
 
 // Load data from local storage
@@ -57,6 +63,9 @@ function App() {
   const [localHistoricalStats, setLocalHistoricalStats] = useState(() =>
     loadFromStorage(STORAGE_KEYS.HISTORICAL_STATS, null)
   );
+  const [settings, setSettings] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
+  );
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [config, setConfig] = useState({ adsense_enabled: false, adsense_key: '' });
@@ -68,6 +77,9 @@ function App() {
   const [lastKeyTime, setLastKeyTime] = useState(null);
   const [correctChars, setCorrectChars] = useState(0);
   const [liveWpm, setLiveWpm] = useState(0);
+
+  // Ref to track timer state reliably (avoids stale closure issues with async state)
+  const timerStartedRef = useRef(false);
 
   const toast = useToast();
   const wpmIntervalRef = useRef(null);
@@ -134,6 +146,7 @@ function App() {
       await api.startRound();
       const state = await api.getState();
       setGameState(state);
+      timerStartedRef.current = false;
       setTimerStarted(false);
       setStartTime(null);
       setLastKeyTime(null);
@@ -216,13 +229,26 @@ function App() {
       const result = await api.processKeystroke(char, seekTimeMs);
 
       // Start timer on first correct keystroke
-      if (result.timer_started && !timerStarted) {
+      if (result.timer_started && !timerStartedRef.current) {
+        timerStartedRef.current = true;
         setTimerStarted(true);
         setStartTime(now);
       }
 
       if (result.is_correct) {
         setCorrectChars(c => c + 1);
+      } else if (settings.perfectMode && timerStartedRef.current) {
+        // Perfect mode: restart round on first mistake (using ref to avoid stale closure)
+        timerStartedRef.current = false;
+        await api.startRound();
+        const state = await api.getState();
+        setGameState(state);
+        setTimerStarted(false);
+        setStartTime(null);
+        setLastKeyTime(null);
+        setCorrectChars(0);
+        setLiveWpm(0);
+        return;
       }
 
       setLastKeyTime(now);
@@ -238,7 +264,7 @@ function App() {
     } catch (e) {
       console.error('Keystroke error:', e);
     }
-  }, [lastKeyTime, timerStarted, handleRoundComplete]);
+  }, [lastKeyTime, settings.perfectMode, handleRoundComplete]);
 
   const handleBackspace = useCallback(async () => {
     try {
@@ -275,6 +301,7 @@ function App() {
       await api.startRound();
       const state = await api.getState();
       setGameState(state);
+      timerStartedRef.current = false;
       setTimerStarted(false);
       setStartTime(null);
       setLastKeyTime(null);
@@ -299,6 +326,12 @@ function App() {
     setHistoricalStats(null);
     setLeaderboardRank(null);
     setPendingSubmission(null);
+  };
+
+  const togglePerfectMode = () => {
+    const newSettings = { ...settings, perfectMode: !settings.perfectMode };
+    setSettings(newSettings);
+    saveToStorage(STORAGE_KEYS.SETTINGS, newSettings);
   };
 
   const handleLeaderboardSubmit = async (displayName) => {
@@ -364,6 +397,8 @@ function App() {
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
               versionInfo={versionInfo}
+              perfectMode={settings.perfectMode}
+              onTogglePerfectMode={togglePerfectMode}
             />
           </MotionBox>
         )}
@@ -387,6 +422,7 @@ function App() {
               onRestart={handleNewRound}
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
+              perfectMode={settings.perfectMode}
             />
           </MotionBox>
         )}

@@ -169,6 +169,7 @@ function TypingScreen({
   onRestart,
   adsenseEnabled,
   adsenseKey,
+  perfectMode,
 }) {
   const currentWord = gameState?.current_word || '';
   const currentInput = gameState?.current_input || '';
@@ -367,14 +368,26 @@ function TypingScreen({
 
       {/* Footer hint */}
       <Flex justify="center" pb={2}>
-        <Text
-          color="gray.600"
-          fontSize={{ base: 'xs', md: 'sm' }}
-          fontFamily="'Fira Code', monospace"
-          textAlign="center"
-        >
-          Type to start | SPACE/ENTER to continue | TAB to restart | ESC to quit
-        </Text>
+        <HStack spacing={2}>
+          <Text
+            color="gray.600"
+            fontSize={{ base: 'xs', md: 'sm' }}
+            fontFamily="'Fira Code', monospace"
+            textAlign="center"
+          >
+            Type to start | SPACE/ENTER to continue | TAB to restart | ESC to quit
+          </Text>
+          {perfectMode && (
+            <Text
+              color="red.400"
+              fontSize={{ base: 'xs', md: 'sm' }}
+              fontFamily="'Fira Code', monospace"
+              fontWeight="bold"
+            >
+              [PERFECT MODE]
+            </Text>
+          )}
+        </HStack>
       </Flex>
 
       {/* Kartoza branding */}

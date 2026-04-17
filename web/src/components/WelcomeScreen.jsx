@@ -12,6 +12,9 @@ import {
   StatNumber,
   SimpleGrid,
   Link,
+  Switch,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { LoginButtons } from './LoginButton.jsx';
@@ -23,7 +26,7 @@ import AdSense from './AdSense.jsx';
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
 
-function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, isLoading, localStats, adsenseEnabled, adsenseKey, versionInfo }) {
+function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, isLoading, localStats, adsenseEnabled, adsenseKey, versionInfo, perfectMode, onTogglePerfectMode }) {
   const { user, isAuthenticated, authConfig } = useAuth();
 
   // Handle keyboard shortcuts
@@ -193,6 +196,50 @@ function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, i
             >
               START
             </Button>
+          </MotionBox>
+
+          {/* Perfect Mode Toggle */}
+          <MotionBox
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+          >
+            <FormControl display="flex" alignItems="center" justifyContent="center">
+              <FormLabel
+                htmlFor="perfect-mode"
+                mb="0"
+                color={perfectMode ? 'red.400' : 'gray.500'}
+                fontSize={{ base: 'md', md: 'lg', lg: 'xl' }}
+                fontFamily="'Fira Code', monospace"
+                fontWeight={perfectMode ? 'bold' : 'normal'}
+                cursor="pointer"
+              >
+                PERFECT MODE
+              </FormLabel>
+              <Switch
+                id="perfect-mode"
+                isChecked={perfectMode}
+                onChange={onTogglePerfectMode}
+                colorScheme="red"
+                size="lg"
+                sx={{
+                  '& .chakra-switch__track': {
+                    bg: perfectMode ? 'red.500' : 'gray.600',
+                  },
+                }}
+              />
+            </FormControl>
+            {perfectMode && (
+              <Text
+                color="red.400"
+                fontSize={{ base: 'xs', md: 'sm' }}
+                fontFamily="'Fira Code', monospace"
+                textAlign="center"
+                mt={1}
+              >
+                Any mistake restarts the round!
+              </Text>
+            )}
           </MotionBox>
 
           {/* Instructions */}
