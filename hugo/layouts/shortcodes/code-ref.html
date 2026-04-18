@@ -1,0 +1,77 @@
+{{/* hugo/layouts/shortcodes/code-ref.html */}}
+{{/* Usage: {{</* code-ref id="settings/structs" lang="go" title="Settings struct" */>}} */}}
+
+{{ $id := .Get "id" }}
+{{ $lang := .Get "lang" | default "go" }}
+{{ $title := .Get "title" }}
+
+{{ $found := false }}
+{{ $code := "" }}
+{{ $file := "" }}
+
+{{/* Search all Go files for the marker */}}
+{{ range (readDir ".") }}
+  {{ if and (not $found) (not .IsDir) (strings.HasSuffix .Name ".go") }}
+    {{ $content := readFile .Name }}
+    {{ $startMarker := printf "// TUTORIAL:%s:start" $id }}
+    {{ $endMarker := printf "// TUTORIAL:%s:end" $id }}
+    {{ if and (strings.Contains $content $startMarker) (strings.Contains $content $endMarker) }}
+      {{ $found = true }}
+      {{ $file = .Name }}
+      {{/* Extract content between markers */}}
+      {{ $parts := split $content $startMarker }}
+      {{ if gt (len $parts) 1 }}
+        {{ $afterStart := index $parts 1 }}
+        {{ $endParts := split $afterStart $endMarker }}
+        {{ if gt (len $endParts) 0 }}
+          {{ $code = strings.TrimSpace (index $endParts 0) }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* Also search in subdirectories */}}
+{{ if not $found }}
+  {{ $dirs := slice "backend" "frontend" "settings" "stats" "words" "auth" "database" "filter" "badge" }}
+  {{ range $dir := $dirs }}
+    {{ if not $found }}
+      {{ $dirPath := printf "%s" $dir }}
+      {{ if (fileExists $dirPath) }}
+        {{ range (readDir $dirPath) }}
+          {{ if and (not $found) (not .IsDir) (strings.HasSuffix .Name ".go") }}
+            {{ $filePath := printf "%s/%s" $dir .Name }}
+            {{ $content := readFile $filePath }}
+            {{ $startMarker := printf "// TUTORIAL:%s:start" $id }}
+            {{ $endMarker := printf "// TUTORIAL:%s:end" $id }}
+            {{ if and (strings.Contains $content $startMarker) (strings.Contains $content $endMarker) }}
+              {{ $found = true }}
+              {{ $file = $filePath }}
+              {{ $parts := split $content $startMarker }}
+              {{ if gt (len $parts) 1 }}
+                {{ $afterStart := index $parts 1 }}
+                {{ $endParts := split $afterStart $endMarker }}
+                {{ if gt (len $endParts) 0 }}
+                  {{ $code = strings.TrimSpace (index $endParts 0) }}
+                {{ end }}
+              {{ end }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if $found }}
+  {{ if $title }}
+<p><strong>{{ $title }}</strong> <em>(from {{ $file }})</em></p>
+  {{ end }}
+<div class="highlight">
+<pre><code class="language-{{ $lang }}">{{ $code }}</code></pre>
+</div>
+{{ else }}
+<div class="warning">
+<p><strong>Warning:</strong> Code reference <code>{{ $id }}</code> not found in source files.</p>
+</div>
+{{ end }}

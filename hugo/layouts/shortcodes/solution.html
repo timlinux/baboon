@@ -1,0 +1,22 @@
+{{/* hugo/layouts/shortcodes/solution.html */}}
+{{/* Used inside exercise shortcode */}}
+
+<details class="solution">
+<summary>Show Solution</summary>
+<div class="solution-content">
+{{ .Inner | markdownify }}
+</div>
+</details>
+
+<style>
+.solution {
+  margin-top: 1rem;
+  border-left: 3px solid #D4922A;
+  padding-left: 1rem;
+}
+.solution summary {
+  cursor: pointer;
+  color: #D4922A;
+  font-weight: bold;
+}
+</style>

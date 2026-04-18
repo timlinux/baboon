@@ -1,0 +1,18 @@
+{{/* hugo/layouts/shortcodes/file-ref.html */}}
+{{/* Usage: {{</* file-ref path="settings/settings.go" lines="47-55" */>}} */}}
+
+{{ $path := .Get "path" }}
+{{ $lines := .Get "lines" }}
+
+{{ $baseURL := "https://github.com/timlinux/baboon/blob/main" }}
+
+{{ if $lines }}
+  {{ $lineRef := replace $lines "-" "-L" }}
+<a href="{{ $baseURL }}/{{ $path }}#L{{ $lineRef }}" target="_blank" rel="noopener">
+  <code>{{ $path }}:{{ $lines }}</code>
+</a>
+{{ else }}
+<a href="{{ $baseURL }}/{{ $path }}" target="_blank" rel="noopener">
+  <code>{{ $path }}</code>
+</a>
+{{ end }}

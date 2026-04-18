@@ -1,0 +1,37 @@
+{{/* hugo/layouts/shortcodes/exercise.html */}}
+{{/*
+Usage:
+{{</* exercise title="Add a new setting" */>}}
+Instructions here...
+
+{{</* solution */>}}
+... solution code ...
+{{</* /solution */>}}
+{{</* /exercise */>}}
+*/}}
+
+{{ $title := .Get "title" | default "Exercise" }}
+
+<details class="exercise">
+<summary><strong>{{ $title }}</strong></summary>
+<div class="exercise-content">
+{{ .Inner | markdownify }}
+</div>
+</details>
+
+<style>
+.exercise {
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: #1a1a2e;
+}
+.exercise summary {
+  cursor: pointer;
+  color: #00ff00;
+}
+.exercise-content {
+  margin-top: 1rem;
+}
+</style>
