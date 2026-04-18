@@ -155,7 +155,7 @@ func (m Model) View() string {
 		}
 		gameState.TimerStarted = m.timerStarted
 
-		return m.renderer.RenderTypingScreenAnimated(gameState, m.carouselAnimator, m.settings)
+		return m.renderer.RenderTypingScreenAnimated(gameState, m.carouselAnimator, m.settings, m.settings.PracticeMode)
 
 	case StateCelebration:
 		return m.renderer.RenderCelebrationScreen(m.celebrationState)

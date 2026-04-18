@@ -34,7 +34,7 @@ func (r *Renderer) SetSize(width, height int) {
 }
 
 // RenderTypingScreenAnimated renders the main typing interface with smooth carousel animations
-func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel *CarouselAnimator, s *settings.Settings) string {
+func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel *CarouselAnimator, s *settings.Settings, practiceMode settings.PracticeMode) string {
 	if state.CurrentWordIdx >= len(state.Words) {
 		return ""
 	}
@@ -80,8 +80,13 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 
 	coloredWord := strings.Join(coloredLines, "\n")
 
-	// Progress indicator
-	progress := fmt.Sprintf("Word %d/%d", state.WordNumber, state.TotalWords)
+	// Progress indicator - adapt text based on mode
+	var progressText string
+	if practiceMode == settings.ModeNgrams {
+		progressText = fmt.Sprintf("N-gram %d/%d", state.WordNumber, state.TotalWords)
+	} else {
+		progressText = fmt.Sprintf("Word %d/%d", state.WordNumber, state.TotalWords)
+	}
 
 	// Get animation values (default to fully visible if no animator)
 	prevOpacity := 0.5
@@ -142,7 +147,7 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 	var carouselElements []string
 
 	// Progress at top of main content
-	carouselElements = append(carouselElements, r.styles.Progress.Render(progress))
+	carouselElements = append(carouselElements, r.styles.Progress.Render(progressText))
 	carouselElements = append(carouselElements, "")
 
 	// Previous word (above current, animated)
@@ -200,12 +205,18 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 		carouselElements...,
 	)
 
-	// Fixed header at top
+	// Fixed header at top - adapt text based on mode
+	var headerText string
+	if practiceMode == settings.ModeNgrams {
+		headerText = "BABOON - N-gram Training"
+	} else {
+		headerText = "BABOON - Typing Practice"
+	}
 	headerStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("14")).
 		Bold(true)
 	header := lipgloss.PlaceHorizontal(r.width, lipgloss.Center,
-		headerStyle.Render("🐒 BABOON - Typing Practice"))
+		headerStyle.Render(headerText))
 
 	// Fixed footer at bottom (help text + Kartoza branding)
 	var helpText string
