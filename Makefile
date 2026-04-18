@@ -1,4 +1,4 @@
-.PHONY: all build clean test run server client install help web-install web-dev web-build web-start docs docs-dev docs-build docs-clean docs-open docs-new web-bundle web-serve demo-record demo-play release version
+.PHONY: all build clean test run server client install help web-install web-dev web-build web-start docs docs-dev docs-build docs-clean docs-open docs-new web-bundle web-serve demo-record demo-play release version tutorial-check tutorial-check-verbose tutorial-extract tutorial-serve tutorial-new-chapter pre-commit-install
 
 # Default target
 all: build
@@ -109,6 +109,35 @@ docs-new:
 	@read -p "Enter page path (e.g., posts/my-new-post): " path; \
 	cd hugo && hugo new "$$path.md"
 
+# Tutorial development
+tutorial-check: ## Validate all tutorial references
+	go run ./tools/tutorialcheck --all
+
+tutorial-check-verbose: ## Validate all tutorial references (verbose)
+	go run ./tools/tutorialcheck --all --verbose
+
+tutorial-extract: ## Re-extract all code snippets (debug)
+	go run ./tools/tutorialcheck --extract-only --verbose
+
+tutorial-serve: ## Hugo server with live reload for tutorial
+	cd hugo && hugo server -D --port 1314
+
+tutorial-new-chapter: ## Scaffold a new chapter (interactive)
+	@read -p "Chapter number (e.g., 13): " num; \
+	read -p "Chapter name (e.g., testing): " name; \
+	mkdir -p hugo/content/go-tutorial/$$num-$$name; \
+	echo "---" > hugo/content/go-tutorial/$$num-$$name/_index.md; \
+	echo "title: \"Chapter $$num: $$(echo $$name | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')\"" >> hugo/content/go-tutorial/$$num-$$name/_index.md; \
+	echo "weight: $$num" >> hugo/content/go-tutorial/$$num-$$name/_index.md; \
+	echo "---" >> hugo/content/go-tutorial/$$num-$$name/_index.md; \
+	echo "" >> hugo/content/go-tutorial/$$num-$$name/_index.md; \
+	echo "Created hugo/content/go-tutorial/$$num-$$name/"
+
+pre-commit-install: ## Install pre-commit hooks
+	pip install pre-commit
+	pre-commit install
+	@echo "Pre-commit hooks installed!"
+
 # Combined production build (React + Hugo bundled together)
 web-bundle: web-build docs-build
 	@echo "Bundling Hugo docs into web/build/docs/..."
@@ -179,6 +208,14 @@ help:
 	@echo "  make docs-clean  - Remove built documentation"
 	@echo "  make docs-open   - Open docs in browser"
 	@echo "  make docs-new    - Create new documentation page"
+	@echo ""
+	@echo "Tutorial Development:"
+	@echo "  make tutorial-check   - Validate tutorial references"
+	@echo "  make tutorial-check-verbose - Verbose validation"
+	@echo "  make tutorial-extract - Extract code snippets (debug)"
+	@echo "  make tutorial-serve   - Hugo server for tutorial"
+	@echo "  make tutorial-new-chapter - Scaffold new chapter"
+	@echo "  make pre-commit-install - Install pre-commit hooks"
 	@echo ""
 	@echo "Demo Recording (asciinema):"
 	@echo "  make demo-record - Record a terminal demo"

@@ -7,9 +7,17 @@ repos:
       - id: go-vet
       - id: go-mod-tidy
 
-  # Local hooks for nix build verification
+  # Local hooks for nix build verification and tutorial validation
   - repo: local
     hooks:
+      - id: tutorial-check
+        name: Validate Go Tutorial
+        entry: go run ./tools/tutorialcheck
+        language: system
+        files: '\.(md|go)$'
+        pass_filenames: true
+        stages: [commit]
+
       - id: nix-build
         name: Verify nix build
         entry: bash -c 'nix build --no-link 2>&1 || (echo "ERROR: nix build failed. Please fix flake.nix before committing." && exit 1)'
