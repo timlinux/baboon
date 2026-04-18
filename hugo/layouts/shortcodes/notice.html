@@ -1,0 +1,32 @@
+{{/* hugo/layouts/shortcodes/notice.html */}}
+{{/* Usage: {{% notice tip %}}Content here{{% /notice %}} */}}
+
+{{- $type := .Get 0 | default "info" -}}
+<div class="notice notice-{{ $type }}">
+  <p class="notice-title">{{ $type | title }}</p>
+  {{ .Inner | markdownify }}
+</div>
+
+<style>
+.notice {
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+.notice-title {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.notice-tip {
+  background: rgba(0, 255, 0, 0.1);
+  border-left: 4px solid #00ff00;
+}
+.notice-warning {
+  background: rgba(255, 165, 0, 0.1);
+  border-left: 4px solid #ffa500;
+}
+.notice-info {
+  background: rgba(0, 123, 255, 0.1);
+  border-left: 4px solid #007bff;
+}
+</style>
