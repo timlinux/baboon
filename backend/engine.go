@@ -27,6 +27,8 @@ type Engine struct {
 
 	// lastLetter is tracked here for bigram/SFB detection (not timing related)
 	lastLetter string
+	// secondLastLetter tracks the letter before lastLetter for trigram detection
+	secondLastLetter string
 
 	// recordedCorrect tracks which character positions have been recorded as correct
 	// to prevent double-counting when user backspaces and retypes
@@ -119,6 +121,7 @@ func (e *Engine) StartRound() {
 	e.input = ""
 	e.started = false
 	e.lastLetter = ""
+	e.secondLastLetter = ""
 }
 
 // ProcessKeystroke handles a character input from the user (legacy, no timing).
@@ -216,6 +219,12 @@ func (e *Engine) ProcessKeystrokeWithTiming(char string, seekTimeMs int64) Keyst
 					}
 				}
 
+				// Record trigram timing (3 consecutive correct letters)
+				if e.secondLastLetter != "" && e.lastLetter != "" {
+					trigram := e.secondLastLetter + e.lastLetter + expectedLetter
+					e.session.RecordTrigramSeekTime(trigram, seekTimeMs)
+				}
+
 				// Record timing stats (separate from accuracy)
 				if finger >= 0 {
 					stat := e.session.FingerStats[finger]
@@ -237,6 +246,8 @@ func (e *Engine) ProcessKeystrokeWithTiming(char string, seekTimeMs int64) Keyst
 				}
 			}
 
+			// Update letter history for next bigram/trigram
+			e.secondLastLetter = e.lastLetter
 			e.lastLetter = expectedLetter
 		}
 
@@ -300,7 +311,8 @@ func (e *Engine) ProcessSpaceWithTiming(seekTimeMs int64) SpaceResult {
 		e.session.WordsCompleted++
 		e.input = ""
 		e.wordIdx++
-		e.lastLetter = "" // Reset for new word
+		e.lastLetter = ""       // Reset for new word
+		e.secondLastLetter = "" // Reset for new word
 
 		if e.wordIdx >= len(e.words) {
 			// Round complete - don't calculate yet, wait for SubmitTiming
