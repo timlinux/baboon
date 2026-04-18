@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 )
 
+// TUTORIAL:settings/advancekey-type:start
 // AdvanceKey defines the key(s) used to advance to the next word
 type AdvanceKey int
 
@@ -15,6 +16,9 @@ const (
 	AdvanceKeyEither                   // Either space or enter
 )
 
+// TUTORIAL:settings/advancekey-type:end
+
+// TUTORIAL:settings/advancekey-methods:start
 // String returns the display name for the advance key setting
 func (a AdvanceKey) String() string {
 	switch a {
@@ -28,6 +32,22 @@ func (a AdvanceKey) String() string {
 		return "Space"
 	}
 }
+
+// KeyHint returns the help text for which key to press
+func (a AdvanceKey) KeyHint() string {
+	switch a {
+	case AdvanceKeySpace:
+		return "SPACE"
+	case AdvanceKeyEnter:
+		return "ENTER"
+	case AdvanceKeyEither:
+		return "SPACE or ENTER"
+	default:
+		return "SPACE"
+	}
+}
+
+// TUTORIAL:settings/advancekey-methods:end
 
 // PracticeMode defines the type of typing practice
 type PracticeMode int
@@ -49,20 +69,6 @@ func (p PracticeMode) String() string {
 	}
 }
 
-// KeyHint returns the help text for which key to press
-func (a AdvanceKey) KeyHint() string {
-	switch a {
-	case AdvanceKeySpace:
-		return "SPACE"
-	case AdvanceKeyEnter:
-		return "ENTER"
-	case AdvanceKeyEither:
-		return "SPACE or ENTER"
-	default:
-		return "SPACE"
-	}
-}
-
 // TUTORIAL:settings/structs:start
 // Settings holds user preferences
 type Settings struct {
@@ -73,6 +79,7 @@ type Settings struct {
 
 // TUTORIAL:settings/structs:end
 
+// TUTORIAL:settings/defaults:start
 // DefaultSettings returns the default settings
 func DefaultSettings() *Settings {
 	return &Settings{
@@ -82,6 +89,9 @@ func DefaultSettings() *Settings {
 	}
 }
 
+// TUTORIAL:settings/defaults:end
+
+// TUTORIAL:settings/path:start
 // GetSettingsPath returns the path to the settings file
 func GetSettingsPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
@@ -95,6 +105,9 @@ func GetSettingsPath() (string, error) {
 	return filepath.Join(settingsDir, "settings.json"), nil
 }
 
+// TUTORIAL:settings/path:end
+
+// TUTORIAL:settings/load:start
 // Load loads settings from disk, returning defaults if not found
 func Load() (*Settings, error) {
 	path, err := GetSettingsPath()
@@ -118,6 +131,9 @@ func Load() (*Settings, error) {
 	return &s, nil
 }
 
+// TUTORIAL:settings/load:end
+
+// TUTORIAL:settings/save:start
 // Save saves settings to disk
 func (s *Settings) Save() error {
 	path, err := GetSettingsPath()
@@ -132,3 +148,5 @@ func (s *Settings) Save() error {
 
 	return os.WriteFile(path, data, 0644)
 }
+
+// TUTORIAL:settings/save:end
