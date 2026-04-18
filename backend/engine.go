@@ -348,8 +348,12 @@ func (e *Engine) SubmitTiming(startTime, endTime time.Time, durationMs int64) {
 		e.session.Accuracy = (float64(e.session.CorrectChars) / float64(e.session.TotalCharacters)) * 100
 	}
 
-	// Update historical stats
-	e.historical.UpdateHistorical(e.session)
+	// Update historical stats based on practice mode
+	if e.config.PracticeMode == settings.ModeNgrams {
+		e.historical.UpdateNgramHistorical(e.session)
+	} else {
+		e.historical.UpdateHistorical(e.session)
+	}
 }
 
 // GetGameState returns a snapshot of the current game state.

@@ -3,6 +3,7 @@ package backend
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/timlinux/baboon/settings"
 )
@@ -101,5 +102,42 @@ func TestEngine_TracksTrigramSeekTime(t *testing.T) {
 	// Check trigram was recorded
 	if _, exists := session.TrigramSeekTime[expectedTrigram]; !exists {
 		t.Errorf("Expected trigram '%s' to be tracked, got: %v", expectedTrigram, session.TrigramSeekTime)
+	}
+}
+
+func TestEngine_NgramMode_UpdatesNgramStats(t *testing.T) {
+	tmpDir := t.TempDir()
+	os.Setenv("HOME", tmpDir)
+	defer os.Unsetenv("HOME")
+
+	cfg := DefaultConfig()
+	cfg.PracticeMode = settings.ModeNgrams
+
+	engine, err := NewEngine(cfg)
+	if err != nil {
+		t.Fatalf("NewEngine() error = %v", err)
+	}
+
+	// Complete a round
+	state := engine.GetGameState()
+	for i, ngram := range state.Words {
+		for _, char := range ngram {
+			engine.ProcessKeystrokeWithTiming(string(char), 50)
+		}
+		if i < len(state.Words)-1 {
+			engine.ProcessSpaceWithTiming(50)
+		}
+	}
+
+	// Submit timing
+	now := time.Now()
+	engine.SubmitTiming(now.Add(-time.Minute), now, 60000)
+
+	historical := engine.GetHistoricalStats()
+	if historical.NgramTotalSessions != 1 {
+		t.Errorf("NgramTotalSessions = %d, want 1", historical.NgramTotalSessions)
+	}
+	if historical.TotalSessions != 0 {
+		t.Errorf("TotalSessions (word mode) = %d, want 0", historical.TotalSessions)
 	}
 }
