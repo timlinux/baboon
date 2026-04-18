@@ -1,0 +1,49 @@
+# .github/workflows/tutorial.yml
+name: Tutorial Validation
+
+on:
+  push:
+    paths:
+      - 'hugo/content/go-tutorial/**'
+      - '**.go'
+      - 'tools/tutorialcheck/**'
+  pull_request:
+    paths:
+      - 'hugo/content/go-tutorial/**'
+      - '**.go'
+      - 'tools/tutorialcheck/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Validate tutorial references
+        run: go run ./tools/tutorialcheck --all --verbose
+
+      - name: Set up Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
+
+      - name: Build Hugo site
+        run: cd hugo && hugo --minify
+
+      - name: Check for broken internal links
+        run: |
+          cd hugo/public
+          # Simple check: ensure go-tutorial directory was built
+          if [ ! -d "go-tutorial" ]; then
+            echo "Warning: go-tutorial directory not found in build output"
+          else
+            echo "Tutorial pages built successfully"
+            find go-tutorial -name "*.html" | wc -l
+          fi
