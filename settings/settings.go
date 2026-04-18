@@ -43,11 +43,13 @@ func (a AdvanceKey) KeyHint() string {
 	}
 }
 
+// TUTORIAL:settings/structs:start
 // Settings holds user preferences
 type Settings struct {
 	AdvanceKey  AdvanceKey `json:"advance_key"`
 	PerfectMode bool       `json:"perfect_mode"`
 }
+// TUTORIAL:settings/structs:end
 
 // DefaultSettings returns the default settings
 func DefaultSettings() *Settings {

@@ -55,7 +55,18 @@ func validateAll(verbose bool) error {
 }
 
 func extractAll(verbose bool) error {
-	// Placeholder - will be implemented in extract.go
+	snippets, err := ExtractSnippets(".", verbose)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Found %d code snippets:\n", len(snippets))
+	for id, snippet := range snippets {
+		fmt.Printf("  %s: %s:%d-%d (%d lines)\n",
+			id, snippet.FilePath, snippet.StartLine, snippet.EndLine,
+			snippet.EndLine-snippet.StartLine+1)
+	}
+
 	return nil
 }
 
