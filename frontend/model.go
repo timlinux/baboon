@@ -165,6 +165,7 @@ func (m Model) View() string {
 			m.api.GetSessionStats(),
 			m.api.GetHistoricalStats(),
 			m.animator,
+			m.settings.PracticeMode,
 		)
 	case StateOptions:
 		return m.renderer.RenderOptionsScreen(m.settings, m.optionsCursor)

@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -354,6 +355,7 @@ func (r *Renderer) RenderResultsScreen(
 	session *stats.Stats,
 	historical *stats.HistoricalStats,
 	animator *Animator,
+	practiceMode settings.PracticeMode,
 ) string {
 	const labelWidth = 18
 	const valueWidth = 8
@@ -362,12 +364,40 @@ func (r *Renderer) RenderResultsScreen(
 	const maxTimeDisplay = 180.0
 	const maxAccuracy = 100.0
 
-	title := r.styles.Title.Render("Round Complete!")
+	var titleText string
+	if practiceMode == settings.ModeNgrams {
+		titleText = "N-gram Training Complete!"
+	} else {
+		titleText = "Round Complete!"
+	}
+	title := r.styles.Title.Render(titleText)
 
-	// Check for new bests
-	isNewBestWPM := session.WPM >= historical.BestWPM
-	isNewBestTime := historical.TotalSessions == 1 || session.Duration.Seconds() <= historical.BestTime
-	isNewBestAccuracy := session.Accuracy >= historical.BestAccuracy
+	// Select appropriate historical stats based on mode
+	var bestWPM, avgWPM, bestAcc, avgAcc, bestTime, avgTime float64
+	var totalSessions int
+
+	if practiceMode == settings.ModeNgrams {
+		bestWPM = historical.NgramBestWPM
+		avgWPM = historical.NgramAverageWPM()
+		bestAcc = historical.NgramBestAccuracy
+		avgAcc = historical.NgramAverageAccuracy()
+		bestTime = historical.NgramBestTime
+		avgTime = historical.NgramAverageTime()
+		totalSessions = historical.NgramTotalSessions
+	} else {
+		bestWPM = historical.BestWPM
+		avgWPM = historical.AverageWPM()
+		bestAcc = historical.BestAccuracy
+		avgAcc = historical.AverageAccuracy()
+		bestTime = historical.BestTime
+		avgTime = historical.AverageTime()
+		totalSessions = historical.TotalSessions
+	}
+
+	// Check for new bests (using mode-appropriate stats)
+	isNewBestWPM := session.WPM >= bestWPM
+	isNewBestTime := totalSessions == 1 || session.Duration.Seconds() <= bestTime
+	isNewBestAccuracy := session.Accuracy >= bestAcc
 
 	// Build animated rows
 	animIdx := 0
@@ -381,13 +411,13 @@ func (r *Renderer) RenderResultsScreen(
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
-		"WPM best:", fmt.Sprintf("%.1f", historical.BestWPM),
-		r.renderStatBar(historical.BestWPM, maxWPMDisplay, barWidth, false),
+		"WPM best:", fmt.Sprintf("%.1f", bestWPM),
+		r.renderStatBar(bestWPM, maxWPMDisplay, barWidth, false),
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
-		"WPM average:", fmt.Sprintf("%.1f", historical.AverageWPM()),
-		r.renderStatBar(historical.AverageWPM(), maxWPMDisplay, barWidth, false),
+		"WPM average:", fmt.Sprintf("%.1f", avgWPM),
+		r.renderStatBar(avgWPM, maxWPMDisplay, barWidth, false),
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 
@@ -399,13 +429,13 @@ func (r *Renderer) RenderResultsScreen(
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
-		"Time best:", fmt.Sprintf("%.1fs", historical.BestTime),
-		r.renderTimeBar(historical.BestTime, maxTimeDisplay, barWidth, false),
+		"Time best:", fmt.Sprintf("%.1fs", bestTime),
+		r.renderTimeBar(bestTime, maxTimeDisplay, barWidth, false),
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
-		"Time average:", fmt.Sprintf("%.1fs", historical.AverageTime()),
-		r.renderTimeBar(historical.AverageTime(), maxTimeDisplay, barWidth, false),
+		"Time average:", fmt.Sprintf("%.1fs", avgTime),
+		r.renderTimeBar(avgTime, maxTimeDisplay, barWidth, false),
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 
@@ -417,22 +447,57 @@ func (r *Renderer) RenderResultsScreen(
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
-		"Accuracy best:", fmt.Sprintf("%.1f%%", historical.BestAccuracy),
-		r.renderStatBar(historical.BestAccuracy, maxAccuracy, barWidth, false),
+		"Accuracy best:", fmt.Sprintf("%.1f%%", bestAcc),
+		r.renderStatBar(bestAcc, maxAccuracy, barWidth, false),
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 	statsLines = append(statsLines, animator.ApplyAnimation(r.formatStatRow(
-		"Accuracy average:", fmt.Sprintf("%.1f%%", historical.AverageAccuracy()),
-		r.renderStatBar(historical.AverageAccuracy(), maxAccuracy, barWidth, false),
+		"Accuracy average:", fmt.Sprintf("%.1f%%", avgAcc),
+		r.renderStatBar(avgAcc, maxAccuracy, barWidth, false),
 		labelWidth, valueWidth), animIdx))
 	animIdx++
 
 	// Sessions
 	statsLines = append(statsLines, "")
 	statsLines = append(statsLines, animator.ApplyAnimation(
-		r.styles.SessionLabel.Render("Total sessions:")+" "+r.styles.SessionValue.Render(fmt.Sprintf("%d", historical.TotalSessions)),
+		r.styles.SessionLabel.Render("Total sessions:")+" "+r.styles.SessionValue.Render(fmt.Sprintf("%d", totalSessions)),
 		animIdx))
 	animIdx++
+
+	// Show slowest n-grams from this session (n-gram mode only)
+	if practiceMode == settings.ModeNgrams {
+		statsLines = append(statsLines, "")
+		statsLines = append(statsLines, animator.ApplyAnimation(
+			r.styles.SessionLabel.Render("Slowest n-grams this session:"), animIdx))
+		animIdx++
+
+		// Collect all n-grams with their times
+		type ngramTime struct {
+			ngram string
+			avg   float64
+		}
+		var slowest []ngramTime
+		for ngram, data := range session.BigramSeekTime {
+			slowest = append(slowest, ngramTime{ngram, data.AverageMs()})
+		}
+		for ngram, data := range session.TrigramSeekTime {
+			slowest = append(slowest, ngramTime{ngram, data.AverageMs()})
+		}
+		sort.Slice(slowest, func(i, j int) bool {
+			return slowest[i].avg > slowest[j].avg
+		})
+
+		// Show top 5
+		count := 5
+		if len(slowest) < count {
+			count = len(slowest)
+		}
+		for i := 0; i < count; i++ {
+			statsLines = append(statsLines, animator.ApplyAnimation(
+				fmt.Sprintf("  %s: %.0fms", slowest[i].ngram, slowest[i].avg), animIdx))
+			animIdx++
+		}
+	}
 
 	// Typing theory stats
 	statsLines = append(statsLines, "")
