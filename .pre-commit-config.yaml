@@ -1,0 +1,31 @@
+repos:
+  # Go formatting and linting
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+      - id: go-vet
+      - id: go-mod-tidy
+
+  # Local hooks for nix build verification
+  - repo: local
+    hooks:
+      - id: nix-build
+        name: Verify nix build
+        entry: bash -c 'nix build --no-link 2>&1 || (echo "ERROR: nix build failed. Please fix flake.nix before committing." && exit 1)'
+        language: system
+        files: '\.(go|nix)$|go\.(mod|sum)$'
+        pass_filenames: false
+
+      - id: nix-flake-check
+        name: Verify flake syntax
+        entry: bash -c 'nix flake check --no-build 2>&1 || (echo "ERROR: nix flake check failed." && exit 1)'
+        language: system
+        files: '\.nix$'
+        pass_filenames: false
+
+      - id: nixfmt
+        name: Format nix files
+        entry: nixfmt
+        language: system
+        files: '\.nix$'

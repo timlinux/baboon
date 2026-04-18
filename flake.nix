@@ -181,12 +181,14 @@
             pname = "baboon";
             version = "1.13.0";
             src = ./.;
-            vendorHash = null; # Will be updated after first build
+            vendorHash = "sha256-QO/RAq29Kqoau0QI8ygs+eNetLv3qT8o1miyGCl6sv0=";
 
             # Required for go-sqlite3 CGO driver
             nativeBuildInputs = [ pkgs.pkg-config ];
             buildInputs = [ pkgs.sqlite ];
-            CGO_ENABLED = 1;
+
+            # CGO must be set via env attribute (not top-level) in nixpkgs >= 24.05
+            env.CGO_ENABLED = "1";
 
             meta = with pkgs.lib; {
               description = "A terminal typing practice app with ASCII art";
@@ -287,10 +289,19 @@
             gcc
             pkg-config
             sqlite
+            # Pre-commit and formatting tools
+            pre-commit
+            nixfmt-rfc-style
           ];
 
           shellHook = ''
             echo "🐒 Baboon development environment"
+            echo ""
+            # Set up pre-commit hooks if not already installed
+            if [ -f .pre-commit-config.yaml ] && [ ! -f .git/hooks/pre-commit ]; then
+              echo "Installing pre-commit hooks..."
+              pre-commit install
+            fi
             echo ""
             echo "Commands:"
             echo "  make build      - Build Go binary"
