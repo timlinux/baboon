@@ -1173,6 +1173,65 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 		optionLines = append(optionLines, line.String())
 	}
 
+	// Practice Mode section
+	optionLines = append(optionLines, "")
+	optionLines = append(optionLines, r.styles.SessionLabel.Render("Practice Mode:"))
+	optionLines = append(optionLines, "")
+
+	practiceModeOptions := []struct {
+		mode        settings.PracticeMode
+		label       string
+		description string
+	}{
+		{settings.ModeWords, "Words", "Practice with random words (default)"},
+		{settings.ModeNgrams, "N-grams", "Practice bigrams and trigrams for targeted training"},
+	}
+
+	for i, opt := range practiceModeOptions {
+		var line strings.Builder
+
+		// Number prefix (continuing from perfect mode: 6, 7)
+		numStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+		line.WriteString(numStyle.Render(fmt.Sprintf(" %d. ", i+6)))
+
+		// Selection indicator and label
+		isSelected := s.PracticeMode == opt.mode
+		isCursor := cursor == i+5 // Offset by 5 (3 advance + 2 perfect)
+
+		var labelStyle lipgloss.Style
+		if isCursor {
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("0")).
+				Background(lipgloss.Color("39")).
+				Bold(true).
+				Padding(0, 1)
+		} else if isSelected {
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("46")).
+				Bold(true)
+		} else {
+			labelStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("252"))
+		}
+
+		// Checkmark for selected option
+		if isSelected {
+			checkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("46")).Bold(true)
+			line.WriteString(checkStyle.Render("✓ "))
+		} else {
+			line.WriteString("  ")
+		}
+
+		line.WriteString(labelStyle.Render(opt.label))
+
+		// Description
+		descStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Italic(true)
+		line.WriteString("  ")
+		line.WriteString(descStyle.Render(opt.description))
+
+		optionLines = append(optionLines, line.String())
+	}
+
 	// Main content (title + options)
 	mainContent := lipgloss.JoinVertical(
 		lipgloss.Center,
@@ -1188,7 +1247,7 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 		headerStyle.Render("🐒 BABOON - Typing Practice"))
 
 	// Fixed footer at bottom (help text + Kartoza branding)
-	helpText := "↑/↓ to navigate | Enter/Space to select | 1-5 quick select | ESC to go back"
+	helpText := "↑/↓ to navigate | Enter/Space to select | 1-7 quick select | ESC to go back"
 
 	// Kartoza branding
 	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))

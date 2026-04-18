@@ -396,7 +396,7 @@ func (m Model) handleResultsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 // handleOptionsInput processes keyboard input on options screen
 func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	const totalOptions = 5 // 3 advance key options + 2 perfect mode options
+	const totalOptions = 7 // 3 advance key + 2 perfect mode + 2 practice mode
 
 	switch msg.Type {
 	case tea.KeyCtrlC:
@@ -432,9 +432,12 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.optionsCursor < 3 {
 			// Advance key options (0, 1, 2)
 			m.settings.AdvanceKey = settings.AdvanceKey(m.optionsCursor)
-		} else {
+		} else if m.optionsCursor < 5 {
 			// Perfect mode options (3 = Off, 4 = On)
 			m.settings.PerfectMode = m.optionsCursor == 4
+		} else {
+			// Practice mode options (5 = Words, 6 = N-grams)
+			m.settings.PracticeMode = settings.PracticeMode(m.optionsCursor - 5)
 		}
 		// Save settings
 		_ = m.settings.Save()
@@ -488,6 +491,24 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "5":
 			m.settings.PerfectMode = true
+			_ = m.settings.Save()
+			if m.optionsFromTyping {
+				m.state = StateTyping
+			} else {
+				m.state = StateResults
+			}
+			return m, nil
+		case "6":
+			m.settings.PracticeMode = settings.ModeWords
+			_ = m.settings.Save()
+			if m.optionsFromTyping {
+				m.state = StateTyping
+			} else {
+				m.state = StateResults
+			}
+			return m, nil
+		case "7":
+			m.settings.PracticeMode = settings.ModeNgrams
 			_ = m.settings.Save()
 			if m.optionsFromTyping {
 				m.state = StateTyping
