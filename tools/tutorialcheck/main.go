@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 var (
@@ -50,7 +51,32 @@ func main() {
 }
 
 func validateAll(verbose bool) error {
-	// Placeholder - will be implemented in extract.go and validate.go
+	// Extract all snippets from source
+	snippets, err := ExtractSnippets(".", verbose)
+	if err != nil {
+		return fmt.Errorf("extracting snippets: %w", err)
+	}
+
+	if verbose {
+		fmt.Printf("Found %d code snippets\n", len(snippets))
+	}
+
+	// Validate markdown references
+	tutorialDir := "hugo/content/go-tutorial"
+	if _, err := os.Stat(tutorialDir); os.IsNotExist(err) {
+		fmt.Println("Tutorial directory not found, skipping markdown validation")
+		return nil
+	}
+
+	errors := ValidateAllMarkdown(tutorialDir, snippets, verbose)
+	if len(errors) > 0 {
+		fmt.Printf("\nFound %d validation errors:\n", len(errors))
+		for _, e := range errors {
+			fmt.Printf("  %s\n", e.Error())
+		}
+		return fmt.Errorf("%d validation errors", len(errors))
+	}
+
 	return nil
 }
 
@@ -71,6 +97,25 @@ func extractAll(verbose bool) error {
 }
 
 func validateFiles(files []string, verbose bool) error {
-	// Placeholder - will be implemented in validate.go
+	snippets, err := ExtractSnippets(".", verbose)
+	if err != nil {
+		return fmt.Errorf("extracting snippets: %w", err)
+	}
+
+	var allErrors []ValidationError
+	for _, file := range files {
+		if strings.HasSuffix(file, ".md") {
+			errors := ValidateMarkdown(file, snippets, verbose)
+			allErrors = append(allErrors, errors...)
+		}
+	}
+
+	if len(allErrors) > 0 {
+		for _, e := range allErrors {
+			fmt.Printf("  %s\n", e.Error())
+		}
+		return fmt.Errorf("%d validation errors", len(allErrors))
+	}
+
 	return nil
 }
