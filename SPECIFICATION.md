@@ -72,6 +72,16 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 **I want to** enable a mode that restarts the round on any mistake
 **So that** I can train myself to type with 100% accuracy
 
+### US-013: Practice N-gram Typing
+**As a** user wanting to improve specific letter combinations
+**I want to** practice typing bigrams and trigrams in isolation
+**So that** I can focus on my weakest transitions without full words
+
+### US-014: Adaptive N-gram Selection
+**As a** user practicing n-grams
+**I want to** automatically practice my slowest combinations more often
+**So that** I can efficiently improve my weak areas
+
 ## Functional Requirements
 
 ### FR-001: Word Display
@@ -508,6 +518,26 @@ The TUI uses an embedded game engine directly, while the web frontend uses the R
 - Perfect Mode SHALL be disabled by default
 - Perfect Mode SHALL only trigger on mistakes after the timer has started (first correct character typed)
 - When Perfect Mode triggers a restart, no statistics SHALL be recorded for the incomplete round
+
+### FR-041: N-gram Practice Mode
+- The application SHALL support an n-gram practice mode selectable via options screen
+- N-gram mode SHALL present sequences of bigrams and trigrams separated by spaces
+- Each round SHALL target 150 characters total (matching word mode)
+- N-grams SHALL be selected adaptively based on user's historical seek times
+
+### FR-042: Trigram Seek Time Tracking
+- The application SHALL track seek time for letter triplets (trigrams)
+- Trigrams SHALL be recorded for 3 consecutive correct keystrokes within a word
+- Trigram data SHALL persist across sessions and inform adaptive selection
+
+### FR-043: Separate N-gram Statistics
+- N-gram mode SHALL track WPM, accuracy, and time separately from word mode
+- Historical bests and averages SHALL be maintained independently
+- Results screen SHALL display n-gram-specific statistics when in n-gram mode
+
+### FR-044: N-gram Results Insights
+- Results screen in n-gram mode SHALL display the 5 slowest n-grams from the session
+- This helps users identify specific combinations needing more practice
 
 ### FR-037: Monthly Leaderboard
 - The application SHALL maintain a leaderboard showing the top 10 scores per month
