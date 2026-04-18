@@ -64,17 +64,26 @@ func validateAll(verbose bool) error {
 	// Validate markdown references
 	tutorialDir := "hugo/content/go-tutorial"
 	if _, err := os.Stat(tutorialDir); os.IsNotExist(err) {
-		fmt.Println("Tutorial directory not found, skipping markdown validation")
+		fmt.Println("Tutorial directory not found, skipping validation")
 		return nil
 	}
 
-	errors := ValidateAllMarkdown(tutorialDir, snippets, verbose)
-	if len(errors) > 0 {
-		fmt.Printf("\nFound %d validation errors:\n", len(errors))
-		for _, e := range errors {
+	var allErrors []ValidationError
+
+	// Validate references
+	refErrors := ValidateAllMarkdown(tutorialDir, snippets, verbose)
+	allErrors = append(allErrors, refErrors...)
+
+	// Compile standalone examples
+	compileErrors := ValidateCompileExamples(tutorialDir, verbose)
+	allErrors = append(allErrors, compileErrors...)
+
+	if len(allErrors) > 0 {
+		fmt.Printf("\nFound %d validation errors:\n", len(allErrors))
+		for _, e := range allErrors {
 			fmt.Printf("  %s\n", e.Error())
 		}
-		return fmt.Errorf("%d validation errors", len(errors))
+		return fmt.Errorf("%d validation errors", len(allErrors))
 	}
 
 	return nil
