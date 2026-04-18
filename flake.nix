@@ -179,7 +179,7 @@
         packages = {
           default = pkgs.buildGoModule {
             pname = "baboon";
-            version = "1.10.0";
+            version = "1.13.0";
             src = ./.;
             vendorHash = null; # Will be updated after first build
 
