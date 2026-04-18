@@ -10,9 +10,9 @@ import (
 type AdvanceKey int
 
 const (
-	AdvanceKeySpace AdvanceKey = iota // Default: space only
-	AdvanceKeyEnter                   // Enter only
-	AdvanceKeyEither                  // Either space or enter
+	AdvanceKeySpace  AdvanceKey = iota // Default: space only
+	AdvanceKeyEnter                    // Enter only
+	AdvanceKeyEither                   // Either space or enter
 )
 
 // String returns the display name for the advance key setting
@@ -26,6 +26,26 @@ func (a AdvanceKey) String() string {
 		return "Either"
 	default:
 		return "Space"
+	}
+}
+
+// PracticeMode defines the type of typing practice
+type PracticeMode int
+
+const (
+	ModeWords  PracticeMode = iota // Default: word-based practice
+	ModeNgrams                     // N-gram (bigram/trigram) training
+)
+
+// String returns the display name for the practice mode
+func (p PracticeMode) String() string {
+	switch p {
+	case ModeWords:
+		return "Words"
+	case ModeNgrams:
+		return "N-grams"
+	default:
+		return "Words"
 	}
 }
 
@@ -46,16 +66,19 @@ func (a AdvanceKey) KeyHint() string {
 // TUTORIAL:settings/structs:start
 // Settings holds user preferences
 type Settings struct {
-	AdvanceKey  AdvanceKey `json:"advance_key"`
-	PerfectMode bool       `json:"perfect_mode"`
+	AdvanceKey   AdvanceKey   `json:"advance_key"`
+	PerfectMode  bool         `json:"perfect_mode"`
+	PracticeMode PracticeMode `json:"practice_mode"`
 }
+
 // TUTORIAL:settings/structs:end
 
 // DefaultSettings returns the default settings
 func DefaultSettings() *Settings {
 	return &Settings{
-		AdvanceKey:  AdvanceKeySpace,
-		PerfectMode: false,
+		AdvanceKey:   AdvanceKeySpace,
+		PerfectMode:  false,
+		PracticeMode: ModeWords,
 	}
 }
 
