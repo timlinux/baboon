@@ -19,6 +19,9 @@
 
           nativeBuildInputs = [ pkgs.hugo ];
 
+          # Disable git info since nix sandbox doesn't have .git
+          HUGO_ENABLEGITINFO = "false";
+
           buildPhase = ''
             hugo --minify
           '';

@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/timlinux/baboon/ngrams"
+	"github.com/timlinux/baboon/settings"
 	"github.com/timlinux/baboon/stats"
 	"github.com/timlinux/baboon/words"
 )
@@ -53,18 +55,30 @@ func NewEngine(config Config) (*Engine, error) {
 func (e *Engine) StartRound() {
 	// Get letter data for weighted word selection
 	letterData := e.getLetterData()
-	e.words = words.GetRandomWordsFixedCount(
-		e.config.WordsPerRound,
-		e.config.CharactersPerRound,
-		e.rng.Intn,
-		letterData,
-	)
+
+	// Generate words or n-grams based on practice mode
+	if e.config.PracticeMode == settings.ModeNgrams {
+		e.words = ngrams.GetTrainingSequence(
+			e.config.CharactersPerRound,
+			e.historical.BigramSeekTime,
+			e.historical.TrigramSeekTime,
+			e.rng.Intn,
+		)
+	} else {
+		e.words = words.GetRandomWordsFixedCount(
+			e.config.WordsPerRound,
+			e.config.CharactersPerRound,
+			e.rng.Intn,
+			letterData,
+		)
+	}
 
 	// Create new session stats
 	e.session = &stats.Stats{
 		LetterAccuracy:    make(map[string]stats.LetterStats),
 		LetterSeekTime:    make(map[string]stats.LetterSeekStats),
 		BigramSeekTime:    make(map[string]stats.BigramSeekStats),
+		TrigramSeekTime:   make(map[string]stats.TrigramSeekStats),
 		FingerStats:       make(map[int]stats.FingerStat),
 		HandStats:         make(map[int]stats.HandStat),
 		RowStats:          make(map[int]stats.RowStat),
