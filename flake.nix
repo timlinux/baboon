@@ -177,8 +177,7 @@
           ${pkgs.nodejs_22}/bin/npm run dev
         '';
 
-      in
-      {
+      in {
         packages = {
           default = pkgs.buildGoModule {
             pname = "baboon";
@@ -323,6 +322,5 @@
             echo ""
           '';
         };
-      }
-    );
+      });
 }
