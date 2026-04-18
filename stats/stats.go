@@ -9,31 +9,32 @@ import (
 
 // Stats represents typing statistics for a session
 type Stats struct {
-	WordsCompleted  int                        `json:"words_completed"`
-	TotalCharacters int                        `json:"total_characters"`
-	CorrectChars    int                        `json:"correct_chars"`
-	IncorrectChars  int                        `json:"incorrect_chars"`
-	StartTime       time.Time                  `json:"start_time"`
-	EndTime         time.Time                  `json:"end_time"`
-	Duration        time.Duration              `json:"duration"`
-	WPM             float64                    `json:"wpm"`
-	Accuracy        float64                    `json:"accuracy"`
-	LetterAccuracy  map[string]LetterStats     `json:"-"` // Per-letter accuracy for this session
-	LetterSeekTime  map[string]LetterSeekStats `json:"-"` // Per-letter seek time for this session
-	BigramSeekTime  map[string]BigramSeekStats `json:"-"` // Per-bigram seek time for this session
-	LastKeyTime     time.Time                  `json:"-"` // Time of last keystroke for seek time calc
-	LastLetter      string                     `json:"-"` // Last letter typed (for bigram tracking)
+	WordsCompleted  int                         `json:"words_completed"`
+	TotalCharacters int                         `json:"total_characters"`
+	CorrectChars    int                         `json:"correct_chars"`
+	IncorrectChars  int                         `json:"incorrect_chars"`
+	StartTime       time.Time                   `json:"start_time"`
+	EndTime         time.Time                   `json:"end_time"`
+	Duration        time.Duration               `json:"duration"`
+	WPM             float64                     `json:"wpm"`
+	Accuracy        float64                     `json:"accuracy"`
+	LetterAccuracy  map[string]LetterStats      `json:"-"` // Per-letter accuracy for this session
+	LetterSeekTime  map[string]LetterSeekStats  `json:"-"` // Per-letter seek time for this session
+	BigramSeekTime  map[string]BigramSeekStats  `json:"-"` // Per-bigram seek time for this session
+	TrigramSeekTime map[string]TrigramSeekStats `json:"-"` // Per-trigram seek time for this session
+	LastKeyTime     time.Time                   `json:"-"` // Time of last keystroke for seek time calc
+	LastLetter      string                      `json:"-"` // Last letter typed (for bigram tracking)
 
 	// Advanced typing theory stats
-	FingerStats       map[int]FingerStat         `json:"-"` // Per-finger accuracy and speed
-	HandStats         map[int]HandStat           `json:"-"` // Per-hand statistics
-	RowStats          map[int]RowStat            `json:"-"` // Per-row statistics
-	ErrorSubstitution map[string]map[string]int  `json:"-"` // Expected -> Typed -> Count
-	SFBCount          int                        `json:"-"` // Same-finger bigram count
-	SFBTotalTime      int64                      `json:"-"` // Total time for SFBs
-	HandAlternations  int                        `json:"-"` // Count of hand alternations
-	SameHandRuns      int                        `json:"-"` // Count of same-hand consecutive pairs
-	SeekTimes         []int64                    `json:"-"` // All seek times for variance calculation
+	FingerStats       map[int]FingerStat        `json:"-"` // Per-finger accuracy and speed
+	HandStats         map[int]HandStat          `json:"-"` // Per-hand statistics
+	RowStats          map[int]RowStat           `json:"-"` // Per-row statistics
+	ErrorSubstitution map[string]map[string]int `json:"-"` // Expected -> Typed -> Count
+	SFBCount          int                       `json:"-"` // Same-finger bigram count
+	SFBTotalTime      int64                     `json:"-"` // Total time for SFBs
+	HandAlternations  int                       `json:"-"` // Count of hand alternations
+	SameHandRuns      int                       `json:"-"` // Count of same-hand consecutive pairs
+	SeekTimes         []int64                   `json:"-"` // All seek times for variance calculation
 }
 
 // LetterStats tracks per-letter accuracy
@@ -64,6 +65,20 @@ type BigramSeekStats struct {
 
 // AverageMs returns the average seek time in milliseconds for the bigram
 func (s BigramSeekStats) AverageMs() float64 {
+	if s.Count == 0 {
+		return 0
+	}
+	return float64(s.TotalTimeMs) / float64(s.Count)
+}
+
+// TrigramSeekStats tracks seek time for letter triplets (e.g., "the", "ing", "tion")
+type TrigramSeekStats struct {
+	TotalTimeMs int64 `json:"total_time_ms"` // Total time in milliseconds
+	Count       int   `json:"count"`         // Number of measurements
+}
+
+// AverageMs returns the average seek time in milliseconds for the trigram
+func (s TrigramSeekStats) AverageMs() float64 {
 	if s.Count == 0 {
 		return 0
 	}
@@ -158,10 +173,10 @@ func (s SFBStats) AverageMs() float64 {
 
 // RhythmStats tracks typing rhythm consistency
 type RhythmStats struct {
-	TotalSeekTimeMs  int64   `json:"total_seek_time_ms"`
-	TotalSeekTimeSq  float64 `json:"total_seek_time_sq"` // Sum of squared seek times
-	Count            int     `json:"count"`
-	LastVariance     float64 `json:"last_variance"` // Last calculated variance
+	TotalSeekTimeMs int64   `json:"total_seek_time_ms"`
+	TotalSeekTimeSq float64 `json:"total_seek_time_sq"` // Sum of squared seek times
+	Count           int     `json:"count"`
+	LastVariance    float64 `json:"last_variance"` // Last calculated variance
 }
 
 // Variance returns the variance of seek times
@@ -259,6 +274,17 @@ func (s *Stats) RecordBigramSeekTime(bigram string, durationMs int64) {
 	stats.TotalTimeMs += durationMs
 	stats.Count++
 	s.BigramSeekTime[bigram] = stats
+}
+
+// RecordTrigramSeekTime records the time taken to type a letter triplet (trigram)
+func (s *Stats) RecordTrigramSeekTime(trigram string, durationMs int64) {
+	if s.TrigramSeekTime == nil {
+		s.TrigramSeekTime = make(map[string]TrigramSeekStats)
+	}
+	stats := s.TrigramSeekTime[trigram]
+	stats.TotalTimeMs += durationMs
+	stats.Count++
+	s.TrigramSeekTime[trigram] = stats
 }
 
 // RecordFingerPresented records that a key was presented for a specific finger
