@@ -6,6 +6,7 @@ package backend
 import (
 	"time"
 
+	"github.com/timlinux/baboon/settings"
 	"github.com/timlinux/baboon/stats"
 )
 
@@ -138,6 +139,9 @@ type GameState struct {
 
 // Config holds configuration options for creating a new game engine.
 type Config struct {
+	// PracticeMode determines the type of typing practice (words vs n-grams).
+	PracticeMode settings.PracticeMode
+
 	// PunctuationMode enables punctuation between words.
 	PunctuationMode bool
 
@@ -194,6 +198,7 @@ type Config struct {
 // DefaultConfig returns the default game configuration.
 func DefaultConfig() Config {
 	return Config{
+		PracticeMode:       settings.ModeWords,
 		PunctuationMode:    false,
 		WordsPerRound:      30,
 		CharactersPerRound: 150,
