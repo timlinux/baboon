@@ -1,13 +1,13 @@
 {{/* hugo/layouts/shortcodes/exercise.html */}}
 {{/*
 Usage:
-{{</* exercise title="Add a new setting" */>}}
+{{ exercise title="Add a new setting" }}
 Instructions here...
 
-{{</* solution */>}}
+{{ solution }}
 ... solution code ...
-{{</* /solution */>}}
-{{</* /exercise */>}}
+{{ /solution }}
+{{ /exercise }}
 */}}
 
 {{ $title := .Get "title" | default "Exercise" }}

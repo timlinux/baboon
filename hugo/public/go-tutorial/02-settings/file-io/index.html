@@ -1,0 +1,466 @@
+<!doctype html><html lang=en-gb><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Master your typing with beautiful practice"><title>File I/O | Baboon - Typing Practice</title><link rel=icon type=image/svg+xml href=/docs/images/baboon-favicon.svg><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel=stylesheet><link rel=stylesheet href=/docs/css/theme.css><link rel=stylesheet href=/docs/css/syntax.css><meta property="og:title" content="File I/O"><meta property="og:description" content="Master your typing with beautiful practice"><meta property="og:type" content="article"><meta property="og:url" content="/docs/go-tutorial/02-settings/file-io/"></head><body><div class=announcement-bar><span>Type like a pro with Baboon - the typing tutor with personality!</span></div><header class=site-header><div class=container><a href=/docs/ class=logo><img src=/docs/images/baboon-logo.svg alt=Baboon height=40>
+<span class=logo-text>BABOON</span></a><nav class=main-nav><a href=/docs/ class=active>Home
+</a><a href=/docs/getting-started/>Getting Started
+</a><a href=/docs/features/>Features
+</a><a href=/docs/guide/>User Guide
+</a><a href=/docs/development/>Development
+</a><a href=/docs/about/>About
+</a><a href=/ class=app-link>Launch App →</a></nav><div class=header-actions><a href=https://github.com/timlinux/baboon class=github-link target=_blank rel=noopener><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374.0.0 5.373.0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931.0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176.0.0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221.0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+</a><button class=theme-toggle onclick=toggleTheme() aria-label="Toggle theme">
+<svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+<svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+</button>
+<button class=mobile-menu-toggle onclick=toggleMobileMenu() aria-label="Toggle menu">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></div></header><nav class=mobile-nav id=mobile-nav><a href=/docs/ class=active>Home
+</a><a href=/docs/getting-started/>Getting Started
+</a><a href=/docs/features/>Features
+</a><a href=/docs/guide/>User Guide
+</a><a href=/docs/development/>Development
+</a><a href=/docs/about/>About
+</a><a href=/ class=app-link>Launch App →</a></nav><main class=site-main><div class=container><div class=content-with-sidebar><article class=page-content><header class=page-header><h1 class=page-title>File I/O</h1></header><div class=content><h1 id=file-io>File I/O</h1><p>Reading and writing files is essential for any application that needs to persist data. In this page, you&rsquo;ll learn how Baboon saves and loads settings files.</p><h2 id=the-os-package>The os Package</h2><p>Go&rsquo;s <code>os</code> package provides functions for interacting with the operating system, including file operations:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Get the current working directory</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>dir</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Getwd</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Working directory:&#34;</span>, <span style=color:#a6e22e>dir</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Get the user&#39;s home directory</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>home</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>UserHomeDir</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Home directory:&#34;</span>, <span style=color:#a6e22e>home</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=building-file-paths>Building File Paths</h2><p>The <code>path/filepath</code> package provides cross-platform path manipulation:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;path/filepath&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Join path elements with the OS-specific separator</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>path</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Join</span>(<span style=color:#e6db74>&#34;config&#34;</span>, <span style=color:#e6db74>&#34;app&#34;</span>, <span style=color:#e6db74>&#34;settings.json&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Path:&#34;</span>, <span style=color:#a6e22e>path</span>)
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Unix: config/app/settings.json</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Windows: config\app\settings.json</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Extract directory and filename</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>dir</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Dir</span>(<span style=color:#a6e22e>path</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>base</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Base</span>(<span style=color:#a6e22e>path</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Directory:&#34;</span>, <span style=color:#a6e22e>dir</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Filename:&#34;</span>, <span style=color:#a6e22e>base</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Here&rsquo;s how Baboon builds the settings path:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/path</code> not found in source files.</p></div><p>This function:</p><ol><li>Gets the user&rsquo;s home directory</li><li>Joins it with <code>.config/baboon</code> to follow XDG conventions</li><li>Creates the directory if it doesn&rsquo;t exist (with <code>os.MkdirAll</code>)</li><li>Returns the full path to <code>settings.json</code></li></ol><div class="notice notice-tip"><p class=notice-title>Tip</p>Always use <code>filepath.Join</code> instead of concatenating strings with <code>/</code>. It handles platform differences automatically.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=creating-directories>Creating Directories</h2><p><code>os.MkdirAll</code> creates a directory and all parent directories if they don&rsquo;t exist:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;path/filepath&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Create nested directories</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>path</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Join</span>(<span style=color:#e6db74>&#34;tmp&#34;</span>, <span style=color:#e6db74>&#34;config&#34;</span>, <span style=color:#e6db74>&#34;app&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>MkdirAll</span>(<span style=color:#a6e22e>path</span>, <span style=color:#ae81ff>0755</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error creating directories:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Created directories:&#34;</span>, <span style=color:#a6e22e>path</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Clean up</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>RemoveAll</span>(<span style=color:#e6db74>&#34;tmp&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>The second parameter (<code>0755</code>) is the permission mode:</p><ul><li><code>7</code> (owner): read + write + execute</li><li><code>5</code> (group): read + execute</li><li><code>5</code> (others): read + execute</li></ul><h2 id=reading-files>Reading Files</h2><p>Go provides several ways to read files. The simplest is <code>os.ReadFile</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Create a test file</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>WriteFile</span>(<span style=color:#e6db74>&#34;test.txt&#34;</span>, []byte(<span style=color:#e6db74>&#34;Hello, World!&#34;</span>), <span style=color:#ae81ff>0644</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Read the entire file into memory</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>ReadFile</span>(<span style=color:#e6db74>&#34;test.txt&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error reading file:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Content:&#34;</span>, string(<span style=color:#a6e22e>data</span>))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Clean up</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#e6db74>&#34;test.txt&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Here&rsquo;s how Baboon loads settings:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/load</code> not found in source files.</p></div><p>This function:</p><ol><li>Gets the settings file path</li><li>Reads the entire file with <code>os.ReadFile</code></li><li>Checks if the error is &ldquo;file not found&rdquo; with <code>os.IsNotExist</code></li><li>Returns default settings if the file doesn&rsquo;t exist</li><li>Unmarshals the JSON data into a <code>Settings</code> struct</li></ol><div class="notice notice-warning"><p class=notice-title>Warning</p><code>os.ReadFile</code> loads the entire file into memory. For large files (megabytes+), use <code>os.Open</code> and read in chunks instead.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=checking-error-types>Checking Error Types</h2><p>Not all errors are created equal. Sometimes you want to handle specific errors differently:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>ReadFile</span>(<span style=color:#e6db74>&#34;nonexistent.txt&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>IsNotExist</span>(<span style=color:#a6e22e>err</span>) {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;File doesn&#39;t exist - that&#39;s okay!&#34;</span>)
+</span></span><span style=display:flex><span>        } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Real error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Data:&#34;</span>, string(<span style=color:#a6e22e>data</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Common error checks:</p><ul><li><code>os.IsNotExist(err)</code> - File doesn&rsquo;t exist</li><li><code>os.IsPermission(err)</code> - Permission denied</li><li><code>os.IsTimeout(err)</code> - Operation timed out</li></ul><h2 id=writing-files>Writing Files</h2><p><code>os.WriteFile</code> writes data to a file, creating it if needed:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span> <span style=color:#f92672>:=</span> []byte(<span style=color:#e6db74>&#34;Hello, File!&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Write to file (create or overwrite)</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>WriteFile</span>(<span style=color:#e6db74>&#34;output.txt&#34;</span>, <span style=color:#a6e22e>data</span>, <span style=color:#ae81ff>0644</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error writing file:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;File written successfully&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Read it back</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>readData</span>, <span style=color:#a6e22e>_</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>ReadFile</span>(<span style=color:#e6db74>&#34;output.txt&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Content:&#34;</span>, string(<span style=color:#a6e22e>readData</span>))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Clean up</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#e6db74>&#34;output.txt&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>The permission <code>0644</code> means:</p><ul><li><code>6</code> (owner): read + write</li><li><code>4</code> (group): read</li><li><code>4</code> (others): read</li></ul><p>Here&rsquo;s how Baboon saves settings:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/save</code> not found in source files.</p></div><h2 id=file-operations-with-open>File Operations with Open</h2><p>For more control, use <code>os.Open</code>, <code>os.Create</code>, or <code>os.OpenFile</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Create a file</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>file</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Create</span>(<span style=color:#e6db74>&#34;example.txt&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>file</span>.<span style=color:#a6e22e>Close</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Write to it</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>file</span>.<span style=color:#a6e22e>WriteString</span>(<span style=color:#e6db74>&#34;Line 1\n&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>file</span>.<span style=color:#a6e22e>WriteString</span>(<span style=color:#e6db74>&#34;Line 2\n&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Sync to disk</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>file</span>.<span style=color:#a6e22e>Sync</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;File created successfully&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Clean up</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#e6db74>&#34;example.txt&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=the-defer-keyword>The defer Keyword</h2><p><code>defer</code> schedules a function call to run when the surrounding function returns:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>file</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Create</span>(<span style=color:#e6db74>&#34;defer-example.txt&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>file</span>.<span style=color:#a6e22e>Close</span>() <span style=color:#75715e>// Will be called when main() returns</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>file</span>.<span style=color:#a6e22e>WriteString</span>(<span style=color:#e6db74>&#34;Hello!&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;File will be closed automatically&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// file.Close() happens here</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#e6db74>&#34;defer-example.txt&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><code>defer</code> is especially useful for cleanup:</p><ul><li>Closing files</li><li>Releasing locks</li><li>Closing network connections</li></ul><p>Multiple defers execute in LIFO (Last In, First Out) order:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;1&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;2&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;3&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Start&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Output:</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Start</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 3</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 2</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// 1</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=atomic-writes>Atomic Writes</h2><p>Writing to a file can fail midway, leaving a corrupted file. For critical data, use atomic writes:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>atomicWrite</span>(<span style=color:#a6e22e>filename</span> <span style=color:#66d9ef>string</span>, <span style=color:#a6e22e>data</span> []<span style=color:#66d9ef>byte</span>) <span style=color:#66d9ef>error</span> {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Write to a temporary file</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>tmpFile</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>filename</span> <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;.tmp&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>WriteFile</span>(<span style=color:#a6e22e>tmpFile</span>, <span style=color:#a6e22e>data</span>, <span style=color:#ae81ff>0644</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Atomically rename (replacing the original)</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Rename</span>(<span style=color:#a6e22e>tmpFile</span>, <span style=color:#a6e22e>filename</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span> <span style=color:#f92672>:=</span> []byte(<span style=color:#e6db74>&#34;Important data&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>atomicWrite</span>(<span style=color:#e6db74>&#34;important.txt&#34;</span>, <span style=color:#a6e22e>data</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Data written atomically&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Clean up</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#e6db74>&#34;important.txt&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class="notice notice-tip"><p class=notice-title>Tip</p>Baboon doesn&rsquo;t use atomic writes for settings because the data isn&rsquo;t critical. But for databases or important user data, always use atomic writes.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=checking-if-files-exist>Checking if Files Exist</h2><p>There&rsquo;s no direct &ldquo;file exists&rdquo; function, but you can check by trying to stat it:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>fileExists</span>(<span style=color:#a6e22e>filename</span> <span style=color:#66d9ef>string</span>) <span style=color:#66d9ef>bool</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Stat</span>(<span style=color:#a6e22e>filename</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>==</span> <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Create a test file</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>WriteFile</span>(<span style=color:#e6db74>&#34;test.txt&#34;</span>, []byte(<span style=color:#e6db74>&#34;test&#34;</span>), <span style=color:#ae81ff>0644</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;test.txt exists:&#34;</span>, <span style=color:#a6e22e>fileExists</span>(<span style=color:#e6db74>&#34;test.txt&#34;</span>))
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;missing.txt exists:&#34;</span>, <span style=color:#a6e22e>fileExists</span>(<span style=color:#e6db74>&#34;missing.txt&#34;</span>))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Clean up</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#e6db74>&#34;test.txt&#34;</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=putting-it-all-together>Putting It All Together</h2><p>Let&rsquo;s write a complete example that mimics Baboon&rsquo;s settings behavior:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;path/filepath&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Config</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Theme</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;theme&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Port</span>  <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;port&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>DefaultConfig</span>() <span style=color:#f92672>*</span><span style=color:#a6e22e>Config</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Config</span>{
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Theme</span>: <span style=color:#e6db74>&#34;dark&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Port</span>:  <span style=color:#ae81ff>8080</span>,
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>getConfigPath</span>() (<span style=color:#66d9ef>string</span>, <span style=color:#66d9ef>error</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>homeDir</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>UserHomeDir</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>configDir</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Join</span>(<span style=color:#a6e22e>homeDir</span>, <span style=color:#e6db74>&#34;.myapp&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>MkdirAll</span>(<span style=color:#a6e22e>configDir</span>, <span style=color:#ae81ff>0755</span>); <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Join</span>(<span style=color:#a6e22e>configDir</span>, <span style=color:#e6db74>&#34;config.json&#34;</span>), <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>Load</span>() (<span style=color:#f92672>*</span><span style=color:#a6e22e>Config</span>, <span style=color:#66d9ef>error</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>path</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>getConfigPath</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>DefaultConfig</span>(), <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>ReadFile</span>(<span style=color:#a6e22e>path</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>IsNotExist</span>(<span style=color:#a6e22e>err</span>) {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>DefaultConfig</span>(), <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>DefaultConfig</span>(), <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>c</span> <span style=color:#a6e22e>Config</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>Unmarshal</span>(<span style=color:#a6e22e>data</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>c</span>); <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>DefaultConfig</span>(), <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>c</span>, <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Config</span>) <span style=color:#a6e22e>Save</span>() <span style=color:#66d9ef>error</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>path</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>getConfigPath</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>MarshalIndent</span>(<span style=color:#a6e22e>c</span>, <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#e6db74>&#34;  &#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>WriteFile</span>(<span style=color:#a6e22e>path</span>, <span style=color:#a6e22e>data</span>, <span style=color:#ae81ff>0644</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Load config (will use defaults first time)</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>config</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Load</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error loading:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Loaded: Theme=%s, Port=%d\n&#34;</span>, <span style=color:#a6e22e>config</span>.<span style=color:#a6e22e>Theme</span>, <span style=color:#a6e22e>config</span>.<span style=color:#a6e22e>Port</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Modify and save</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>config</span>.<span style=color:#a6e22e>Theme</span> = <span style=color:#e6db74>&#34;light&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>config</span>.<span style=color:#a6e22e>Port</span> = <span style=color:#ae81ff>9000</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>config</span>.<span style=color:#a6e22e>Save</span>(); <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error saving:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Saved successfully&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Load again to verify</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>config2</span>, <span style=color:#a6e22e>_</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Load</span>()
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Reloaded: Theme=%s, Port=%d\n&#34;</span>, <span style=color:#a6e22e>config2</span>.<span style=color:#a6e22e>Theme</span>, <span style=color:#a6e22e>config2</span>.<span style=color:#a6e22e>Port</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Clean up</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>path</span>, <span style=color:#a6e22e>_</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>getConfigPath</span>()
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#a6e22e>path</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Dir</span>(<span style=color:#a6e22e>path</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><details class=exercise><summary><strong>Exercise</strong></summary><div class=exercise-content><p>Create a simple note-taking app that saves notes to <code>~/.notes/notes.txt</code>. Implement:</p><ul><li><code>SaveNote(note string)</code> - Appends a note to the file</li><li><code>LoadNotes()</code> - Returns all notes as a slice of strings (one per line)</li><li>Handle the case where the file doesn&rsquo;t exist yet</li></ul><details class=solution><summary>Show Solution</summary><div class=solution-content><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;os&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;path/filepath&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;strings&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>getNotesPath</span>() (<span style=color:#66d9ef>string</span>, <span style=color:#66d9ef>error</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>homeDir</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>UserHomeDir</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>notesDir</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Join</span>(<span style=color:#a6e22e>homeDir</span>, <span style=color:#e6db74>&#34;.notes&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>MkdirAll</span>(<span style=color:#a6e22e>notesDir</span>, <span style=color:#ae81ff>0755</span>); <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Join</span>(<span style=color:#a6e22e>notesDir</span>, <span style=color:#e6db74>&#34;notes.txt&#34;</span>), <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>SaveNote</span>(<span style=color:#a6e22e>note</span> <span style=color:#66d9ef>string</span>) <span style=color:#66d9ef>error</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>path</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>getNotesPath</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Open file for appending (create if doesn&#39;t exist)</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>file</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>OpenFile</span>(<span style=color:#a6e22e>path</span>, <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>O_APPEND</span>|<span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>O_CREATE</span>|<span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>O_WRONLY</span>, <span style=color:#ae81ff>0644</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>defer</span> <span style=color:#a6e22e>file</span>.<span style=color:#a6e22e>Close</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>file</span>.<span style=color:#a6e22e>WriteString</span>(<span style=color:#a6e22e>note</span> <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;\n&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>LoadNotes</span>() ([]<span style=color:#66d9ef>string</span>, <span style=color:#66d9ef>error</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>path</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>getNotesPath</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>, <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>ReadFile</span>(<span style=color:#a6e22e>path</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>IsNotExist</span>(<span style=color:#a6e22e>err</span>) {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> []<span style=color:#66d9ef>string</span>{}, <span style=color:#66d9ef>nil</span> <span style=color:#75715e>// Empty list if file doesn&#39;t exist</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>, <span style=color:#a6e22e>err</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Split by newlines and filter empty lines</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>lines</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>strings</span>.<span style=color:#a6e22e>Split</span>(string(<span style=color:#a6e22e>data</span>), <span style=color:#e6db74>&#34;\n&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>notes</span> <span style=color:#f92672>:=</span> []<span style=color:#66d9ef>string</span>{}
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>line</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>lines</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>line</span> <span style=color:#f92672>!=</span> <span style=color:#e6db74>&#34;&#34;</span> {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>notes</span> = append(<span style=color:#a6e22e>notes</span>, <span style=color:#a6e22e>line</span>)
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>notes</span>, <span style=color:#66d9ef>nil</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Save some notes</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>SaveNote</span>(<span style=color:#e6db74>&#34;Buy milk&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>SaveNote</span>(<span style=color:#e6db74>&#34;Call dentist&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>SaveNote</span>(<span style=color:#e6db74>&#34;Finish Go tutorial&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Load and display</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>notes</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>LoadNotes</span>()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Your notes:&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> <span style=color:#a6e22e>i</span>, <span style=color:#a6e22e>note</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>notes</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;%d. %s\n&#34;</span>, <span style=color:#a6e22e>i</span><span style=color:#f92672>+</span><span style=color:#ae81ff>1</span>, <span style=color:#a6e22e>note</span>)
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Clean up</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>path</span>, <span style=color:#a6e22e>_</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>getNotesPath</span>()
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#a6e22e>path</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>os</span>.<span style=color:#a6e22e>Remove</span>(<span style=color:#a6e22e>filepath</span>.<span style=color:#a6e22e>Dir</span>(<span style=color:#a6e22e>path</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div></details><style>.solution{margin-top:1rem;border-left:3px solid #d4922a;padding-left:1rem}.solution summary{cursor:pointer;color:#d4922a;font-weight:700}</style></div></details><style>.exercise{border:1px solid #444;border-radius:4px;padding:1rem;margin:1rem 0;background:#1a1a2e}.exercise summary{cursor:pointer;color:#0f0}.exercise-content{margin-top:1rem}</style><hr><p><strong>Congratulations!</strong> You&rsquo;ve completed Chapter 02 and learned the fundamentals of Go programming through Baboon&rsquo;s settings package. You now understand:</p><ul><li>Basic and custom types</li><li>Structs and methods</li><li>JSON serialization with struct tags</li><li>File I/O and error handling</li></ul><p><strong>Next:</strong> In the next chapter, we&rsquo;ll explore the word list package and learn about slices, maps, and interfaces.</p></div></article><aside class=sidebar><nav class=toc><h4 class=toc-title>On This Page</h4><nav id=TableOfContents><ul><li><a href=#the-os-package>The os Package</a></li><li><a href=#building-file-paths>Building File Paths</a></li><li><a href=#creating-directories>Creating Directories</a></li><li><a href=#reading-files>Reading Files</a></li><li><a href=#checking-error-types>Checking Error Types</a></li><li><a href=#writing-files>Writing Files</a></li><li><a href=#file-operations-with-open>File Operations with Open</a></li><li><a href=#the-defer-keyword>The defer Keyword</a></li><li><a href=#atomic-writes>Atomic Writes</a></li><li><a href=#checking-if-files-exist>Checking if Files Exist</a></li><li><a href=#putting-it-all-together>Putting It All Together</a></li></ul></nav></nav></aside></div></div></main><footer class=site-footer><div class=container><div class=footer-content><div class=footer-brand><img src=/docs/images/baboon-logo.svg alt=Baboon height=32><p>Master your typing with beautiful practice</p></div><div class=footer-links><div class=footer-section><h4>Documentation</h4><a href=/docs/getting-started/>Getting Started</a>
+<a href=/docs/features/>Features</a>
+<a href=/docs/guide/>User Guide</a></div><div class=footer-section><h4>Development</h4><a href=/docs/development/>Architecture</a>
+<a href=/docs/development/api/>API Reference</a>
+<a href=/docs/development/contributing/>Contributing</a></div><div class=footer-section><h4>Support</h4><a href=https://github.com/timlinux/baboon/issues target=_blank>Report Issue</a>
+<a href=https://github.com/sponsors/kartoza target=_blank>GitHub Sponsors</a>
+<a href=https://ko-fi.com/timlinux target=_blank>Buy Me a Coffee</a></div></div></div><div class=footer-bottom><p>Made with <span class=heart>❤</span> by
+<a href=https://kartoza.com target=_blank>Kartoza</a> |
+<a href=https://github.com/sponsors/kartoza target=_blank>Donate!</a> |
+<a href=https://github.com/timlinux/baboon target=_blank>GitHub</a></p><p class=copyright>© 2026 Baboon. MIT License.</p></div></div></footer><script src=/docs/js/main.js></script></body></html>

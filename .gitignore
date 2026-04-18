@@ -1,5 +1,5 @@
-# Binaries
-baboon
+# Binaries (root level only, not hugo/themes/baboon)
+/baboon
 *.exe
 *.exe~
 *.dll

@@ -1,0 +1,236 @@
+<!doctype html><html lang=en-gb><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Master your typing with beautiful practice"><title>Structs | Baboon - Typing Practice</title><link rel=icon type=image/svg+xml href=/docs/images/baboon-favicon.svg><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel=stylesheet><link rel=stylesheet href=/docs/css/theme.css><link rel=stylesheet href=/docs/css/syntax.css><meta property="og:title" content="Structs"><meta property="og:description" content="Master your typing with beautiful practice"><meta property="og:type" content="article"><meta property="og:url" content="/docs/go-tutorial/02-settings/structs/"></head><body><div class=announcement-bar><span>Type like a pro with Baboon - the typing tutor with personality!</span></div><header class=site-header><div class=container><a href=/docs/ class=logo><img src=/docs/images/baboon-logo.svg alt=Baboon height=40>
+<span class=logo-text>BABOON</span></a><nav class=main-nav><a href=/docs/ class=active>Home
+</a><a href=/docs/getting-started/>Getting Started
+</a><a href=/docs/features/>Features
+</a><a href=/docs/guide/>User Guide
+</a><a href=/docs/development/>Development
+</a><a href=/docs/about/>About
+</a><a href=/ class=app-link>Launch App →</a></nav><div class=header-actions><a href=https://github.com/timlinux/baboon class=github-link target=_blank rel=noopener><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374.0.0 5.373.0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931.0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176.0.0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221.0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+</a><button class=theme-toggle onclick=toggleTheme() aria-label="Toggle theme">
+<svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+<svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+</button>
+<button class=mobile-menu-toggle onclick=toggleMobileMenu() aria-label="Toggle menu">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></div></header><nav class=mobile-nav id=mobile-nav><a href=/docs/ class=active>Home
+</a><a href=/docs/getting-started/>Getting Started
+</a><a href=/docs/features/>Features
+</a><a href=/docs/guide/>User Guide
+</a><a href=/docs/development/>Development
+</a><a href=/docs/about/>About
+</a><a href=/ class=app-link>Launch App →</a></nav><main class=site-main><div class=container><div class=content-with-sidebar><article class=page-content><header class=page-header><h1 class=page-title>Structs</h1></header><div class=content><h1 id=structs>Structs</h1><p>Structs are Go&rsquo;s way of grouping related data together. They&rsquo;re similar to classes in other languages, but simpler - they&rsquo;re just data containers.</p><h2 id=defining-a-struct>Defining a Struct</h2><p>Here&rsquo;s how Baboon defines the <code>Settings</code> struct:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/structs</code> not found in source files.</p></div><p>A struct definition has:</p><ul><li>The <code>type</code> keyword</li><li>The struct name (<code>Settings</code>)</li><li>The <code>struct</code> keyword</li><li>A list of fields in curly braces</li></ul><p>Each field has:</p><ul><li>A name (<code>AdvanceKey</code>, <code>PerfectMode</code>, <code>PracticeMode</code>)</li><li>A type (<code>AdvanceKey</code>, <code>bool</code>, <code>PracticeMode</code>)</li><li>Optional struct tags (those backtick strings - we&rsquo;ll cover these in the next page)</li></ul><h2 id=creating-struct-instances>Creating Struct Instances</h2><p>There are several ways to create a struct:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Person</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Name</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Age</span>  <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Method 1: Specify all fields by name</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>p1</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Person</span>{<span style=color:#a6e22e>Name</span>: <span style=color:#e6db74>&#34;Alice&#34;</span>, <span style=color:#a6e22e>Age</span>: <span style=color:#ae81ff>30</span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Method 2: Use positional values (not recommended)</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>p2</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Person</span>{<span style=color:#e6db74>&#34;Bob&#34;</span>, <span style=color:#ae81ff>25</span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Method 3: Create with zero values, then set fields</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>p3</span> <span style=color:#a6e22e>Person</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>p3</span>.<span style=color:#a6e22e>Name</span> = <span style=color:#e6db74>&#34;Charlie&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>p3</span>.<span style=color:#a6e22e>Age</span> = <span style=color:#ae81ff>35</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>p1</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>p2</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>p3</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class="notice notice-warning"><p class=notice-title>Warning</p>Using positional values (Method 2) is fragile. If someone reorders the struct fields, your code breaks. Always use field names.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=zero-values>Zero Values</h2><p>If you don&rsquo;t initialize a field, it gets a &ldquo;zero value&rdquo;:</p><ul><li>Numbers: <code>0</code></li><li>Booleans: <code>false</code></li><li>Strings: <code>""</code></li><li>Pointers: <code>nil</code></li><li>Structs: all fields are zero-valued</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Config</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Timeout</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Debug</span>   <span style=color:#66d9ef>bool</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Name</span>    <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>c</span> <span style=color:#a6e22e>Config</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Timeout: %d, Debug: %t, Name: &#39;%s&#39;\n&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Timeout</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Debug</span>, <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Name</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=exported-vs-unexported-names>Exported vs Unexported Names</h2><p>In Go, names that start with a capital letter are <strong>exported</strong> (public), while names starting with a lowercase letter are <strong>unexported</strong> (private to the package):</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>User</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Name</span>     <span style=color:#66d9ef>string</span> <span style=color:#75715e>// Exported - visible outside the package</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Email</span>    <span style=color:#66d9ef>string</span> <span style=color:#75715e>// Exported</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>password</span> <span style=color:#66d9ef>string</span> <span style=color:#75715e>// Unexported - only visible within the package</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>u</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>User</span>{
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Name</span>:     <span style=color:#e6db74>&#34;Alice&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Email</span>:    <span style=color:#e6db74>&#34;alice@example.com&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>password</span>: <span style=color:#e6db74>&#34;secret123&#34;</span>,
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;User: %s (%s)\n&#34;</span>, <span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>Name</span>, <span style=color:#a6e22e>u</span>.<span style=color:#a6e22e>Email</span>)
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Outside this package, you couldn&#39;t access u.password</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>All fields in Baboon&rsquo;s <code>Settings</code> struct are exported because we need to serialize them to JSON (more on that in the next page).</p><h2 id=constructor-functions>Constructor Functions</h2><p>Go doesn&rsquo;t have constructors like other languages, but by convention we create functions that return initialized structs. Here&rsquo;s how Baboon does it:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/defaults</code> not found in source files.</p></div><p>This function:</p><ul><li>Has a descriptive name: <code>DefaultSettings</code></li><li>Returns a pointer to <code>Settings</code> (<code>*Settings</code>)</li><li>Initializes all fields with sensible defaults</li></ul><p>Why return a pointer? Because in Go:</p><ul><li>Passing structs by value copies all the data</li><li>Passing pointers is more efficient for larger structs</li><li>Pointers let you modify the original struct</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Counter</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Value</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Constructor returns a pointer</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewCounter</span>() <span style=color:#f92672>*</span><span style=color:#a6e22e>Counter</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Counter</span>{<span style=color:#a6e22e>Value</span>: <span style=color:#ae81ff>0</span>}
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Method with pointer receiver can modify the struct</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Counter</span>) <span style=color:#a6e22e>Increment</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Value</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>counter</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>NewCounter</span>()
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>counter</span>.<span style=color:#a6e22e>Increment</span>()
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>counter</span>.<span style=color:#a6e22e>Increment</span>()
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Count:&#34;</span>, <span style=color:#a6e22e>counter</span>.<span style=color:#a6e22e>Value</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class="notice notice-tip"><p class=notice-title>Tip</p>The <code>&</code> operator takes the address of a value, creating a pointer. The <code>*</code> in the type means &ldquo;pointer to&rdquo;.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=accessing-struct-fields>Accessing Struct Fields</h2><p>Use the dot notation to access fields:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Rectangle</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Width</span>  <span style=color:#66d9ef>float64</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Height</span> <span style=color:#66d9ef>float64</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>r</span> <span style=color:#a6e22e>Rectangle</span>) <span style=color:#a6e22e>Area</span>() <span style=color:#66d9ef>float64</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>r</span>.<span style=color:#a6e22e>Width</span> <span style=color:#f92672>*</span> <span style=color:#a6e22e>r</span>.<span style=color:#a6e22e>Height</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>rect</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Rectangle</span>{<span style=color:#a6e22e>Width</span>: <span style=color:#ae81ff>10</span>, <span style=color:#a6e22e>Height</span>: <span style=color:#ae81ff>5</span>}
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Width:&#34;</span>, <span style=color:#a6e22e>rect</span>.<span style=color:#a6e22e>Width</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Height:&#34;</span>, <span style=color:#a6e22e>rect</span>.<span style=color:#a6e22e>Height</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Area:&#34;</span>, <span style=color:#a6e22e>rect</span>.<span style=color:#a6e22e>Area</span>())
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Go automatically dereferences pointers, so you can use the dot notation on pointers too:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Point</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>X</span>, <span style=color:#a6e22e>Y</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>p</span> <span style=color:#f92672>:=</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Point</span>{<span style=color:#a6e22e>X</span>: <span style=color:#ae81ff>10</span>, <span style=color:#a6e22e>Y</span>: <span style=color:#ae81ff>20</span>}
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// No need to write (*p).X - Go does it automatically</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;X:&#34;</span>, <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>X</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Y:&#34;</span>, <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>Y</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=methods-vs-functions>Methods vs Functions</h2><p>Methods are functions attached to a type. They have a receiver (the thing before the method name):</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Temperature</span> <span style=color:#66d9ef>float64</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Method - has a receiver</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>t</span> <span style=color:#a6e22e>Temperature</span>) <span style=color:#a6e22e>ToFahrenheit</span>() <span style=color:#66d9ef>float64</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> float64(<span style=color:#a6e22e>t</span>)<span style=color:#f92672>*</span><span style=color:#ae81ff>9</span><span style=color:#f92672>/</span><span style=color:#ae81ff>5</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>32</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Regular function - no receiver</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>CelsiusToFahrenheit</span>(<span style=color:#a6e22e>celsius</span> <span style=color:#66d9ef>float64</span>) <span style=color:#66d9ef>float64</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>celsius</span><span style=color:#f92672>*</span><span style=color:#ae81ff>9</span><span style=color:#f92672>/</span><span style=color:#ae81ff>5</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>32</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>temp</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Temperature</span>(<span style=color:#ae81ff>25.0</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Method call</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;%.1f°C = %.1f°F\n&#34;</span>, <span style=color:#a6e22e>temp</span>, <span style=color:#a6e22e>temp</span>.<span style=color:#a6e22e>ToFahrenheit</span>())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Function call</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;%.1f°C = %.1f°F\n&#34;</span>, <span style=color:#ae81ff>25.0</span>, <span style=color:#a6e22e>CelsiusToFahrenheit</span>(<span style=color:#ae81ff>25.0</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=value-vs-pointer-receivers>Value vs Pointer Receivers</h2><p>Methods can have either value receivers or pointer receivers:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Counter</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Count</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Value receiver - gets a copy</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#a6e22e>Counter</span>) <span style=color:#a6e22e>GetCount</span>() <span style=color:#66d9ef>int</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Count</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Pointer receiver - gets the original</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>c</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Counter</span>) <span style=color:#a6e22e>Increment</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>c</span>.<span style=color:#a6e22e>Count</span><span style=color:#f92672>++</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>counter</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Counter</span>{<span style=color:#a6e22e>Count</span>: <span style=color:#ae81ff>0</span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>counter</span>.<span style=color:#a6e22e>Increment</span>()  <span style=color:#75715e>// Modifies the original</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>counter</span>.<span style=color:#a6e22e>Increment</span>()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Count:&#34;</span>, <span style=color:#a6e22e>counter</span>.<span style=color:#a6e22e>GetCount</span>())
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><strong>Rule of thumb:</strong></p><ul><li>Use pointer receivers when you need to modify the struct</li><li>Use pointer receivers for large structs (to avoid copying)</li><li>Use value receivers for small, immutable structs</li><li>Be consistent: if some methods need pointer receivers, use them for all methods</li></ul><details class=exercise><summary><strong>Exercise</strong></summary><div class=exercise-content><p>Create a <code>Book</code> struct with fields for Title, Author, Pages, and Read (boolean). Create a constructor <code>NewBook</code> that takes title, author, and pages, and returns a pointer to a Book with Read defaulting to false. Add a method <code>MarkAsRead()</code> that sets Read to true.</p><details class=solution><summary>Show Solution</summary><div class=solution-content><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Book</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Title</span>  <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Author</span> <span style=color:#66d9ef>string</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Pages</span>  <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Read</span>   <span style=color:#66d9ef>bool</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>NewBook</span>(<span style=color:#a6e22e>title</span>, <span style=color:#a6e22e>author</span> <span style=color:#66d9ef>string</span>, <span style=color:#a6e22e>pages</span> <span style=color:#66d9ef>int</span>) <span style=color:#f92672>*</span><span style=color:#a6e22e>Book</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>Book</span>{
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Title</span>:  <span style=color:#a6e22e>title</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Author</span>: <span style=color:#a6e22e>author</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Pages</span>:  <span style=color:#a6e22e>pages</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Read</span>:   <span style=color:#66d9ef>false</span>,
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>b</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Book</span>) <span style=color:#a6e22e>MarkAsRead</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>b</span>.<span style=color:#a6e22e>Read</span> = <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>b</span> <span style=color:#a6e22e>Book</span>) <span style=color:#a6e22e>String</span>() <span style=color:#66d9ef>string</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>status</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>&#34;unread&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>b</span>.<span style=color:#a6e22e>Read</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>status</span> = <span style=color:#e6db74>&#34;read&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Sprintf</span>(<span style=color:#e6db74>&#34;%s by %s (%d pages, %s)&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>b</span>.<span style=color:#a6e22e>Title</span>, <span style=color:#a6e22e>b</span>.<span style=color:#a6e22e>Author</span>, <span style=color:#a6e22e>b</span>.<span style=color:#a6e22e>Pages</span>, <span style=color:#a6e22e>status</span>)
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>book</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>NewBook</span>(<span style=color:#e6db74>&#34;The Go Programming Language&#34;</span>, <span style=color:#e6db74>&#34;Donovan &amp; Kernighan&#34;</span>, <span style=color:#ae81ff>380</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>book</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>book</span>.<span style=color:#a6e22e>MarkAsRead</span>()
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#a6e22e>book</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div></details><style>.solution{margin-top:1rem;border-left:3px solid #d4922a;padding-left:1rem}.solution summary{cursor:pointer;color:#d4922a;font-weight:700}</style></div></details><style>.exercise{border:1px solid #444;border-radius:4px;padding:1rem;margin:1rem 0;background:#1a1a2e}.exercise summary{cursor:pointer;color:#0f0}.exercise-content{margin-top:1rem}</style><hr><p><strong>Next:</strong> <a href=../json-tags/>JSON Tags</a> - Learn how to serialize structs to JSON</p></div></article><aside class=sidebar><nav class=toc><h4 class=toc-title>On This Page</h4><nav id=TableOfContents><ul><li><a href=#defining-a-struct>Defining a Struct</a></li><li><a href=#creating-struct-instances>Creating Struct Instances</a></li><li><a href=#zero-values>Zero Values</a></li><li><a href=#exported-vs-unexported-names>Exported vs Unexported Names</a></li><li><a href=#constructor-functions>Constructor Functions</a></li><li><a href=#accessing-struct-fields>Accessing Struct Fields</a></li><li><a href=#methods-vs-functions>Methods vs Functions</a></li><li><a href=#value-vs-pointer-receivers>Value vs Pointer Receivers</a></li></ul></nav></nav></aside></div></div></main><footer class=site-footer><div class=container><div class=footer-content><div class=footer-brand><img src=/docs/images/baboon-logo.svg alt=Baboon height=32><p>Master your typing with beautiful practice</p></div><div class=footer-links><div class=footer-section><h4>Documentation</h4><a href=/docs/getting-started/>Getting Started</a>
+<a href=/docs/features/>Features</a>
+<a href=/docs/guide/>User Guide</a></div><div class=footer-section><h4>Development</h4><a href=/docs/development/>Architecture</a>
+<a href=/docs/development/api/>API Reference</a>
+<a href=/docs/development/contributing/>Contributing</a></div><div class=footer-section><h4>Support</h4><a href=https://github.com/timlinux/baboon/issues target=_blank>Report Issue</a>
+<a href=https://github.com/sponsors/kartoza target=_blank>GitHub Sponsors</a>
+<a href=https://ko-fi.com/timlinux target=_blank>Buy Me a Coffee</a></div></div></div><div class=footer-bottom><p>Made with <span class=heart>❤</span> by
+<a href=https://kartoza.com target=_blank>Kartoza</a> |
+<a href=https://github.com/sponsors/kartoza target=_blank>Donate!</a> |
+<a href=https://github.com/timlinux/baboon target=_blank>GitHub</a></p><p class=copyright>© 2026 Baboon. MIT License.</p></div></div></footer><script src=/docs/js/main.js></script></body></html>

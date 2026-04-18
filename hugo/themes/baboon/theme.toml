@@ -1,0 +1,16 @@
+# Baboon Hugo Theme
+name = "Baboon"
+license = "MIT"
+licenselink = "https://github.com/timlinux/baboon/blob/main/LICENSE"
+description = "Custom theme for Baboon typing practice application"
+homepage = "https://github.com/timlinux/baboon"
+tags = ["dark", "documentation", "responsive"]
+features = ["dark mode", "syntax highlighting", "search"]
+
+[author]
+  name = "Tim Sutton"
+  homepage = "https://kartoza.com"
+
+[original]
+  name = "Kartoza"
+  homepage = "https://kartoza.com"

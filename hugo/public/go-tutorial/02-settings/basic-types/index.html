@@ -1,0 +1,172 @@
+<!doctype html><html lang=en-gb><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Master your typing with beautiful practice"><title>Basic Types and Custom Types | Baboon - Typing Practice</title><link rel=icon type=image/svg+xml href=/docs/images/baboon-favicon.svg><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel=stylesheet><link rel=stylesheet href=/docs/css/theme.css><link rel=stylesheet href=/docs/css/syntax.css><meta property="og:title" content="Basic Types and Custom Types"><meta property="og:description" content="Master your typing with beautiful practice"><meta property="og:type" content="article"><meta property="og:url" content="/docs/go-tutorial/02-settings/basic-types/"></head><body><div class=announcement-bar><span>Type like a pro with Baboon - the typing tutor with personality!</span></div><header class=site-header><div class=container><a href=/docs/ class=logo><img src=/docs/images/baboon-logo.svg alt=Baboon height=40>
+<span class=logo-text>BABOON</span></a><nav class=main-nav><a href=/docs/ class=active>Home
+</a><a href=/docs/getting-started/>Getting Started
+</a><a href=/docs/features/>Features
+</a><a href=/docs/guide/>User Guide
+</a><a href=/docs/development/>Development
+</a><a href=/docs/about/>About
+</a><a href=/ class=app-link>Launch App →</a></nav><div class=header-actions><a href=https://github.com/timlinux/baboon class=github-link target=_blank rel=noopener><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374.0.0 5.373.0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931.0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176.0.0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221.0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+</a><button class=theme-toggle onclick=toggleTheme() aria-label="Toggle theme">
+<svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+<svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+</button>
+<button class=mobile-menu-toggle onclick=toggleMobileMenu() aria-label="Toggle menu">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></div></header><nav class=mobile-nav id=mobile-nav><a href=/docs/ class=active>Home
+</a><a href=/docs/getting-started/>Getting Started
+</a><a href=/docs/features/>Features
+</a><a href=/docs/guide/>User Guide
+</a><a href=/docs/development/>Development
+</a><a href=/docs/about/>About
+</a><a href=/ class=app-link>Launch App →</a></nav><main class=site-main><div class=container><div class=content-with-sidebar><article class=page-content><header class=page-header><h1 class=page-title>Basic Types and Custom Types</h1></header><div class=content><h1 id=basic-types-and-custom-types>Basic Types and Custom Types</h1><p>Go has a simple but powerful type system. In this page, you&rsquo;ll learn about Go&rsquo;s built-in types and how to create your own custom types with special behaviors.</p><h2 id=gos-basic-types>Go&rsquo;s Basic Types</h2><p>Go provides several built-in types:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Numeric types</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>age</span> <span style=color:#66d9ef>int</span> = <span style=color:#ae81ff>25</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>price</span> <span style=color:#66d9ef>float64</span> = <span style=color:#ae81ff>19.99</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// String type</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>name</span> <span style=color:#66d9ef>string</span> = <span style=color:#e6db74>&#34;Baboon&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Boolean type</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>isActive</span> <span style=color:#66d9ef>bool</span> = <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Age: %d, Price: %.2f, Name: %s, Active: %t\n&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>age</span>, <span style=color:#a6e22e>price</span>, <span style=color:#a6e22e>name</span>, <span style=color:#a6e22e>isActive</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class="notice notice-tip"><p class=notice-title>Tip</p>Go has multiple numeric types like <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>, <code>uint</code>, <code>float32</code>, etc. For most cases, <code>int</code> and <code>float64</code> are good defaults.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=creating-custom-types>Creating Custom Types</h2><p>You can create your own types based on existing ones using the <code>type</code> keyword. This is useful when you want to add meaning to a simple type:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/advancekey-type</code> not found in source files.</p></div><p>Here, <code>AdvanceKey</code> is a custom type based on <code>int</code>. This gives us several advantages:</p><ol><li><strong>Type Safety</strong>: You can&rsquo;t accidentally pass any <code>int</code> where an <code>AdvanceKey</code> is expected</li><li><strong>Documentation</strong>: The type name tells us what the value represents</li><li><strong>Methods</strong>: We can attach methods to our custom type (more on this below)</li></ol><h2 id=constants-with-iota>Constants with iota</h2><p>The <code>iota</code> keyword is Go&rsquo;s enumerator. It starts at 0 and increments by 1 for each constant in a <code>const</code> block:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Status</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> (
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>StatusPending</span>  <span style=color:#a6e22e>Status</span> = <span style=color:#66d9ef>iota</span> <span style=color:#75715e>// 0</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>StatusActive</span>                 <span style=color:#75715e>// 1</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>StatusComplete</span>               <span style=color:#75715e>// 2</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Pending:&#34;</span>, <span style=color:#a6e22e>StatusPending</span>)    <span style=color:#75715e>// 0</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Active:&#34;</span>, <span style=color:#a6e22e>StatusActive</span>)      <span style=color:#75715e>// 1</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Complete:&#34;</span>, <span style=color:#a6e22e>StatusComplete</span>)  <span style=color:#75715e>// 2</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>In Baboon&rsquo;s settings, we use this pattern to define the three advance key options:</p><ul><li><code>AdvanceKeySpace</code> (0)</li><li><code>AdvanceKeyEnter</code> (1)</li><li><code>AdvanceKeyEither</code> (2)</li></ul><div class="notice notice-warning"><p class=notice-title>Warning</p>The actual numeric values don&rsquo;t matter for our code logic. What matters is that each constant has a unique value. Never rely on the specific numbers.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=methods-on-custom-types>Methods on Custom Types</h2><p>One of the most powerful features of custom types is the ability to add methods to them. Here&rsquo;s how Baboon defines methods on <code>AdvanceKey</code>:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/advancekey-methods</code> not found in source files.</p></div><p>The syntax <code>func (a AdvanceKey) String() string</code> means:</p><ul><li><code>(a AdvanceKey)</code> is the <strong>receiver</strong> - like <code>self</code> in Python or <code>this</code> in JavaScript</li><li><code>String()</code> is the method name</li><li><code>string</code> is the return type</li></ul><p>Let&rsquo;s see these methods in action:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>AdvanceKey</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> (
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKeySpace</span>  <span style=color:#a6e22e>AdvanceKey</span> = <span style=color:#66d9ef>iota</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKeyEnter</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKeyEither</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>a</span> <span style=color:#a6e22e>AdvanceKey</span>) <span style=color:#a6e22e>String</span>() <span style=color:#66d9ef>string</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>switch</span> <span style=color:#a6e22e>a</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>AdvanceKeySpace</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Space&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>AdvanceKeyEnter</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Enter&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>AdvanceKeyEither</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Either&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>default</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Space&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>a</span> <span style=color:#a6e22e>AdvanceKey</span>) <span style=color:#a6e22e>KeyHint</span>() <span style=color:#66d9ef>string</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>switch</span> <span style=color:#a6e22e>a</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>AdvanceKeySpace</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;SPACE&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>AdvanceKeyEnter</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;ENTER&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>AdvanceKeyEither</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;SPACE or ENTER&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>default</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;SPACE&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>key</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>AdvanceKeyEnter</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Display name:&#34;</span>, <span style=color:#a6e22e>key</span>.<span style=color:#a6e22e>String</span>())
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Hint:&#34;</span>, <span style=color:#a6e22e>key</span>.<span style=color:#a6e22e>KeyHint</span>())
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=type-conversions>Type Conversions</h2><p>Sometimes you need to convert between types. Go requires explicit conversions:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>AdvanceKey</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> (
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKeySpace</span>  <span style=color:#a6e22e>AdvanceKey</span> = <span style=color:#66d9ef>iota</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKeyEnter</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Convert int to AdvanceKey</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>num</span> <span style=color:#66d9ef>int</span> = <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>key</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>AdvanceKey</span>(<span style=color:#a6e22e>num</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Key:&#34;</span>, <span style=color:#a6e22e>key</span>)  <span style=color:#75715e>// 1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Convert AdvanceKey to int</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>k</span> <span style=color:#a6e22e>AdvanceKey</span> = <span style=color:#a6e22e>AdvanceKeyEnter</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>value</span> <span style=color:#f92672>:=</span> int(<span style=color:#a6e22e>k</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Value:&#34;</span>, <span style=color:#a6e22e>value</span>)  <span style=color:#75715e>// 1</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class="notice notice-tip"><p class=notice-title>Tip</p>Go doesn&rsquo;t do implicit type conversions. This prevents bugs where you accidentally mix incompatible types.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=why-use-custom-types>Why Use Custom Types?</h2><p>You might wonder: why not just use <code>int</code> everywhere? Here&rsquo;s why custom types are better:</p><ol><li><strong>Self-Documenting Code</strong>: <code>func SetKey(key AdvanceKey)</code> is clearer than <code>func SetKey(key int)</code></li><li><strong>Type Safety</strong>: The compiler prevents you from passing the wrong kind of value</li><li><strong>Methods</strong>: You can attach behavior specific to that type</li><li><strong>Future-Proofing</strong>: If you need to change the underlying type later, you only change it in one place</li></ol><details class=exercise><summary><strong>Exercise</strong></summary><div class=exercise-content><p>Create a custom type called <code>Difficulty</code> with three levels: Easy, Medium, Hard. Add a <code>String()</code> method that returns the name, and a <code>MaxErrors()</code> method that returns how many errors are allowed (10 for Easy, 5 for Medium, 2 for Hard).</p><details class=solution><summary>Show Solution</summary><div class=solution-content><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Difficulty</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> (
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>DifficultyEasy</span>   <span style=color:#a6e22e>Difficulty</span> = <span style=color:#66d9ef>iota</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>DifficultyMedium</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>DifficultyHard</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>d</span> <span style=color:#a6e22e>Difficulty</span>) <span style=color:#a6e22e>String</span>() <span style=color:#66d9ef>string</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>switch</span> <span style=color:#a6e22e>d</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>DifficultyEasy</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Easy&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>DifficultyMedium</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Medium&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>DifficultyHard</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Hard&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>default</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Easy&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>d</span> <span style=color:#a6e22e>Difficulty</span>) <span style=color:#a6e22e>MaxErrors</span>() <span style=color:#66d9ef>int</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>switch</span> <span style=color:#a6e22e>d</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>DifficultyEasy</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>10</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>DifficultyMedium</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>5</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>case</span> <span style=color:#a6e22e>DifficultyHard</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>default</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>10</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>level</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>DifficultyMedium</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Playing on %s difficulty (max %d errors)\n&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>level</span>.<span style=color:#a6e22e>String</span>(), <span style=color:#a6e22e>level</span>.<span style=color:#a6e22e>MaxErrors</span>())
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div></details><style>.solution{margin-top:1rem;border-left:3px solid #d4922a;padding-left:1rem}.solution summary{cursor:pointer;color:#d4922a;font-weight:700}</style></div></details><style>.exercise{border:1px solid #444;border-radius:4px;padding:1rem;margin:1rem 0;background:#1a1a2e}.exercise summary{cursor:pointer;color:#0f0}.exercise-content{margin-top:1rem}</style><hr><p><strong>Next:</strong> <a href=../structs/>Structs</a> - Learn how to group related data together</p></div></article><aside class=sidebar><nav class=toc><h4 class=toc-title>On This Page</h4><nav id=TableOfContents><ul><li><a href=#gos-basic-types>Go&rsquo;s Basic Types</a></li><li><a href=#creating-custom-types>Creating Custom Types</a></li><li><a href=#constants-with-iota>Constants with iota</a></li><li><a href=#methods-on-custom-types>Methods on Custom Types</a></li><li><a href=#type-conversions>Type Conversions</a></li><li><a href=#why-use-custom-types>Why Use Custom Types?</a></li></ul></nav></nav></aside></div></div></main><footer class=site-footer><div class=container><div class=footer-content><div class=footer-brand><img src=/docs/images/baboon-logo.svg alt=Baboon height=32><p>Master your typing with beautiful practice</p></div><div class=footer-links><div class=footer-section><h4>Documentation</h4><a href=/docs/getting-started/>Getting Started</a>
+<a href=/docs/features/>Features</a>
+<a href=/docs/guide/>User Guide</a></div><div class=footer-section><h4>Development</h4><a href=/docs/development/>Architecture</a>
+<a href=/docs/development/api/>API Reference</a>
+<a href=/docs/development/contributing/>Contributing</a></div><div class=footer-section><h4>Support</h4><a href=https://github.com/timlinux/baboon/issues target=_blank>Report Issue</a>
+<a href=https://github.com/sponsors/kartoza target=_blank>GitHub Sponsors</a>
+<a href=https://ko-fi.com/timlinux target=_blank>Buy Me a Coffee</a></div></div></div><div class=footer-bottom><p>Made with <span class=heart>❤</span> by
+<a href=https://kartoza.com target=_blank>Kartoza</a> |
+<a href=https://github.com/sponsors/kartoza target=_blank>Donate!</a> |
+<a href=https://github.com/timlinux/baboon target=_blank>GitHub</a></p><p class=copyright>© 2026 Baboon. MIT License.</p></div></div></footer><script src=/docs/js/main.js></script></body></html>

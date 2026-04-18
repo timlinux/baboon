@@ -1,0 +1,24 @@
+{{ define "main" }}
+<div class="container">
+  <header class="page-header">
+    <h1 class="page-title">{{ .Title }}</h1>
+    {{ with .Params.description }}
+    <p class="page-description">{{ . }}</p>
+    {{ end }}
+  </header>
+
+  {{ .Content }}
+
+  {{ if .Pages }}
+  <div class="feature-grid">
+    {{ range .Pages }}
+    <a href="{{ .RelPermalink }}" class="feature-card" style="text-decoration: none;">
+      <div class="feature-icon">{{ with .Params.icon }}{{ . }}{{ else }}📄{{ end }}</div>
+      <h3 class="feature-title">{{ .Title }}</h3>
+      <p class="feature-desc">{{ with .Params.description }}{{ . }}{{ else }}{{ .Summary | truncate 100 }}{{ end }}</p>
+    </a>
+    {{ end }}
+  </div>
+  {{ end }}
+</div>
+{{ end }}

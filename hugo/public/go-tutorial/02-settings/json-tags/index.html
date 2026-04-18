@@ -1,0 +1,270 @@
+<!doctype html><html lang=en-gb><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Master your typing with beautiful practice"><title>JSON Tags and Serialization | Baboon - Typing Practice</title><link rel=icon type=image/svg+xml href=/docs/images/baboon-favicon.svg><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel=stylesheet><link rel=stylesheet href=/docs/css/theme.css><link rel=stylesheet href=/docs/css/syntax.css><meta property="og:title" content="JSON Tags and Serialization"><meta property="og:description" content="Master your typing with beautiful practice"><meta property="og:type" content="article"><meta property="og:url" content="/docs/go-tutorial/02-settings/json-tags/"></head><body><div class=announcement-bar><span>Type like a pro with Baboon - the typing tutor with personality!</span></div><header class=site-header><div class=container><a href=/docs/ class=logo><img src=/docs/images/baboon-logo.svg alt=Baboon height=40>
+<span class=logo-text>BABOON</span></a><nav class=main-nav><a href=/docs/ class=active>Home
+</a><a href=/docs/getting-started/>Getting Started
+</a><a href=/docs/features/>Features
+</a><a href=/docs/guide/>User Guide
+</a><a href=/docs/development/>Development
+</a><a href=/docs/about/>About
+</a><a href=/ class=app-link>Launch App →</a></nav><div class=header-actions><a href=https://github.com/timlinux/baboon class=github-link target=_blank rel=noopener><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374.0.0 5.373.0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931.0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176.0.0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221.0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+</a><button class=theme-toggle onclick=toggleTheme() aria-label="Toggle theme">
+<svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+<svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+</button>
+<button class=mobile-menu-toggle onclick=toggleMobileMenu() aria-label="Toggle menu">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></div></header><nav class=mobile-nav id=mobile-nav><a href=/docs/ class=active>Home
+</a><a href=/docs/getting-started/>Getting Started
+</a><a href=/docs/features/>Features
+</a><a href=/docs/guide/>User Guide
+</a><a href=/docs/development/>Development
+</a><a href=/docs/about/>About
+</a><a href=/ class=app-link>Launch App →</a></nav><main class=site-main><div class=container><div class=content-with-sidebar><article class=page-content><header class=page-header><h1 class=page-title>JSON Tags and Serialization</h1></header><div class=content><h1 id=json-tags-and-serialization>JSON Tags and Serialization</h1><p>Go makes it easy to convert structs to and from JSON. This is how Baboon saves settings to disk and loads them back.</p><h2 id=what-are-struct-tags>What Are Struct Tags?</h2><p>Look at the <code>Settings</code> struct again:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/structs</code> not found in source files.</p></div><p>Those strings in backticks (<code>`json:"advance_key"`</code>) are <strong>struct tags</strong>. They&rsquo;re metadata attached to fields that other code can read.</p><p>The <code>encoding/json</code> package reads these tags to know:</p><ul><li>What JSON field name to use</li><li>Whether to skip empty fields</li><li>Other serialization options</li></ul><h2 id=json-tag-syntax>JSON Tag Syntax</h2><p>The basic syntax is <code>`json:"field_name"`</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>User</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>FirstName</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;first_name&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>LastName</span>  <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;last_name&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Age</span>       <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;age&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>user</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>User</span>{
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>FirstName</span>: <span style=color:#e6db74>&#34;Jane&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>LastName</span>:  <span style=color:#e6db74>&#34;Doe&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Age</span>:       <span style=color:#ae81ff>28</span>,
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>_</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>Marshal</span>(<span style=color:#a6e22e>user</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(string(<span style=color:#a6e22e>data</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Without the tags, the JSON would use the exact field names: <code>{"FirstName":"Jane","LastName":"Doe","Age":28}</code>. With tags, we get snake_case: <code>{"first_name":"Jane","last_name":"Doe","age":28}</code>.</p><div class="notice notice-tip"><p class=notice-title>Tip</p>Use snake_case in JSON tags to follow common JSON conventions. Go uses PascalCase for exported names, but JSON typically uses snake_case.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=tag-options>Tag Options</h2><p>You can add options after a comma:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Config</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Host</span>     <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;host&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Port</span>     <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;port&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Password</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;password,omitempty&#34;`</span>  <span style=color:#75715e>// Omit if empty</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Debug</span>    <span style=color:#66d9ef>bool</span>   <span style=color:#e6db74>`json:&#34;debug,omitempty&#34;`</span>     <span style=color:#75715e>// Omit if false</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Internal</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;-&#34;`</span>                   <span style=color:#75715e>// Never include</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>config</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Config</span>{
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Host</span>:     <span style=color:#e6db74>&#34;localhost&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Port</span>:     <span style=color:#ae81ff>8080</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Password</span>: <span style=color:#e6db74>&#34;&#34;</span>,      <span style=color:#75715e>// Will be omitted</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Debug</span>:    <span style=color:#66d9ef>false</span>,   <span style=color:#75715e>// Will be omitted</span>
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Internal</span>: <span style=color:#e6db74>&#34;secret&#34;</span>,
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>_</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>MarshalIndent</span>(<span style=color:#a6e22e>config</span>, <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#e6db74>&#34;  &#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(string(<span style=color:#a6e22e>data</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Common options:</p><ul><li><code>omitempty</code> - Omit field if it&rsquo;s empty (zero value)</li><li><code>-</code> - Never include this field in JSON</li></ul><h2 id=marshaling-go-to-json>Marshaling: Go to JSON</h2><p>&ldquo;Marshaling&rdquo; means converting a Go value to JSON:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Person</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Name</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;name&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Age</span>  <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;age&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>p</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Person</span>{<span style=color:#a6e22e>Name</span>: <span style=color:#e6db74>&#34;Alice&#34;</span>, <span style=color:#a6e22e>Age</span>: <span style=color:#ae81ff>30</span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Marshal to compact JSON</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>Marshal</span>(<span style=color:#a6e22e>p</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Compact:&#34;</span>, string(<span style=color:#a6e22e>data</span>))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Marshal to pretty-printed JSON</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>MarshalIndent</span>(<span style=color:#a6e22e>p</span>, <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#e6db74>&#34;  &#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Pretty:\n&#34;</span> <span style=color:#f92672>+</span> string(<span style=color:#a6e22e>data</span>))
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Here&rsquo;s how Baboon marshals settings:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/save</code> not found in source files.</p></div><p>The <code>MarshalIndent</code> function takes:</p><ul><li>The value to marshal</li><li>A prefix string (usually empty)</li><li>An indent string (two spaces for readability)</li></ul><h2 id=unmarshaling-json-to-go>Unmarshaling: JSON to Go</h2><p>&ldquo;Unmarshaling&rdquo; means converting JSON to a Go value:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Person</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Name</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;name&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Age</span>  <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;age&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>jsonStr</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>`{&#34;name&#34;:&#34;Bob&#34;,&#34;age&#34;:25}`</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>p</span> <span style=color:#a6e22e>Person</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>Unmarshal</span>([]byte(<span style=color:#a6e22e>jsonStr</span>), <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>p</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Name: %s, Age: %d\n&#34;</span>, <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>Name</span>, <span style=color:#a6e22e>p</span>.<span style=color:#a6e22e>Age</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Key points:</p><ul><li>Pass a byte slice (<code>[]byte</code>) to <code>Unmarshal</code></li><li>Pass a pointer to the struct (<code>&amp;p</code>) so it can be modified</li><li>The JSON field names must match the struct tags</li></ul><p>Here&rsquo;s how Baboon unmarshals settings:</p><div class=warning><p><strong>Warning:</strong> Code reference <code>settings/load</code> not found in source files.</p></div><h2 id=handling-missing-fields>Handling Missing Fields</h2><p>If a JSON field is missing, the struct field gets its zero value:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Config</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Host</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;host&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Port</span> <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;port&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// JSON is missing the &#34;port&#34; field</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>jsonStr</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>`{&#34;host&#34;:&#34;localhost&#34;}`</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>config</span> <span style=color:#a6e22e>Config</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>Unmarshal</span>([]byte(<span style=color:#a6e22e>jsonStr</span>), <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>config</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Host: %s, Port: %d\n&#34;</span>, <span style=color:#a6e22e>config</span>.<span style=color:#a6e22e>Host</span>, <span style=color:#a6e22e>config</span>.<span style=color:#a6e22e>Port</span>)
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Output: Host: localhost, Port: 0</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>This is why Baboon&rsquo;s <code>Load</code> function returns <code>DefaultSettings()</code> if the file doesn&rsquo;t exist - it ensures all fields have sensible values.</p><h2 id=handling-extra-fields>Handling Extra Fields</h2><p>If JSON has extra fields that aren&rsquo;t in the struct, they&rsquo;re ignored:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>User</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Name</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;name&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// JSON has extra fields &#34;age&#34; and &#34;email&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>jsonStr</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>`{&#34;name&#34;:&#34;Alice&#34;,&#34;age&#34;:30,&#34;email&#34;:&#34;alice@example.com&#34;}`</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>user</span> <span style=color:#a6e22e>User</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>Unmarshal</span>([]byte(<span style=color:#a6e22e>jsonStr</span>), <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>user</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;Name: %s\n&#34;</span>, <span style=color:#a6e22e>user</span>.<span style=color:#a6e22e>Name</span>)
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Extra fields are silently ignored</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>This makes your code forward-compatible: if you add new fields later, old code won&rsquo;t break.</p><h2 id=custom-types-and-json>Custom Types and JSON</h2><p>When you have custom types like <code>AdvanceKey</code>, the JSON package marshals them as their underlying type:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>AdvanceKey</span> <span style=color:#66d9ef>int</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> (
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKeySpace</span>  <span style=color:#a6e22e>AdvanceKey</span> = <span style=color:#66d9ef>iota</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKeyEnter</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKeyEither</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Settings</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>AdvanceKey</span> <span style=color:#a6e22e>AdvanceKey</span> <span style=color:#e6db74>`json:&#34;advance_key&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>settings</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>Settings</span>{<span style=color:#a6e22e>AdvanceKey</span>: <span style=color:#a6e22e>AdvanceKeyEnter</span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>_</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>MarshalIndent</span>(<span style=color:#a6e22e>settings</span>, <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#e6db74>&#34;  &#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(string(<span style=color:#a6e22e>data</span>))
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Output: {&#34;advance_key&#34;: 1}</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>The <code>AdvanceKey</code> (which has value 1) is marshaled as the number <code>1</code>. When unmarshaling, the number is converted back to an <code>AdvanceKey</code>.</p><div class="notice notice-warning"><p class=notice-title>Warning</p>If you change the order of constants, old JSON files will map to different values. This is why you should never rely on specific iota values for persistence.</div><style>.notice{border-radius:4px;padding:1rem;margin:1rem 0}.notice-title{font-weight:700;margin-bottom:.5rem}.notice-tip{background:rgba(0,255,0,.1);border-left:4px solid #0f0}.notice-warning{background:rgba(255,165,0,.1);border-left:4px solid orange}.notice-info{background:rgba(0,123,255,.1);border-left:4px solid #007bff}</style><h2 id=error-handling>Error Handling</h2><p>Always check errors when marshaling/unmarshaling:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Config</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Timeout</span> <span style=color:#66d9ef>int</span> <span style=color:#e6db74>`json:&#34;timeout&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Invalid JSON (missing closing brace)</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>invalidJSON</span> <span style=color:#f92672>:=</span> <span style=color:#e6db74>`{&#34;timeout&#34;: 30`</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>config</span> <span style=color:#a6e22e>Config</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>Unmarshal</span>([]byte(<span style=color:#a6e22e>invalidJSON</span>), <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>config</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Failed to parse JSON:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Config:&#34;</span>, <span style=color:#a6e22e>config</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><details class=exercise><summary><strong>Exercise</strong></summary><div class=exercise-content><p>Create a <code>GameStats</code> struct with fields for PlayerName, Score, Level, and HighScore. Add appropriate JSON tags. Write a function that marshals a GameStats to pretty JSON, then unmarshals it back and prints the values. Make HighScore optional (omit if zero).</p><details class=solution><summary>Show Solution</summary><div class=solution-content><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;encoding/json&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>GameStats</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>PlayerName</span> <span style=color:#66d9ef>string</span> <span style=color:#e6db74>`json:&#34;player_name&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Score</span>      <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;score&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>Level</span>      <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;level&#34;`</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>HighScore</span>  <span style=color:#66d9ef>int</span>    <span style=color:#e6db74>`json:&#34;high_score,omitempty&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Create some stats</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>stats</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>GameStats</span>{
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>PlayerName</span>: <span style=color:#e6db74>&#34;Alice&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Score</span>:      <span style=color:#ae81ff>1500</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Level</span>:      <span style=color:#ae81ff>5</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>HighScore</span>:  <span style=color:#ae81ff>0</span>, <span style=color:#75715e>// Will be omitted</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Marshal to JSON</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>data</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>MarshalIndent</span>(<span style=color:#a6e22e>stats</span>, <span style=color:#e6db74>&#34;&#34;</span>, <span style=color:#e6db74>&#34;  &#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Marshal error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;JSON:&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(string(<span style=color:#a6e22e>data</span>))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Unmarshal back</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>stats2</span> <span style=color:#a6e22e>GameStats</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>json</span>.<span style=color:#a6e22e>Unmarshal</span>(<span style=color:#a6e22e>data</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>stats2</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;Unmarshal error:&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;\nUnmarshaled: %s, Score=%d, Level=%d, HighScore=%d\n&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>stats2</span>.<span style=color:#a6e22e>PlayerName</span>, <span style=color:#a6e22e>stats2</span>.<span style=color:#a6e22e>Score</span>, <span style=color:#a6e22e>stats2</span>.<span style=color:#a6e22e>Level</span>, <span style=color:#a6e22e>stats2</span>.<span style=color:#a6e22e>HighScore</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div></div></details><style>.solution{margin-top:1rem;border-left:3px solid #d4922a;padding-left:1rem}.solution summary{cursor:pointer;color:#d4922a;font-weight:700}</style></div></details><style>.exercise{border:1px solid #444;border-radius:4px;padding:1rem;margin:1rem 0;background:#1a1a2e}.exercise summary{cursor:pointer;color:#0f0}.exercise-content{margin-top:1rem}</style><hr><p><strong>Next:</strong> <a href=../file-io/>File I/O</a> - Learn how to read and write files</p></div></article><aside class=sidebar><nav class=toc><h4 class=toc-title>On This Page</h4><nav id=TableOfContents><ul><li><a href=#what-are-struct-tags>What Are Struct Tags?</a></li><li><a href=#json-tag-syntax>JSON Tag Syntax</a></li><li><a href=#tag-options>Tag Options</a></li><li><a href=#marshaling-go-to-json>Marshaling: Go to JSON</a></li><li><a href=#unmarshaling-json-to-go>Unmarshaling: JSON to Go</a></li><li><a href=#handling-missing-fields>Handling Missing Fields</a></li><li><a href=#handling-extra-fields>Handling Extra Fields</a></li><li><a href=#custom-types-and-json>Custom Types and JSON</a></li><li><a href=#error-handling>Error Handling</a></li></ul></nav></nav></aside></div></div></main><footer class=site-footer><div class=container><div class=footer-content><div class=footer-brand><img src=/docs/images/baboon-logo.svg alt=Baboon height=32><p>Master your typing with beautiful practice</p></div><div class=footer-links><div class=footer-section><h4>Documentation</h4><a href=/docs/getting-started/>Getting Started</a>
+<a href=/docs/features/>Features</a>
+<a href=/docs/guide/>User Guide</a></div><div class=footer-section><h4>Development</h4><a href=/docs/development/>Architecture</a>
+<a href=/docs/development/api/>API Reference</a>
+<a href=/docs/development/contributing/>Contributing</a></div><div class=footer-section><h4>Support</h4><a href=https://github.com/timlinux/baboon/issues target=_blank>Report Issue</a>
+<a href=https://github.com/sponsors/kartoza target=_blank>GitHub Sponsors</a>
+<a href=https://ko-fi.com/timlinux target=_blank>Buy Me a Coffee</a></div></div></div><div class=footer-bottom><p>Made with <span class=heart>❤</span> by
+<a href=https://kartoza.com target=_blank>Kartoza</a> |
+<a href=https://github.com/sponsors/kartoza target=_blank>Donate!</a> |
+<a href=https://github.com/timlinux/baboon target=_blank>GitHub</a></p><p class=copyright>© 2026 Baboon. MIT License.</p></div></div></footer><script src=/docs/js/main.js></script></body></html>

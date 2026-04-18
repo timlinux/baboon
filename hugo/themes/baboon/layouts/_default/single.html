@@ -1,0 +1,44 @@
+{{ define "main" }}
+<div class="container">
+  <div class="content-with-sidebar">
+    <article class="page-content">
+      <header class="page-header">
+        <h1 class="page-title">{{ .Title }}</h1>
+        {{ with .Params.description }}
+        <p class="page-description">{{ . }}</p>
+        {{ end }}
+      </header>
+
+      <div class="content">
+        {{ .Content }}
+      </div>
+
+      {{ if .Params.donation }}
+      <div class="donation-box">
+        <h3 class="donation-title">Support Baboon Development</h3>
+        <p class="donation-text">
+          If you find Baboon useful, please consider supporting its development!
+        </p>
+        <div class="donation-buttons">
+          <a href="{{ .Site.Params.sponsor_url }}" class="btn btn-primary" target="_blank">
+            GitHub Sponsors
+          </a>
+          <a href="{{ .Site.Params.kofi_url }}" class="btn btn-secondary" target="_blank">
+            Buy Me a Coffee
+          </a>
+        </div>
+      </div>
+      {{ end }}
+    </article>
+
+    {{ if .TableOfContents }}
+    <aside class="sidebar">
+      <nav class="toc">
+        <h4 class="toc-title">On This Page</h4>
+        {{ .TableOfContents }}
+      </nav>
+    </aside>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
