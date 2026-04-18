@@ -223,6 +223,18 @@ type HistoricalStats struct {
 	LetterSeekTime  map[string]LetterSeekStats `json:"letter_seek_time"` // Per-letter seek time tracking
 	BigramSeekTime  map[string]BigramSeekStats `json:"bigram_seek_time"` // Per-bigram seek time tracking
 
+	// Trigram tracking (shared across modes)
+	TrigramSeekTime map[string]TrigramSeekStats `json:"trigram_seek_time"`
+
+	// N-gram mode separate tracking
+	NgramBestWPM       float64 `json:"ngram_best_wpm"`
+	NgramBestAccuracy  float64 `json:"ngram_best_accuracy"`
+	NgramBestTime      float64 `json:"ngram_best_time"`
+	NgramTotalWPM      float64 `json:"ngram_total_wpm"`
+	NgramTotalAccuracy float64 `json:"ngram_total_accuracy"`
+	NgramTotalTime     float64 `json:"ngram_total_time"`
+	NgramTotalSessions int     `json:"ngram_total_sessions"`
+
 	// Advanced typing theory stats
 	FingerStats       map[int]FingerStat        `json:"finger_stats"`       // Per-finger accuracy and speed
 	HandStats         map[int]HandStat          `json:"hand_stats"`         // Per-hand statistics
@@ -459,6 +471,7 @@ func LoadHistoricalStats() (*HistoricalStats, error) {
 				LetterAccuracy:    make(map[string]LetterStats),
 				LetterSeekTime:    make(map[string]LetterSeekStats),
 				BigramSeekTime:    make(map[string]BigramSeekStats),
+				TrigramSeekTime:   make(map[string]TrigramSeekStats),
 				FingerStats:       make(map[int]FingerStat),
 				HandStats:         make(map[int]HandStat),
 				RowStats:          make(map[int]RowStat),
@@ -482,6 +495,9 @@ func LoadHistoricalStats() (*HistoricalStats, error) {
 	}
 	if stats.BigramSeekTime == nil {
 		stats.BigramSeekTime = make(map[string]BigramSeekStats)
+	}
+	if stats.TrigramSeekTime == nil {
+		stats.TrigramSeekTime = make(map[string]TrigramSeekStats)
 	}
 	if stats.FingerStats == nil {
 		stats.FingerStats = make(map[int]FingerStat)
@@ -701,4 +717,60 @@ func (h *HistoricalStats) AverageTime() float64 {
 		return 0
 	}
 	return h.TotalTime / float64(h.TotalSessions)
+}
+
+// NgramAverageWPM returns the average WPM across all n-gram sessions
+func (h *HistoricalStats) NgramAverageWPM() float64 {
+	if h.NgramTotalSessions == 0 {
+		return 0
+	}
+	return h.NgramTotalWPM / float64(h.NgramTotalSessions)
+}
+
+// NgramAverageAccuracy returns the average accuracy across all n-gram sessions
+func (h *HistoricalStats) NgramAverageAccuracy() float64 {
+	if h.NgramTotalSessions == 0 {
+		return 0
+	}
+	return h.NgramTotalAccuracy / float64(h.NgramTotalSessions)
+}
+
+// NgramAverageTime returns the average time across all n-gram sessions in seconds
+func (h *HistoricalStats) NgramAverageTime() float64 {
+	if h.NgramTotalSessions == 0 {
+		return 0
+	}
+	return h.NgramTotalTime / float64(h.NgramTotalSessions)
+}
+
+// UpdateNgramHistorical updates n-gram-specific stats with new session data
+func (h *HistoricalStats) UpdateNgramHistorical(session *Stats) {
+	h.NgramTotalSessions++
+
+	// Update totals for averages
+	h.NgramTotalWPM += session.WPM
+	h.NgramTotalAccuracy += session.Accuracy
+	h.NgramTotalTime += session.Duration.Seconds()
+
+	// Update bests
+	if session.WPM > h.NgramBestWPM {
+		h.NgramBestWPM = session.WPM
+	}
+	if session.Accuracy > h.NgramBestAccuracy {
+		h.NgramBestAccuracy = session.Accuracy
+	}
+	if h.NgramBestTime == 0 || session.Duration.Seconds() < h.NgramBestTime {
+		h.NgramBestTime = session.Duration.Seconds()
+	}
+
+	// Merge trigram seek time (shared across modes)
+	if h.TrigramSeekTime == nil {
+		h.TrigramSeekTime = make(map[string]TrigramSeekStats)
+	}
+	for trigram, sessionStats := range session.TrigramSeekTime {
+		histStats := h.TrigramSeekTime[trigram]
+		histStats.TotalTimeMs += sessionStats.TotalTimeMs
+		histStats.Count += sessionStats.Count
+		h.TrigramSeekTime[trigram] = histStats
+	}
 }

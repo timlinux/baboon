@@ -40,3 +40,48 @@ func TestStats_RecordTrigramSeekTime(t *testing.T) {
 		t.Errorf("ing count = %v, want 1", got)
 	}
 }
+
+func TestHistoricalStats_NgramAverages(t *testing.T) {
+	h := &HistoricalStats{
+		NgramTotalWPM:      200,
+		NgramTotalAccuracy: 190,
+		NgramTotalTime:     300,
+		NgramTotalSessions: 2,
+	}
+
+	if got := h.NgramAverageWPM(); got != 100 {
+		t.Errorf("NgramAverageWPM() = %v, want 100", got)
+	}
+	if got := h.NgramAverageAccuracy(); got != 95 {
+		t.Errorf("NgramAverageAccuracy() = %v, want 95", got)
+	}
+	if got := h.NgramAverageTime(); got != 150 {
+		t.Errorf("NgramAverageTime() = %v, want 150", got)
+	}
+}
+
+func TestHistoricalStats_UpdateNgramHistorical(t *testing.T) {
+	h := &HistoricalStats{
+		TrigramSeekTime: make(map[string]TrigramSeekStats),
+	}
+	session := &Stats{
+		WPM:      80,
+		Accuracy: 95,
+		Duration: 60 * 1000000000, // 60 seconds in nanoseconds
+		TrigramSeekTime: map[string]TrigramSeekStats{
+			"the": {TotalTimeMs: 200, Count: 2},
+		},
+	}
+
+	h.UpdateNgramHistorical(session)
+
+	if h.NgramTotalSessions != 1 {
+		t.Errorf("NgramTotalSessions = %v, want 1", h.NgramTotalSessions)
+	}
+	if h.NgramBestWPM != 80 {
+		t.Errorf("NgramBestWPM = %v, want 80", h.NgramBestWPM)
+	}
+	if h.TrigramSeekTime["the"].Count != 2 {
+		t.Errorf("TrigramSeekTime[the].Count = %v, want 2", h.TrigramSeekTime["the"].Count)
+	}
+}
