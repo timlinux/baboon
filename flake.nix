@@ -31,15 +31,23 @@
           '';
         };
 
-        # Script to run Hugo dev server
+        # Script to run Hugo dev server (run from project root)
         docs-serve = pkgs.writeShellScriptBin "baboon-docs-serve" ''
-          cd ${toString ./hugo}
+          if [ ! -d "hugo" ]; then
+            echo "Error: hugo directory not found. Run from project root." >&2
+            exit 1
+          fi
+          cd hugo
           ${pkgs.hugo}/bin/hugo server -D --bind 0.0.0.0 --port 1313
         '';
 
-        # Script to build docs
+        # Script to build docs (run from project root)
         docs-build = pkgs.writeShellScriptBin "baboon-docs-build" ''
-          cd ${toString ./hugo}
+          if [ ! -d "hugo" ]; then
+            echo "Error: hugo directory not found. Run from project root." >&2
+            exit 1
+          fi
+          cd hugo
           ${pkgs.hugo}/bin/hugo --minify
           echo "Documentation built in hugo/public/"
         '';
