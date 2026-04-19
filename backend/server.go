@@ -15,6 +15,7 @@ import (
 	"github.com/timlinux/baboon/badge"
 	"github.com/timlinux/baboon/database"
 	"github.com/timlinux/baboon/filter"
+	"github.com/timlinux/baboon/settings"
 	"github.com/timlinux/baboon/stats"
 )
 
@@ -249,7 +250,8 @@ func (s *Server) StartAsync() {
 
 // CreateSessionRequest is the request body for POST /api/sessions
 type CreateSessionRequest struct {
-	PunctuationMode bool `json:"punctuation_mode"`
+	PunctuationMode bool   `json:"punctuation_mode"`
+	PracticeMode    string `json:"practice_mode"` // "words" or "ngrams"
 }
 
 // CreateSessionResponse is the response body for POST /api/sessions
@@ -354,6 +356,12 @@ func (s *Server) handleCreateSession(w http.ResponseWriter, r *http.Request) {
 	config := s.config
 	if req.PunctuationMode {
 		config.PunctuationMode = true
+	}
+	// Set practice mode based on request
+	if req.PracticeMode == "ngrams" {
+		config.PracticeMode = settings.ModeNgrams
+	} else {
+		config.PracticeMode = settings.ModeWords
 	}
 
 	// Create new engine for this session
@@ -810,8 +818,8 @@ func (s *Server) handleExportUserData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	export := map[string]interface{}{
-		"user":       user,
-		"stats":      userStats,
+		"user":        user,
+		"stats":       userStats,
 		"exported_at": time.Now().UTC().Format(time.RFC3339),
 	}
 

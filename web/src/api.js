@@ -42,11 +42,14 @@ class BaboonAPI {
     return response.json();
   }
 
-  async createSession(punctuationMode = false) {
+  async createSession(punctuationMode = false, practiceMode = 'words') {
     const response = await fetch(`${this.baseUrl}/sessions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ punctuation_mode: punctuationMode }),
+      body: JSON.stringify({
+        punctuation_mode: punctuationMode,
+        practice_mode: practiceMode,
+      }),
     });
     const data = await response.json();
     this.sessionId = data.session_id;

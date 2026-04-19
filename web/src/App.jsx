@@ -143,7 +143,7 @@ function App() {
   const startGame = async () => {
     try {
       setIsLoading(true);
-      await api.createSession(false);
+      await api.createSession(false, settings.practiceMode);
       await api.startRound();
       const state = await api.getState();
       setGameState(state);
