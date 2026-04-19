@@ -141,3 +141,53 @@ func TestEngine_NgramMode_UpdatesNgramStats(t *testing.T) {
 		t.Errorf("TotalSessions (word mode) = %d, want 0", historical.TotalSessions)
 	}
 }
+
+func TestEngine_SetPracticeMode(t *testing.T) {
+	tmpDir := t.TempDir()
+	os.Setenv("HOME", tmpDir)
+	defer os.Unsetenv("HOME")
+
+	cfg := DefaultConfig()
+	engine, err := NewEngine(cfg)
+	if err != nil {
+		t.Fatalf("NewEngine() error = %v", err)
+	}
+
+	// Initially in words mode
+	state := engine.GetGameState()
+	if len(state.Words) == 0 {
+		t.Fatal("Expected non-empty word list")
+	}
+	// Words should be longer than n-grams
+	firstWordLen := len(state.Words[0])
+
+	// Switch to n-gram mode
+	engine.SetPracticeMode(settings.ModeNgrams)
+	engine.StartRound()
+
+	state = engine.GetGameState()
+	if len(state.Words) == 0 {
+		t.Fatal("Expected non-empty n-gram list")
+	}
+
+	// N-grams should be 2-3 letters
+	for _, ngram := range state.Words {
+		if len(ngram) < 2 || len(ngram) > 3 {
+			t.Errorf("Expected n-gram (2-3 chars), got %q (len=%d)", ngram, len(ngram))
+		}
+	}
+
+	// N-grams should be shorter than words
+	if len(state.Words[0]) >= firstWordLen && firstWordLen > 3 {
+		t.Errorf("N-gram mode should generate shorter sequences than word mode")
+	}
+
+	// Switch back to words mode
+	engine.SetPracticeMode(settings.ModeWords)
+	engine.StartRound()
+
+	state = engine.GetGameState()
+	if len(state.Words) != 30 {
+		t.Errorf("Expected 30 words, got %d", len(state.Words))
+	}
+}

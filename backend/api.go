@@ -62,6 +62,13 @@ type GameAPI interface {
 	// GetHistoricalStats returns the historical statistics.
 	GetHistoricalStats() *stats.HistoricalStats
 
+	// Configuration
+	// -------------
+
+	// SetPracticeMode updates the practice mode for the next round.
+	// This allows changing between word-based and n-gram training.
+	SetPracticeMode(mode settings.PracticeMode)
+
 	// Persistence
 	// -----------
 

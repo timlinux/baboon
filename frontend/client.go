@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/timlinux/baboon/backend"
+	"github.com/timlinux/baboon/settings"
 	"github.com/timlinux/baboon/stats"
 )
 
@@ -415,6 +416,16 @@ func (c *Client) SaveStats() error {
 	}
 
 	return nil
+}
+
+// SetPracticeMode updates the practice mode for the next round.
+// Note: In client mode, this is stored locally and sent when creating a new session.
+// For now, this is a no-op since the session is already created with a practice mode.
+// A future improvement could add an API endpoint to change the practice mode.
+func (c *Client) SetPracticeMode(mode settings.PracticeMode) {
+	// In client mode, practice mode is set at session creation.
+	// This method is a no-op but satisfies the interface.
+	// To change practice mode in client mode, a new session would need to be created.
 }
 
 // Ensure Client implements backend.GameAPI

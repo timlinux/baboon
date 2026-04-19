@@ -63,6 +63,10 @@ type Model struct {
 func NewModel(api backend.GameAPI) Model {
 	// Load settings (use defaults if error)
 	s, _ := settings.Load()
+
+	// Set the practice mode from loaded settings so the engine uses the correct mode
+	api.SetPracticeMode(s.PracticeMode)
+
 	return Model{
 		api:              api,
 		state:            StateTyping,
@@ -439,6 +443,7 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		} else {
 			// Practice mode options (5 = Words, 6 = N-grams)
 			m.settings.PracticeMode = settings.PracticeMode(m.optionsCursor - 5)
+			m.api.SetPracticeMode(m.settings.PracticeMode)
 		}
 		// Save settings
 		_ = m.settings.Save()
@@ -501,6 +506,7 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "6":
 			m.settings.PracticeMode = settings.ModeWords
+			m.api.SetPracticeMode(settings.ModeWords)
 			_ = m.settings.Save()
 			if m.optionsFromTyping {
 				m.state = StateTyping
@@ -510,6 +516,7 @@ func (m Model) handleOptionsInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "7":
 			m.settings.PracticeMode = settings.ModeNgrams
+			m.api.SetPracticeMode(settings.ModeNgrams)
 			_ = m.settings.Save()
 			if m.optionsFromTyping {
 				m.state = StateTyping

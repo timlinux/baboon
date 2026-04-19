@@ -356,6 +356,11 @@ func (e *Engine) SubmitTiming(startTime, endTime time.Time, durationMs int64) {
 	}
 }
 
+// SetPracticeMode updates the practice mode for the next round.
+func (e *Engine) SetPracticeMode(mode settings.PracticeMode) {
+	e.config.PracticeMode = mode
+}
+
 // GetGameState returns a snapshot of the current game state.
 func (e *Engine) GetGameState() GameState {
 	// Cap word number at total words to prevent "31 / 30" display when round is complete
