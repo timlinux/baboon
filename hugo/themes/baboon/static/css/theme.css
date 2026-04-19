@@ -365,20 +365,41 @@ code {
 }
 
 pre {
-  background: var(--bg-card);
+  background: #272822;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   overflow-x: auto;
   margin: var(--space-lg) 0;
+  color: #f8f8f2;
 }
 
 pre code {
   background: transparent;
   padding: 0;
-  color: var(--text-primary);
+  color: #f8f8f2;
   font-size: 0.875rem;
   line-height: 1.6;
+}
+
+/* Hugo highlight blocks - ensure readable text */
+.highlight {
+  background: #272822;
+  border-radius: var(--radius-lg);
+  margin: var(--space-lg) 0;
+  overflow: hidden;
+}
+
+.highlight pre {
+  margin: 0;
+  background: #272822;
+  color: #f8f8f2;
+}
+
+.highlight code {
+  background: transparent;
+  color: #f8f8f2;
+  padding: 0;
 }
 
 /* Terminal window styling */
