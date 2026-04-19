@@ -17,7 +17,7 @@ clean:
 	rm -f baboon
 	rm -rf result
 	go clean -cache -testcache
-	rm -rf web/node_modules web/dist web/build
+	rm -rf web/node_modules web/build
 	rm -rf hugo/public hugo/resources hugo/.hugo_build.lock
 	@echo "All caches cleared. Next build will be fresh."
 
