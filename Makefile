@@ -1,9 +1,10 @@
 .PHONY: all build clean test run server client install help web-install web-dev web-build web-start docs docs-dev docs-build docs-clean docs-open docs-new web-bundle web-serve demo-record demo-play release version tutorial-check tutorial-check-verbose tutorial-extract tutorial-serve tutorial-new-chapter pre-commit-install
 
-# Default target
-all: build
+# Default target - build everything
+all: build web-build docs-build
+	@echo "Build complete: Go binary, web frontend, and Hugo docs"
 
-# Build the binary
+# Build only the Go binary
 build:
 	go build -o baboon .
 
@@ -173,7 +174,8 @@ help:
 	@echo "Baboon - Terminal typing practice"
 	@echo ""
 	@echo "Build targets:"
-	@echo "  make build       - Build the binary"
+	@echo "  make             - Build everything (Go, web, docs)"
+	@echo "  make build       - Build Go binary only"
 	@echo "  make nix-build   - Build with nix (reproducible)"
 	@echo "  make clean       - Remove all build artifacts and caches"
 	@echo "  make install     - Install to GOPATH/bin"
