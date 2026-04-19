@@ -29,6 +29,7 @@ const STORAGE_KEYS = {
 // Default settings
 const DEFAULT_SETTINGS = {
   perfectMode: false,
+  practiceMode: 'words',
 };
 
 // Load data from local storage
@@ -399,6 +400,8 @@ function App() {
               versionInfo={versionInfo}
               perfectMode={settings.perfectMode}
               onTogglePerfectMode={togglePerfectMode}
+              settings={settings}
+              setSettings={setSettings}
             />
           </MotionBox>
         )}
@@ -423,6 +426,7 @@ function App() {
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
               perfectMode={settings.perfectMode}
+              practiceMode={settings.practiceMode}
             />
           </MotionBox>
         )}
@@ -444,6 +448,7 @@ function App() {
               isLoading={isLoading}
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
+              practiceMode={settings.practiceMode}
             />
           </MotionBox>
         )}

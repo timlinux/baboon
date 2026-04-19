@@ -26,7 +26,7 @@ import AdSense from './AdSense.jsx';
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
 
-function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, isLoading, localStats, adsenseEnabled, adsenseKey, versionInfo, perfectMode, onTogglePerfectMode }) {
+function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, isLoading, localStats, adsenseEnabled, adsenseKey, versionInfo, perfectMode, onTogglePerfectMode, settings, setSettings }) {
   const { user, isAuthenticated, authConfig } = useAuth();
 
   // Handle keyboard shortcuts
@@ -240,6 +240,50 @@ function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, i
                 Any mistake restarts the round!
               </Text>
             )}
+          </MotionBox>
+
+          {/* Practice Mode Toggle */}
+          <MotionBox
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.95 }}
+          >
+            <Box textAlign="center">
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="gray.400" mb={2} fontFamily="'Fira Code', monospace">
+                Practice Mode
+              </Text>
+              <HStack spacing={4} justify="center">
+                <Button
+                  size="sm"
+                  variant={settings?.practiceMode === 'words' ? 'solid' : 'outline'}
+                  colorScheme="orange"
+                  fontFamily="'Fira Code', monospace"
+                  onClick={() => setSettings(prev => ({ ...prev, practiceMode: 'words' }))}
+                >
+                  Words
+                </Button>
+                <Button
+                  size="sm"
+                  variant={settings?.practiceMode === 'ngrams' ? 'solid' : 'outline'}
+                  colorScheme="orange"
+                  fontFamily="'Fira Code', monospace"
+                  onClick={() => setSettings(prev => ({ ...prev, practiceMode: 'ngrams' }))}
+                >
+                  N-grams
+                </Button>
+              </HStack>
+              {settings?.practiceMode === 'ngrams' && (
+                <Text
+                  color="orange.400"
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  fontFamily="'Fira Code', monospace"
+                  textAlign="center"
+                  mt={1}
+                >
+                  Practice common letter combinations
+                </Text>
+              )}
+            </Box>
           </MotionBox>
 
           {/* Instructions */}

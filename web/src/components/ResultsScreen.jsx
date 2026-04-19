@@ -106,28 +106,46 @@ function ResultsScreen({
   isLoading,
   adsenseEnabled,
   adsenseKey,
+  practiceMode,
 }) {
   const wpm = sessionStats?.wpm || 0;
   const accuracy = sessionStats?.accuracy || 0;
   const duration = sessionStats?.duration ? sessionStats.duration / 1e9 : 0;
 
-  const bestWpm = historicalStats?.best_wpm || 0;
-  const bestAccuracy = historicalStats?.best_accuracy || 0;
-  const bestTime = historicalStats?.best_time || 0;
+  // Use n-gram specific stats when in ngram mode, fall back to regular stats
+  const bestWpm = practiceMode === 'ngrams'
+    ? (historicalStats?.ngram_best_wpm || historicalStats?.best_wpm || 0)
+    : (historicalStats?.best_wpm || 0);
+  const bestAccuracy = practiceMode === 'ngrams'
+    ? (historicalStats?.ngram_best_accuracy || historicalStats?.best_accuracy || 0)
+    : (historicalStats?.best_accuracy || 0);
+  const bestTime = practiceMode === 'ngrams'
+    ? (historicalStats?.ngram_best_time || historicalStats?.best_time || 0)
+    : (historicalStats?.best_time || 0);
 
-  const avgWpm = historicalStats?.total_sessions > 0
-    ? historicalStats.total_wpm / historicalStats.total_sessions
+  // Use n-gram specific totals for averages when in ngram mode
+  const totalSessions = practiceMode === 'ngrams'
+    ? (historicalStats?.ngram_total_sessions || historicalStats?.total_sessions || 0)
+    : (historicalStats?.total_sessions || 0);
+  const avgWpm = totalSessions > 0
+    ? (practiceMode === 'ngrams'
+      ? (historicalStats?.ngram_total_wpm || historicalStats?.total_wpm || 0) / totalSessions
+      : (historicalStats?.total_wpm || 0) / totalSessions)
     : 0;
-  const avgAccuracy = historicalStats?.total_sessions > 0
-    ? historicalStats.total_accuracy / historicalStats.total_sessions
+  const avgAccuracy = totalSessions > 0
+    ? (practiceMode === 'ngrams'
+      ? (historicalStats?.ngram_total_accuracy || historicalStats?.total_accuracy || 0) / totalSessions
+      : (historicalStats?.total_accuracy || 0) / totalSessions)
     : 0;
-  const avgTime = historicalStats?.total_sessions > 0
-    ? historicalStats.total_time / historicalStats.total_sessions
+  const avgTime = totalSessions > 0
+    ? (practiceMode === 'ngrams'
+      ? (historicalStats?.ngram_total_time || historicalStats?.total_time || 0) / totalSessions
+      : (historicalStats?.total_time || 0) / totalSessions)
     : 0;
 
-  const isNewBestWpm = wpm >= bestWpm && historicalStats?.total_sessions > 0;
-  const isNewBestAccuracy = accuracy >= bestAccuracy && historicalStats?.total_sessions > 0;
-  const isNewBestTime = (bestTime === 0 || duration <= bestTime) && historicalStats?.total_sessions > 0;
+  const isNewBestWpm = wpm >= bestWpm && totalSessions > 0;
+  const isNewBestAccuracy = accuracy >= bestAccuracy && totalSessions > 0;
+  const isNewBestTime = (bestTime === 0 || duration <= bestTime) && totalSessions > 0;
 
   // Responsive sizing
   const fontSize = useBreakpointValue({ base: 'md', md: 'lg', lg: 'xl', xl: '2xl' });
@@ -256,7 +274,7 @@ function ResultsScreen({
           fontWeight="bold"
           fontFamily="'Fira Code', monospace"
         >
-          BABOON - Typing Practice
+          {practiceMode === 'ngrams' ? 'BABOON - N-gram Training' : 'BABOON - Typing Practice'}
         </Text>
       </Flex>
 
@@ -274,7 +292,7 @@ function ResultsScreen({
           color="cyan.400"
           fontFamily="'Fira Code', monospace"
         >
-          Round Complete!
+          {practiceMode === 'ngrams' ? 'N-gram Training Complete!' : 'Round Complete!'}
         </Text>
       </MotionBox>
 
@@ -356,8 +374,10 @@ function ResultsScreen({
         <Box h={{ base: 1, md: 2 }} />
         <AnimatedStatRow delay={animIdx++ * 0.03}>
           <HStack spacing={2} fontFamily="'Fira Code', monospace" fontSize={fontSize} justify="center">
-            <Text color="cyan.400" w={labelWidth} textAlign="right">Total sessions:</Text>
-            <Text color="white">{historicalStats?.total_sessions || 1}</Text>
+            <Text color="cyan.400" w={labelWidth} textAlign="right">
+              {practiceMode === 'ngrams' ? 'N-gram sessions:' : 'Total sessions:'}
+            </Text>
+            <Text color="white">{totalSessions || 1}</Text>
           </HStack>
         </AnimatedStatRow>
 

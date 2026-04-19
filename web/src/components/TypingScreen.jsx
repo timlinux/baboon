@@ -170,6 +170,7 @@ function TypingScreen({
   adsenseEnabled,
   adsenseKey,
   perfectMode,
+  practiceMode,
 }) {
   const currentWord = gameState?.current_word || '';
   const currentInput = gameState?.current_input || '';
@@ -256,7 +257,7 @@ function TypingScreen({
         aria-live="polite"
         aria-atomic="true"
       >
-        Word {wordNumber} of {totalWords}: {currentWord}
+        {practiceMode === 'ngrams' ? 'N-gram' : 'Word'} {wordNumber} of {totalWords}: {currentWord}
       </Box>
 
       {/* Header */}
@@ -267,19 +268,19 @@ function TypingScreen({
           fontWeight="bold"
           fontFamily="'Fira Code', monospace"
         >
-          BABOON - Typing Practice
+          {practiceMode === 'ngrams' ? 'BABOON - N-gram Training' : 'BABOON - Typing Practice'}
         </Text>
       </Flex>
 
       {/* Word counter */}
-      <Flex justify="center" py={2} role="status" aria-label={`Progress: word ${wordNumber} of ${totalWords}`}>
+      <Flex justify="center" py={2} role="status" aria-label={`Progress: ${practiceMode === 'ngrams' ? 'n-gram' : 'word'} ${wordNumber} of ${totalWords}`}>
         <Text
           color="cyan.400"
           fontSize={counterSize}
           fontWeight="bold"
           fontFamily="'Fira Code', monospace"
         >
-          Word {wordNumber}/{totalWords}
+          {practiceMode === 'ngrams' ? `N-gram ${wordNumber}/${totalWords}` : `Word ${wordNumber}/${totalWords}`}
         </Text>
       </Flex>
 
