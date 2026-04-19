@@ -11,10 +11,14 @@ build:
 nix-build:
 	nix build
 
-# Clean build artifacts
+# Clean build artifacts and caches
 clean:
 	rm -f baboon
 	rm -rf result
+	go clean -cache -testcache
+	rm -rf web/node_modules web/dist web/build
+	rm -rf hugo/public hugo/resources hugo/.hugo_build.lock
+	@echo "All caches cleared. Next build will be fresh."
 
 # Run tests
 test:
@@ -171,7 +175,7 @@ help:
 	@echo "Build targets:"
 	@echo "  make build       - Build the binary"
 	@echo "  make nix-build   - Build with nix (reproducible)"
-	@echo "  make clean       - Remove build artifacts"
+	@echo "  make clean       - Remove all build artifacts and caches"
 	@echo "  make install     - Install to GOPATH/bin"
 	@echo ""
 	@echo "Run targets:"
