@@ -6,9 +6,11 @@ const theme = extendTheme({
     useSystemColorMode: false,
   },
   fonts: {
-    heading: '"Inter", sans-serif',
-    body: '"Inter", sans-serif',
-    mono: '"JetBrains Mono", monospace',
+    // System font stack - no CDN required
+    heading: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    // Fira Code embedded locally (OFL licensed)
+    mono: '"Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
   },
   colors: {
     // Kartoza brand colors

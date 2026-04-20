@@ -16,9 +16,46 @@
     <meta property="og:url" content="https://baboon.kartoza.com" />
 
     <title>Baboon - Typing Practice</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Symbols+2&display=swap" rel="stylesheet">
+    <!-- Local fonts - no CDN dependencies -->
+    <style>
+      /* Fira Code - monospace font for code/typing */
+      @font-face {
+        font-family: 'Fira Code';
+        src: url('/fonts/FiraCode-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Fira Code';
+        src: url('/fonts/FiraCode-Medium.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Fira Code';
+        src: url('/fonts/FiraCode-SemiBold.woff2') format('woff2');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Fira Code';
+        src: url('/fonts/FiraCode-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+      /* Noto Sans Symbols 2 - for Unicode triangle glyphs */
+      @font-face {
+        font-family: 'Noto Sans Symbols 2';
+        src: url('/fonts/NotoSansSymbols2-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
     <style>
       * {
         margin: 0;

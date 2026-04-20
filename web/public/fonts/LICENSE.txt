@@ -1,0 +1,18 @@
+# Font Licenses
+
+## Fira Code
+Copyright 2014-2020 The Fira Code Project Authors (https://github.com/tonsky/FiraCode)
+
+Licensed under the SIL Open Font License, Version 1.1.
+https://scripts.sil.org/OFL
+
+## Noto Sans Symbols 2
+Copyright 2022 Google LLC
+
+Licensed under the SIL Open Font License, Version 1.1.
+https://scripts.sil.org/OFL
+
+---
+
+The SIL Open Font License allows free use, modification, and redistribution
+of these fonts, including bundling with software under any license.
