@@ -30,7 +30,30 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── words/ # Word dictionary
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└── font/ # Block letter font
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="the-gameapi-interface"&gt;The GameAPI Interface&lt;/h2&gt;
-&lt;p&gt;All frontend-backend communication goes through a single interface:&lt;/p&gt;</description></item><item><title>Feature Overview</title><link>/docs/features/overview/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/features/overview/</guid><description>&lt;p&gt;Baboon is more than just a typing test - it&amp;rsquo;s a comprehensive typing improvement tool with features designed to help you become a faster, more accurate typist.&lt;/p&gt;
+&lt;p&gt;All frontend-backend communication goes through a single interface:&lt;/p&gt;</description></item><item><title>Basic Types and Custom Types</title><link>/docs/go-tutorial/02-settings/basic-types/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/go-tutorial/02-settings/basic-types/</guid><description>&lt;h1 id="basic-types-and-custom-types"&gt;Basic Types and Custom Types&lt;/h1&gt;
+&lt;p&gt;Go has a simple but powerful type system. In this page, you&amp;rsquo;ll learn about Go&amp;rsquo;s built-in types and how to create your own custom types with special behaviors.&lt;/p&gt;
+&lt;h2 id="gos-basic-types"&gt;Go&amp;rsquo;s Basic Types&lt;/h2&gt;
+&lt;p&gt;Go provides several built-in types:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;main&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;func&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;main&lt;/span&gt;() {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Numeric types&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;age&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; = &lt;span style="color:#ae81ff"&gt;25&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;price&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;float64&lt;/span&gt; = &lt;span style="color:#ae81ff"&gt;19.99&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// String type&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;name&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; = &lt;span style="color:#e6db74"&gt;&amp;#34;Baboon&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Boolean type&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;isActive&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt; = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;fmt&lt;/span&gt;.&lt;span style="color:#a6e22e"&gt;Printf&lt;/span&gt;(&lt;span style="color:#e6db74"&gt;&amp;#34;Age: %d, Price: %.2f, Name: %s, Active: %t\n&amp;#34;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;age&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;price&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;name&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;isActive&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class="notice notice-tip"&gt;
+ &lt;p class="notice-title"&gt;Tip&lt;/p&gt;</description></item><item><title>Feature Overview</title><link>/docs/features/overview/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/features/overview/</guid><description>&lt;p&gt;Baboon is more than just a typing test - it&amp;rsquo;s a comprehensive typing improvement tool with features designed to help you become a faster, more accurate typist.&lt;/p&gt;
 &lt;h2 id="core-features"&gt;Core Features&lt;/h2&gt;
 &lt;h3 id="beautiful-block-letters"&gt;Beautiful Block Letters&lt;/h3&gt;
 &lt;p&gt;Words are displayed using large Unicode block characters that change colour in real-time as you type:&lt;/p&gt;
@@ -40,7 +63,31 @@
 &lt;li&gt;&lt;strong&gt;Orange&lt;/strong&gt; highlighting the current position&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id="real-time-wpm-tracking"&gt;Real-time WPM Tracking&lt;/h3&gt;
-&lt;p&gt;Watch your speed as you type with a live WPM bar that updates continuously, giving you immediate feedback on your pace.&lt;/p&gt;</description></item><item><title>How to Play</title><link>/docs/guide/how-to-play/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/guide/how-to-play/</guid><description>&lt;p&gt;Baboon is designed to be intuitive, but here&amp;rsquo;s a complete guide to playing.&lt;/p&gt;
+&lt;p&gt;Watch your speed as you type with a live WPM bar that updates continuously, giving you immediate feedback on your pace.&lt;/p&gt;</description></item><item><title>Hello Baboon</title><link>/docs/go-tutorial/01-getting-started/hello-baboon/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/go-tutorial/01-getting-started/hello-baboon/</guid><description>&lt;h1 id="hello-baboon"&gt;Hello Baboon&lt;/h1&gt;
+&lt;p&gt;Let&amp;rsquo;s explore the Baboon codebase and understand how a Go project is organized.&lt;/p&gt;
+&lt;h2 id="installing-go"&gt;Installing Go&lt;/h2&gt;
+&lt;p&gt;If you haven&amp;rsquo;t already, install Go from &lt;a href="https://go.dev/dl/"&gt;go.dev/dl&lt;/a&gt;. Verify your installation:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go version
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You should see something like &lt;code&gt;go version go1.21.0 linux/amd64&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="cloning-baboon"&gt;Cloning Baboon&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;git clone https://github.com/timlinux/baboon.git
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cd baboon
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="project-structure"&gt;Project Structure&lt;/h2&gt;
+&lt;p&gt;Baboon follows standard Go project conventions:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-fallback" data-lang="fallback"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;baboon/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── main.go # Application entry point
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── go.mod # Module definition
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── go.sum # Dependency checksums
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── backend/ # Game engine and REST API
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── frontend/ # Terminal UI (Bubble Tea)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── settings/ # User preferences
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── stats/ # Statistics tracking
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── words/ # Word dictionary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── auth/ # Authentication
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── database/ # Database layer
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└── web/ # React web frontend
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="the-gomod-file"&gt;The go.mod File&lt;/h2&gt;
+&lt;p&gt;Every Go project has a &lt;code&gt;go.mod&lt;/code&gt; file that defines the module path and dependencies:&lt;/p&gt;</description></item><item><title>How to Play</title><link>/docs/guide/how-to-play/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/guide/how-to-play/</guid><description>&lt;p&gt;Baboon is designed to be intuitive, but here&amp;rsquo;s a complete guide to playing.&lt;/p&gt;
 &lt;h2 id="the-basics"&gt;The Basics&lt;/h2&gt;
 &lt;h3 id="starting-a-round"&gt;Starting a Round&lt;/h3&gt;
 &lt;ol&gt;
@@ -194,7 +241,200 @@
  &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;h2 id="web-mode"&gt;Web Mode&lt;/h2&gt;
-&lt;p&gt;For a beautiful browser-based experience:&lt;/p&gt;</description></item><item><title>Your First Session</title><link>/docs/getting-started/first-session/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/getting-started/first-session/</guid><description>&lt;p&gt;Let&amp;rsquo;s walk through your first complete typing session with Baboon.&lt;/p&gt;
+&lt;p&gt;For a beautiful browser-based experience:&lt;/p&gt;</description></item><item><title>Structs</title><link>/docs/go-tutorial/02-settings/structs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/go-tutorial/02-settings/structs/</guid><description>&lt;h1 id="structs"&gt;Structs&lt;/h1&gt;
+&lt;p&gt;Structs are Go&amp;rsquo;s way of grouping related data together. They&amp;rsquo;re similar to classes in other languages, but simpler - they&amp;rsquo;re just data containers.&lt;/p&gt;
+&lt;h2 id="defining-a-struct"&gt;Defining a Struct&lt;/h2&gt;
+&lt;p&gt;Here&amp;rsquo;s how Baboon defines the &lt;code&gt;Settings&lt;/code&gt; struct:&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+&lt;div class="warning"&gt;
+&lt;p&gt;&lt;strong&gt;Warning:&lt;/strong&gt; Code reference &lt;code&gt;settings/structs&lt;/code&gt; not found in source files.&lt;/p&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;A struct definition has:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;code&gt;type&lt;/code&gt; keyword&lt;/li&gt;
+&lt;li&gt;The struct name (&lt;code&gt;Settings&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;struct&lt;/code&gt; keyword&lt;/li&gt;
+&lt;li&gt;A list of fields in curly braces&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Each field has:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A name (&lt;code&gt;AdvanceKey&lt;/code&gt;, &lt;code&gt;PerfectMode&lt;/code&gt;, &lt;code&gt;PracticeMode&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;A type (&lt;code&gt;AdvanceKey&lt;/code&gt;, &lt;code&gt;bool&lt;/code&gt;, &lt;code&gt;PracticeMode&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;Optional struct tags (those backtick strings - we&amp;rsquo;ll cover these in the next page)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="creating-struct-instances"&gt;Creating Struct Instances&lt;/h2&gt;
+&lt;p&gt;There are several ways to create a struct:&lt;/p&gt;</description></item><item><title>JSON Tags and Serialization</title><link>/docs/go-tutorial/02-settings/json-tags/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/go-tutorial/02-settings/json-tags/</guid><description>&lt;h1 id="json-tags-and-serialization"&gt;JSON Tags and Serialization&lt;/h1&gt;
+&lt;p&gt;Go makes it easy to convert structs to and from JSON. This is how Baboon saves settings to disk and loads them back.&lt;/p&gt;
+&lt;h2 id="what-are-struct-tags"&gt;What Are Struct Tags?&lt;/h2&gt;
+&lt;p&gt;Look at the &lt;code&gt;Settings&lt;/code&gt; struct again:&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+&lt;div class="warning"&gt;
+&lt;p&gt;&lt;strong&gt;Warning:&lt;/strong&gt; Code reference &lt;code&gt;settings/structs&lt;/code&gt; not found in source files.&lt;/p&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;Those strings in backticks (&lt;code&gt;`json:&amp;quot;advance_key&amp;quot;`&lt;/code&gt;) are &lt;strong&gt;struct tags&lt;/strong&gt;. They&amp;rsquo;re metadata attached to fields that other code can read.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;encoding/json&lt;/code&gt; package reads these tags to know:&lt;/p&gt;</description></item><item><title>Your First Session</title><link>/docs/getting-started/first-session/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/getting-started/first-session/</guid><description>&lt;p&gt;Let&amp;rsquo;s walk through your first complete typing session with Baboon.&lt;/p&gt;
 &lt;h2 id="starting-the-app"&gt;Starting the App&lt;/h2&gt;
 &lt;p&gt;Launch Baboon from your terminal:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;baboon
@@ -217,4 +457,33 @@
  to advance&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id="visual-feedback"&gt;Visual Feedback&lt;/h3&gt;
-&lt;p&gt;Letters change colour as you type:&lt;/p&gt;</description></item></channel></rss>
+&lt;p&gt;Letters change colour as you type:&lt;/p&gt;</description></item><item><title>File I/O</title><link>/docs/go-tutorial/02-settings/file-io/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>/docs/go-tutorial/02-settings/file-io/</guid><description>&lt;h1 id="file-io"&gt;File I/O&lt;/h1&gt;
+&lt;p&gt;Reading and writing files is essential for any application that needs to persist data. In this page, you&amp;rsquo;ll learn how Baboon saves and loads settings files.&lt;/p&gt;
+&lt;h2 id="the-os-package"&gt;The os Package&lt;/h2&gt;
+&lt;p&gt;Go&amp;rsquo;s &lt;code&gt;os&lt;/code&gt; package provides functions for interacting with the operating system, including file operations:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-go" data-lang="go"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;package&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;main&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; (
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;os&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;func&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;main&lt;/span&gt;() {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Get the current working directory&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;dir&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;os&lt;/span&gt;.&lt;span style="color:#a6e22e"&gt;Getwd&lt;/span&gt;()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;!=&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;nil&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;fmt&lt;/span&gt;.&lt;span style="color:#a6e22e"&gt;Println&lt;/span&gt;(&lt;span style="color:#e6db74"&gt;&amp;#34;Error:&amp;#34;&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;err&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;fmt&lt;/span&gt;.&lt;span style="color:#a6e22e"&gt;Println&lt;/span&gt;(&lt;span style="color:#e6db74"&gt;&amp;#34;Working directory:&amp;#34;&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;dir&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Get the user&amp;#39;s home directory&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;home&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;:=&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;os&lt;/span&gt;.&lt;span style="color:#a6e22e"&gt;UserHomeDir&lt;/span&gt;()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;err&lt;/span&gt; &lt;span style="color:#f92672"&gt;!=&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;nil&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;fmt&lt;/span&gt;.&lt;span style="color:#a6e22e"&gt;Println&lt;/span&gt;(&lt;span style="color:#e6db74"&gt;&amp;#34;Error:&amp;#34;&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;err&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;fmt&lt;/span&gt;.&lt;span style="color:#a6e22e"&gt;Println&lt;/span&gt;(&lt;span style="color:#e6db74"&gt;&amp;#34;Home directory:&amp;#34;&lt;/span&gt;, &lt;span style="color:#a6e22e"&gt;home&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="building-file-paths"&gt;Building File Paths&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;path/filepath&lt;/code&gt; package provides cross-platform path manipulation:&lt;/p&gt;</description></item></channel></rss>
