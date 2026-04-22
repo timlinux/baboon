@@ -12,11 +12,11 @@ import (
 
 // CodeSnippet represents extracted code from a TUTORIAL marker
 type CodeSnippet struct {
-	ID       string
-	FilePath string
+	ID        string
+	FilePath  string
 	StartLine int
 	EndLine   int
-	Code     string
+	Code      string
 }
 
 var (

@@ -13,16 +13,16 @@ import (
 type LeaderboardEntry struct {
 	ID              string    `json:"id"`
 	UserID          string    `json:"user_id"`
-	Username        string    `json:"username"`                  // Platform username or "ANON"
-	DisplayName     string    `json:"display_name"`              // User's custom message
+	Username        string    `json:"username"`     // Platform username or "ANON"
+	DisplayName     string    `json:"display_name"` // User's custom message
 	WPM             float64   `json:"wpm"`
 	Accuracy        float64   `json:"accuracy"`
-	Score           float64   `json:"score"`                     // Combined score: WPM * (Accuracy/100)
+	Score           float64   `json:"score"` // Combined score: WPM * (Accuracy/100)
 	DurationSeconds float64   `json:"duration_seconds"`
-	MonthYear       string    `json:"month_year"`                // Format: "2026-04"
+	MonthYear       string    `json:"month_year"` // Format: "2026-04"
 	CreatedAt       time.Time `json:"created_at"`
 	BadgeImageURL   string    `json:"badge_image_url,omitempty"`
-	Rank            int       `json:"rank,omitempty"`            // Populated when fetching top 10
+	Rank            int       `json:"rank,omitempty"` // Populated when fetching top 10
 }
 
 // LeaderboardRepository handles database operations for leaderboard entries.

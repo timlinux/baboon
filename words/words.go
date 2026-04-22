@@ -277,7 +277,7 @@ func GetRandomWordsFixedCount(numWords, targetChars int, rng func(int) int, lett
 			// Ensure we can still reach target with remaining words
 			// Min possible: remaining words * 1 char each (but we need words of at least length 1)
 			// Max possible: remaining words * max word length
-			minPossibleRemaining := wordsRemaining - 1 // Minimum 1 char per remaining word
+			minPossibleRemaining := wordsRemaining - 1        // Minimum 1 char per remaining word
 			maxPossibleRemaining := (wordsRemaining - 1) * 15 // Assuming max word length ~15
 
 			// Adjust bounds to ensure feasibility

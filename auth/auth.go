@@ -52,13 +52,13 @@ type Config struct {
 	RefreshTokenExpiry time.Duration
 
 	// OAuth provider credentials
-	GoogleClientID       string
-	GoogleClientSecret   string
-	GitHubClientID       string
-	GitHubClientSecret   string
-	AppleClientID        string
-	AppleClientSecret    string
-	MicrosoftClientID    string
+	GoogleClientID        string
+	GoogleClientSecret    string
+	GitHubClientID        string
+	GitHubClientSecret    string
+	AppleClientID         string
+	AppleClientSecret     string
+	MicrosoftClientID     string
 	MicrosoftClientSecret string
 }
 
