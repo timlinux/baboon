@@ -213,7 +213,7 @@ function NameEntryScreen({ wpm, accuracy, rank, onSubmit, onSkip, adsenseEnabled
         transition={{ type: 'spring', bounce: 0.4 }}
         mb={{ base: 4, md: 6, lg: 8 }}
       >
-        <BlockFontWord word="TOP 10" input="" showCurrent={false} fontSize="sm" />
+        <BlockFontWord word="TOP 10" input="" showCurrent={false} fontSize="5xl" />
       </MotionBox>
 
       {/* New High Score announcement */}

@@ -179,7 +179,7 @@ function LeaderboardScreen({ onBack, adsenseEnabled, adsenseKey }) {
   const [shareEntry, setShareEntry] = useState(null);
 
   // Use larger title size to maximize screen real estate
-  const titleSize = useBreakpointValue({ base: 'sm', sm: 'md', md: 'lg', lg: 'xl', xl: '2xl' });
+  const titleSize = useBreakpointValue({ base: '3xl', sm: '4xl', md: '5xl', lg: '6xl', xl: '7xl' });
 
   // Fetch available months
   useEffect(() => {

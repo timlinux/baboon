@@ -11,109 +11,99 @@ import {
 } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdSense from './AdSense.jsx';
-import { AnimatedBlockFontWord, WpmBar } from './BlockFont.jsx';
+import { BlockFontWord, WpmBar } from './BlockFont.jsx';
 
 const MotionBox = motion(Box);
 
 // Calculate optimal font size based on word length and viewport
 function useBlockFontSize(wordLength) {
-  // Each letter is ~7 chars wide (6 + 1 spacing), estimate total width
-  const charsPerLetter = 7;
-  const estimatedWidth = wordLength * charsPerLetter;
-
-  // Use viewport-based sizing
   const baseSizes = useBreakpointValue({
-    base: { short: 'xs', medium: '2xs', long: '3xs' },
-    sm: { short: 'sm', medium: 'xs', long: '2xs' },
-    md: { short: 'md', medium: 'sm', long: 'xs' },
-    lg: { short: 'lg', medium: 'md', long: 'sm' },
-    xl: { short: 'xl', medium: 'lg', long: 'md' },
-    '2xl': { short: '2xl', medium: 'xl', long: 'lg' },
-  }) || { short: 'sm', medium: 'xs', long: '2xs' };
+    base: { short: '4xl', medium: '3xl', long: '2xl' },
+    sm: { short: '5xl', medium: '4xl', long: '3xl' },
+    md: { short: '6xl', medium: '5xl', long: '4xl' },
+    lg: { short: '7xl', medium: '6xl', long: '5xl' },
+    xl: { short: '8xl', medium: '7xl', long: '6xl' },
+    '2xl': { short: '9xl', medium: '8xl', long: '7xl' },
+  }) || { short: '5xl', medium: '4xl', long: '3xl' };
 
   if (wordLength <= 4) return baseSizes.short;
   if (wordLength <= 7) return baseSizes.medium;
   return baseSizes.long;
 }
 
-// Preview word (smaller, faded) for carousel
-function PreviewWord({ word, position }) {
-  const isPrevious = position === 'previous';
-
+// Slot machine word reel - all words slide up together on transition
+function WordReel({ previousWord, currentWord, currentInput, nextWords, wordKey, blockFontSize }) {
   const previewSize = useBreakpointValue({
     base: 'lg',
     md: '2xl',
     lg: '3xl',
     xl: '4xl',
   });
-
-  return (
-    <MotionBox
-      position="absolute"
-      top={isPrevious ? '8%' : undefined}
-      bottom={!isPrevious ? '8%' : undefined}
-      initial={{ opacity: 0, y: isPrevious ? 30 : -30 }}
-      animate={{ opacity: 0.5, y: 0 }}
-      exit={{ opacity: 0, y: isPrevious ? -30 : 30 }}
-      transition={{
-        type: 'spring',
-        stiffness: 200,
-        damping: 25,
-      }}
-    >
-      <Text
-        fontFamily="'Fira Code', 'JetBrains Mono', monospace"
-        fontSize={previewSize}
-        color="gray.500"
-        textTransform="lowercase"
-        letterSpacing="0.2em"
-      >
-        · · · {word} · · ·
-      </Text>
-    </MotionBox>
-  );
-}
-
-// Multiple upcoming words preview
-function UpcomingWords({ words }) {
-  const previewSize = useBreakpointValue({
+  const nextSize = useBreakpointValue({
     base: 'md',
     md: 'lg',
     lg: 'xl',
     xl: '2xl',
   });
 
-  if (!words || words.length === 0) return null;
-
   return (
-    <MotionBox
-      position="absolute"
-      bottom="8%"
-      initial={{ opacity: 0, y: -30 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 30 }}
-      transition={{
-        type: 'spring',
-        stiffness: 200,
-        damping: 25,
-      }}
-    >
-      <VStack spacing={1}>
-        {words.map((word, index) => (
-          <Text
-            key={`next-${index}-${word}`}
-            fontFamily="'Fira Code', 'JetBrains Mono', monospace"
-            fontSize={previewSize}
-            color={index === 0 ? 'gray.400' : index === 1 ? 'gray.500' : 'gray.600'}
-            textTransform="lowercase"
-            letterSpacing="0.15em"
-            opacity={1 - index * 0.2}
-          >
-            {index === 0 ? `▼  ${word}  ▼` : word}
-          </Text>
-        ))}
-      </VStack>
-    </MotionBox>
+    <AnimatePresence mode="wait" initial={false}>
+      <MotionBox
+        key={wordKey}
+        initial={{ y: 60 }}
+        animate={{ y: 0 }}
+        exit={{ y: -60 }}
+        transition={{
+          duration: 0.15,
+          ease: 'easeInOut',
+        }}
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        gap={6}
+      >
+        {/* Previous word - faded, small, above */}
+        <Box minH="2em" display="flex" alignItems="center" justifyContent="center">
+          {previousWord && (
+            <Text
+              fontFamily="'Fira Code', 'JetBrains Mono', monospace"
+              fontSize={previewSize}
+              color="gray.600"
+              textTransform="lowercase"
+              letterSpacing="0.2em"
+              opacity={0.4}
+            >
+              {previousWord}
+            </Text>
+          )}
+        </Box>
+
+        {/* Current word - large, bold, colored */}
+        <BlockFontWord
+          word={currentWord}
+          input={currentInput}
+          showCurrent={true}
+          fontSize={blockFontSize}
+        />
+
+        {/* Next words - fading out below */}
+        <VStack spacing={1} minH="4em">
+          {nextWords.map((word, index) => (
+            <Text
+              key={`next-${index}-${word}`}
+              fontFamily="'Fira Code', 'JetBrains Mono', monospace"
+              fontSize={nextSize}
+              color={index === 0 ? 'gray.400' : index === 1 ? 'gray.500' : 'gray.600'}
+              textTransform="lowercase"
+              letterSpacing="0.15em"
+              opacity={1 - index * 0.25}
+            >
+              {index === 0 ? `▼  ${word}  ▼` : word}
+            </Text>
+          ))}
+        </VStack>
+      </MotionBox>
+    </AnimatePresence>
   );
 }
 
@@ -164,6 +154,7 @@ function TypingScreen({
   timerStarted,
   onKeystroke,
   onBackspace,
+  onClearInput,
   onSpace,
   onExit,
   onRestart,
@@ -200,9 +191,6 @@ function TypingScreen({
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ignore if modifier keys are pressed (except shift)
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-
       if (e.key === 'Escape') {
         onExit();
         return;
@@ -213,6 +201,16 @@ function TypingScreen({
         onRestart();
         return;
       }
+
+      // Ctrl+Backspace clears entire word input
+      if (e.key === 'Backspace' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        onClearInput();
+        return;
+      }
+
+      // Ignore other modifier key combos (except shift)
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       if (e.key === 'Backspace') {
         e.preventDefault();
@@ -235,7 +233,7 @@ function TypingScreen({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onKeystroke, onBackspace, onSpace, onExit, onRestart]);
+  }, [onKeystroke, onBackspace, onClearInput, onSpace, onExit, onRestart]);
 
   const extraChars = currentInput.length > currentWord.length
     ? currentInput.slice(currentWord.length)
@@ -301,8 +299,8 @@ function TypingScreen({
         />
       </Box>
 
-      {/* Main word carousel area */}
-      <Flex flex={1} direction="column" align="center" justify="center" position="relative">
+      {/* Main word reel area - slot machine style */}
+      <Flex flex={1} direction="column" align="center" justify="center" position="relative" overflow="hidden">
         {/* Decorative separator */}
         <Box position="absolute" top="20%">
           <Text color="gray.700" fontFamily="monospace" fontSize={headerSize}>
@@ -310,37 +308,15 @@ function TypingScreen({
           </Text>
         </Box>
 
-        {/* Previous word */}
-        <AnimatePresence mode="wait">
-          {previousWord && (
-            <PreviewWord key={`prev-${wordKey}`} word={previousWord} position="previous" />
-          )}
-        </AnimatePresence>
-
-        {/* Current word - Block font */}
-        <VStack spacing={4}>
-          <AnimatePresence mode="wait">
-            <AnimatedBlockFontWord
-              key={`current-${wordKey}`}
-              word={currentWord}
-              input={currentInput}
-              wordKey={wordKey}
-              fontSize={blockFontSize}
-            />
-          </AnimatePresence>
-
-          {/* Extra typed characters (errors) */}
-          <AnimatePresence>
-            {extraChars && <ExtraChars chars={extraChars} />}
-          </AnimatePresence>
-        </VStack>
-
-        {/* Next words (up to 3) */}
-        <AnimatePresence mode="wait">
-          {nextWords.length > 0 && (
-            <UpcomingWords key={`next-${wordKey}`} words={nextWords} />
-          )}
-        </AnimatePresence>
+        {/* Slot machine word reel */}
+        <WordReel
+          previousWord={previousWord}
+          currentWord={currentWord}
+          currentInput={currentInput}
+          nextWords={nextWords}
+          wordKey={wordKey}
+          blockFontSize={blockFontSize}
+        />
 
         {/* Decorative separator */}
         <Box position="absolute" bottom="20%">

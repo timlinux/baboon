@@ -139,6 +139,12 @@ func (e *Engine) ProcessKeystrokeWithTiming(char string, seekTimeMs int64) Keyst
 
 	currentWord := e.words[e.wordIdx]
 	inputIdx := len(e.input)
+
+	// Cap input at word length - ignore keystrokes beyond the word
+	if inputIdx >= len(currentWord) {
+		return KeystrokeResult{CharIndex: inputIdx}
+	}
+
 	result := KeystrokeResult{CharIndex: inputIdx}
 
 	// Check if this should start the timer (first correct character of first word)

@@ -4,230 +4,6 @@ import { motion } from 'framer-motion';
 
 const MotionBox = motion(Box);
 
-// Block letters matching the TUI blockfont library exactly
-// Each letter is 6 lines tall, using Unicode block characters
-// Uses block elements for solid letters with smooth corners:
-//   ██ full blocks - solid letter bodies
-//   ◢ ◣ ◤ ◥ - filled triangles for smooth rounded corners
-const BLOCK_LETTERS = {
-  'A': [
-    " ◢██◣ ",
-    "◢█  █◣",
-    "██████",
-    "██  ██",
-    "██  ██",
-    "      ",
-  ],
-  'B': [
-    "█████◣",
-    "██  ◥█",
-    "██████",
-    "██  ◢█",
-    "█████◤",
-    "      ",
-  ],
-  'C': [
-    " ◢████",
-    "◢█    ",
-    "██    ",
-    "◥█    ",
-    " ◥████",
-    "      ",
-  ],
-  'D': [
-    "█████◣",
-    "██  ◥█",
-    "██   █",
-    "██  ◢█",
-    "█████◤",
-    "      ",
-  ],
-  'E': [
-    "██████",
-    "██    ",
-    "████  ",
-    "██    ",
-    "██████",
-    "      ",
-  ],
-  'F': [
-    "██████",
-    "██    ",
-    "████  ",
-    "██    ",
-    "██    ",
-    "      ",
-  ],
-  'G': [
-    "◢█████",
-    "██    ",
-    "██ ███",
-    "██  ██",
-    "◥████◤",
-    "      ",
-  ],
-  'H': [
-    "██  ██",
-    "██  ██",
-    "██████",
-    "██  ██",
-    "██  ██",
-    "      ",
-  ],
-  'I': [
-    "██████",
-    "  ██  ",
-    "  ██  ",
-    "  ██  ",
-    "██████",
-    "      ",
-  ],
-  'J': [
-    "██████",
-    "    ██",
-    "    ██",
-    "██  ██",
-    "◥████◤",
-    "      ",
-  ],
-  'K': [
-    "██ ◢█◤",
-    "██◢█◤ ",
-    "███◣  ",
-    "██◥█◣ ",
-    "██ ◥█◣",
-    "      ",
-  ],
-  'L': [
-    "██    ",
-    "██    ",
-    "██    ",
-    "██    ",
-    "██████",
-    "      ",
-  ],
-  'M': [
-    "██◣◢██",
-    "██████",
-    "██ █ █",
-    "██   █",
-    "██   █",
-    "      ",
-  ],
-  'N': [
-    "██◣ ██",
-    "███◣██",
-    "██◥███",
-    "██ ◥██",
-    "██  ██",
-    "      ",
-  ],
-  'O': [
-    "◢████◣",
-    "██  ██",
-    "██  ██",
-    "██  ██",
-    "◥████◤",
-    "      ",
-  ],
-  'P': [
-    "█████◣",
-    "██  ◥█",
-    "█████◤",
-    "██    ",
-    "██    ",
-    "      ",
-  ],
-  'Q': [
-    "◢████◣",
-    "██  ██",
-    "██  ██",
-    "██ ◥█◤",
-    "◥███◤█",
-    "      ",
-  ],
-  'R': [
-    "█████◣",
-    "██  ◥█",
-    "█████◤",
-    "██◥█◣ ",
-    "██ ◥█◣",
-    "      ",
-  ],
-  'S': [
-    "◢████◣",
-    "██    ",
-    "◥████◣",
-    "    ██",
-    "◥████◤",
-    "      ",
-  ],
-  'T': [
-    "██████",
-    "  ██  ",
-    "  ██  ",
-    "  ██  ",
-    "  ██  ",
-    "      ",
-  ],
-  'U': [
-    "██  ██",
-    "██  ██",
-    "██  ██",
-    "██  ██",
-    "◥████◤",
-    "      ",
-  ],
-  'V': [
-    "██  ██",
-    "██  ██",
-    "◥█  █◤",
-    " ◥██◤ ",
-    "  ◥◤  ",
-    "      ",
-  ],
-  'W': [
-    "██   ██",
-    "██   ██",
-    "██ █ ██",
-    "███████",
-    "◥█◤ ◥█◤",
-    "       ",
-  ],
-  'X': [
-    "██  ██",
-    " ◥██◤ ",
-    "  ██  ",
-    " ◢██◣ ",
-    "██  ██",
-    "      ",
-  ],
-  'Y': [
-    "◥█  █◤",
-    " ◥██◤ ",
-    "  ██  ",
-    "  ██  ",
-    "  ██  ",
-    "      ",
-  ],
-  'Z': [
-    "██████",
-    "   ◢█◤",
-    "  ◢█◤ ",
-    " ◢█◤  ",
-    "██████",
-    "      ",
-  ],
-  ' ': [
-    "    ",
-    "    ",
-    "    ",
-    "    ",
-    "    ",
-    "    ",
-  ],
-};
-
 // TUI-style colors matching the terminal app
 const COLORS = {
   correct: '#00ff00',   // Bright green (ANSI 10)
@@ -258,99 +34,47 @@ export function getGradientColor(position) {
   return GRADIENT_COLORS[Math.max(0, idx)];
 }
 
-// Font family for block characters - includes Noto Sans Symbols 2 for triangle glyphs
-const BLOCK_FONT_FAMILY = "'Fira Code', 'JetBrains Mono', 'Noto Sans Symbols 2', 'Cascadia Code', monospace";
+// Font family for monospace elements
+const BLOCK_FONT_FAMILY = "'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace";
 
-// Render a single block letter character with color
-function BlockChar({ char, color, fontSize = 'xs' }) {
-  // Replace spaces with non-breaking spaces for proper rendering
-  const displayChar = char === ' ' ? '\u00A0' : char;
-
-  return (
-    <Text
-      as="span"
-      color={color}
-      fontFamily={BLOCK_FONT_FAMILY}
-      fontSize={fontSize}
-      lineHeight="1"
-      whiteSpace="pre"
-      letterSpacing="0"
-      display="inline"
-    >
-      {displayChar}
-    </Text>
-  );
-}
-
-// Render a word in block font style
-export function BlockFontWord({ word, input = '', showCurrent = true, fontSize = 'xs' }) {
+// Render a word as large bold uppercase letters with per-character coloring
+export function BlockFontWord({ word, input = '', showCurrent = true, fontSize = '6xl' }) {
   const upperWord = word.toUpperCase();
-  const lines = [];
-
-  // Build 6 lines of block characters
-  for (let lineIdx = 0; lineIdx < 6; lineIdx++) {
-    const lineChars = [];
-
-    for (let charIdx = 0; charIdx < upperWord.length; charIdx++) {
-      const char = upperWord[charIdx];
-      const letter = BLOCK_LETTERS[char] || BLOCK_LETTERS[' '];
-      const line = letter[lineIdx] || '';
-
-      // Determine color based on typing status
-      let color;
-      if (charIdx < input.length) {
-        // Character has been typed
-        const typedCorrect = input[charIdx]?.toLowerCase() === word[charIdx]?.toLowerCase();
-        color = typedCorrect ? COLORS.correct : COLORS.incorrect;
-      } else if (charIdx === input.length && showCurrent) {
-        // Current character to type
-        color = COLORS.current;
-      } else {
-        // Not yet typed
-        color = COLORS.untyped;
-      }
-
-      // Add each character of the block letter line
-      for (const blockChar of line) {
-        lineChars.push(
-          <BlockChar
-            key={`${charIdx}-${lineChars.length}`}
-            char={blockChar}
-            color={color}
-            fontSize={fontSize}
-          />
-        );
-      }
-
-      // Add spacing between letters
-      if (charIdx < upperWord.length - 1) {
-        lineChars.push(
-          <BlockChar
-            key={`space-${charIdx}`}
-            char=" "
-            color={COLORS.untyped}
-            fontSize={fontSize}
-          />
-        );
-      }
-    }
-
-    lines.push(
-      <Box key={lineIdx} whiteSpace="pre" lineHeight="1">
-        {lineChars}
-      </Box>
-    );
-  }
 
   return (
-    <VStack spacing={0} align="center">
-      {lines}
-    </VStack>
+    <HStack spacing={0} justify="center" userSelect="none">
+      {[...upperWord].map((char, charIdx) => {
+        let color;
+        if (charIdx < input.length) {
+          const typedCorrect = input[charIdx]?.toLowerCase() === word[charIdx]?.toLowerCase();
+          color = typedCorrect ? COLORS.correct : COLORS.incorrect;
+        } else if (charIdx === input.length && showCurrent) {
+          color = COLORS.current;
+        } else {
+          color = COLORS.untyped;
+        }
+
+        return (
+          <Text
+            key={charIdx}
+            as="span"
+            color={color}
+            fontFamily={BLOCK_FONT_FAMILY}
+            fontSize={fontSize}
+            fontWeight="900"
+            lineHeight="1.1"
+            letterSpacing="0.05em"
+          >
+            {char}
+          </Text>
+        );
+      })}
+    </HStack>
   );
 }
 
-// Animated block font word with spring physics
-export function AnimatedBlockFontWord({ word, input = '', wordKey, showCurrent = true, fontSize = 'xs' }) {
+// Animated word with spring physics
+export function AnimatedBlockFontWord({ word, input = '', wordKey, showCurrent = true, fontSize = '6xl' }) {
   return (
     <MotionBox
       key={wordKey}

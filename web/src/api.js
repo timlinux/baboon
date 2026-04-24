@@ -87,6 +87,13 @@ class BaboonAPI {
     return response.json();
   }
 
+  async clearInput() {
+    const response = await fetch(`${this.baseUrl}/sessions/${this.sessionId}/clearinput`, {
+      method: 'POST',
+    });
+    return response.json();
+  }
+
   async processSpace(seekTimeMs = 0) {
     const response = await fetch(`${this.baseUrl}/sessions/${this.sessionId}/space`, {
       method: 'POST',

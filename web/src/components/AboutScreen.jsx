@@ -39,7 +39,7 @@ function AboutScreen({ onBack, adsenseEnabled, adsenseKey }) {
             transition={{ type: 'spring', bounce: 0.5 }}
             textAlign="center"
           >
-            <BlockFontWord word="WHY" input="" showCurrent={false} fontSize="2xs" />
+            <BlockFontWord word="WHY" input="" showCurrent={false} fontSize="6xl" />
           </MotionBox>
 
           {/* AI Era Section */}

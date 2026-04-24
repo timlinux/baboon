@@ -52,7 +52,7 @@ function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, i
               animate={{ scale: 1 }}
               transition={{ type: 'spring', bounce: 0.5, duration: 0.8 }}
             >
-              <BlockFontWord word="BABOON" input="" showCurrent={false} fontSize="2xs" />
+              <BlockFontWord word="BABOON" input="" showCurrent={false} fontSize="5xl" />
             </MotionBox>
             <MotionText
               initial={{ opacity: 0, y: 20 }}

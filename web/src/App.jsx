@@ -277,6 +277,16 @@ function App() {
     }
   }, []);
 
+  const handleClearInput = useCallback(async () => {
+    try {
+      await api.clearInput();
+      const state = await api.getState();
+      setGameState(state);
+    } catch (e) {
+      console.error('Clear input error:', e);
+    }
+  }, []);
+
   const handleSpace = useCallback(async () => {
     const now = Date.now();
     const seekTimeMs = lastKeyTime ? now - lastKeyTime : 0;
@@ -420,6 +430,7 @@ function App() {
               timerStarted={timerStarted}
               onKeystroke={handleKeystroke}
               onBackspace={handleBackspace}
+              onClearInput={handleClearInput}
               onSpace={handleSpace}
               onExit={handleBackToMenu}
               onRestart={handleNewRound}
