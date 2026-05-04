@@ -33,6 +33,14 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/memory
         value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/args
+        value:
+          - "web"
+          - "-port"
+          - "8787"
+          - "-adsense"
+          - "ca-pub-4905598657746318"
     target:
       kind: Deployment
       name: baboon
