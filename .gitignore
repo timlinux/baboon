@@ -38,3 +38,4 @@ baboon.db
 
 dist
 .direnv
+git.sh
