@@ -39,6 +39,9 @@ COPY --from=builder /app/baboon .
 # Copy web frontend (must be pre-built: cd web && npm run build)
 COPY web/build ./web/dist
 
+# ads.txt must be served at /ads.txt for AdSense verification
+COPY hugo/static/ads.txt ./web/dist/ads.txt
+
 # Create non-root user for security
 RUN addgroup -g 1000 baboon && \
     adduser -D -u 1000 -G baboon baboon && \
