@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdSense from './AdSense.jsx';
+import BrandingFooter from './BrandingFooter.jsx';
 import { BlockFontWord, WpmBar } from './BlockFont.jsx';
 
 const MotionBox = motion(Box);
@@ -162,6 +163,7 @@ function TypingScreen({
   adsenseKey,
   perfectMode,
   practiceMode,
+  versionInfo,
 }) {
   const currentWord = gameState?.current_word || '';
   const currentInput = gameState?.current_input || '';
@@ -369,37 +371,7 @@ function TypingScreen({
 
       {/* Kartoza branding */}
       <Flex justify="center" pb={4}>
-        <HStack spacing={2} color="gray.600" fontSize={{ base: 'xs', md: 'sm' }} fontFamily="'Fira Code', monospace">
-          <Text>Made with</Text>
-          <Text color="red.400">♥</Text>
-          <Text>by</Text>
-          <Link
-            href="https://kartoza.com"
-            isExternal
-            color="cyan.500"
-            _hover={{ color: 'cyan.400' }}
-          >
-            Kartoza
-          </Link>
-          <Text>|</Text>
-          <Link
-            href="https://github.com/sponsors/kartoza"
-            isExternal
-            color="cyan.500"
-            _hover={{ color: 'cyan.400' }}
-          >
-            Donate!
-          </Link>
-          <Text>|</Text>
-          <Link
-            href="https://github.com/timlinux/baboon"
-            isExternal
-            color="gray.500"
-            _hover={{ color: 'gray.400' }}
-          >
-            GitHub
-          </Link>
-        </HStack>
+        <BrandingFooter versionInfo={versionInfo} />
       </Flex>
 
       {/* AdSense ad */}

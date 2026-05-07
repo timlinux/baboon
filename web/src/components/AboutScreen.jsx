@@ -12,11 +12,12 @@ import {
 import { motion } from 'framer-motion';
 import { BlockFontWord } from './BlockFont.jsx';
 import AdSense from './AdSense.jsx';
+import BrandingFooter from './BrandingFooter.jsx';
 
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
 
-function AboutScreen({ onBack, adsenseEnabled, adsenseKey }) {
+function AboutScreen({ onBack, adsenseEnabled, adsenseKey, versionInfo }) {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -252,22 +253,7 @@ function AboutScreen({ onBack, adsenseEnabled, adsenseKey }) {
             transition={{ delay: 1 }}
           >
             <VStack spacing={2}>
-              <HStack spacing={2} color="gray.600" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">
-                <Text>Made with</Text>
-                <Text color="red.400">♥</Text>
-                <Text>by</Text>
-                <Link href="https://kartoza.com" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
-                  Kartoza
-                </Link>
-                <Text>|</Text>
-                <Link href="https://github.com/sponsors/kartoza" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
-                  Donate!
-                </Link>
-                <Text>|</Text>
-                <Link href="https://github.com/timlinux/baboon" isExternal color="gray.500" _hover={{ color: 'gray.400' }}>
-                  GitHub
-                </Link>
-              </HStack>
+              <BrandingFooter versionInfo={versionInfo} fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} />
               <Text color="gray.700" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontFamily="'Fira Code', monospace">
                 ESC = back
               </Text>

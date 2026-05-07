@@ -438,6 +438,7 @@ function App() {
               adsenseKey={config.adsense_key}
               perfectMode={settings.perfectMode}
               practiceMode={settings.practiceMode}
+              versionInfo={versionInfo}
             />
           </MotionBox>
         )}
@@ -460,6 +461,7 @@ function App() {
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
               practiceMode={settings.practiceMode}
+              versionInfo={versionInfo}
             />
           </MotionBox>
         )}
@@ -480,6 +482,7 @@ function App() {
               onSkip={handleSkipLeaderboard}
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
+              versionInfo={versionInfo}
             />
           </MotionBox>
         )}
@@ -496,6 +499,7 @@ function App() {
               onBack={() => setScreen(sessionStats ? 'results' : 'welcome')}
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
+              versionInfo={versionInfo}
             />
           </MotionBox>
         )}
@@ -512,6 +516,7 @@ function App() {
               onBack={() => setScreen('welcome')}
               adsenseEnabled={config.adsense_enabled}
               adsenseKey={config.adsense_key}
+              versionInfo={versionInfo}
             />
           </MotionBox>
         )}

@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import api from '../api.js';
 import { BlockFontWord } from './BlockFont.jsx';
 import AdSense from './AdSense.jsx';
+import BrandingFooter from './BrandingFooter.jsx';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -66,7 +67,7 @@ function CharacterSlot({ char, state, index }) {
   );
 }
 
-function NameEntryScreen({ wpm, accuracy, rank, onSubmit, onSkip, adsenseEnabled, adsenseKey }) {
+function NameEntryScreen({ wpm, accuracy, rank, onSubmit, onSkip, adsenseEnabled, adsenseKey, versionInfo }) {
   const [name, setName] = useState('');
   const [slotStates, setSlotStates] = useState(Array(MAX_NAME_LENGTH).fill(SLOT_EMPTY));
   const [validationError, setValidationError] = useState('');
@@ -337,18 +338,7 @@ function NameEntryScreen({ wpm, accuracy, rank, onSubmit, onSkip, adsenseEnabled
         position="absolute"
         bottom={{ base: 16, md: 20 }}
       >
-        <HStack spacing={2} color="gray.600" fontSize={{ base: 'sm', md: 'md' }} fontFamily="'Fira Code', monospace">
-          <Text>Made with</Text>
-          <Text color="red.400">♥</Text>
-          <Text>by</Text>
-          <Link href="https://kartoza.com" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
-            Kartoza
-          </Link>
-          <Text>|</Text>
-          <Link href="https://github.com/sponsors/kartoza" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
-            Donate!
-          </Link>
-        </HStack>
+        <BrandingFooter versionInfo={versionInfo} fontSize={{ base: 'sm', md: 'md' }} />
       </MotionBox>
 
       {/* AdSense ad */}
