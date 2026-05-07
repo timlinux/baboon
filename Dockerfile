@@ -4,12 +4,12 @@
 # =============================================================================
 # Build stage - Compile Go binary
 # =============================================================================
-FROM golang:1.21-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache git ca-certificates tzdata
+# gcc and musl-dev are required for CGO (go-sqlite3)
+RUN apk add --no-cache git ca-certificates tzdata gcc musl-dev
 
 # Copy go mod files first for better caching
 COPY go.mod go.sum ./
@@ -18,10 +18,9 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the binary with optimizations
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+# Build the binary — CGO must be enabled for go-sqlite3
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s -X main.version=$(git describe --tags --always --dirty 2>/dev/null || echo dev)" \
-    -a -installsuffix cgo \
     -o baboon .
 
 # =============================================================================
@@ -29,8 +28,8 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
 # =============================================================================
 FROM alpine:3.19
 
-# Install runtime dependencies
-RUN apk add --no-cache ca-certificates tzdata wget
+# sqlite-libs needed at runtime since binary is CGO-linked
+RUN apk add --no-cache ca-certificates tzdata wget sqlite-libs
 
 WORKDIR /app
 
@@ -38,7 +37,7 @@ WORKDIR /app
 COPY --from=builder /app/baboon .
 
 # Copy web frontend (must be pre-built: cd web && npm run build)
-COPY web/dist ./web/dist
+COPY web/build ./web/dist
 
 # Create non-root user for security
 RUN addgroup -g 1000 baboon && \
