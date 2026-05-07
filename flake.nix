@@ -6,8 +6,14 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
 
@@ -185,29 +191,39 @@
           ${pkgs.nodejs_22}/bin/npm run dev
         '';
 
-      in {
+      in
+      {
         packages = {
-          default = pkgs.buildGoModule {
-            pname = "baboon";
-            version = "1.13.0";
-            src = ./.;
-            vendorHash = "sha256-QO/RAq29Kqoau0QI8ygs+eNetLv3qT8o1miyGCl6sv0=";
+          default =
+            let
+              baboonVersion = "1.17.1";
+            in
+            pkgs.buildGoModule {
+              pname = "baboon";
+              version = baboonVersion;
+              src = ./.;
+              vendorHash = "sha256-QO/RAq29Kqoau0QI8ygs+eNetLv3qT8o1miyGCl6sv0=";
 
-            # Required for go-sqlite3 CGO driver
-            nativeBuildInputs = [ pkgs.pkg-config ];
-            buildInputs = [ pkgs.sqlite ];
+              # Required for go-sqlite3 CGO driver
+              nativeBuildInputs = [ pkgs.pkg-config ];
+              buildInputs = [ pkgs.sqlite ];
 
-            # CGO must be set via env attribute (not top-level) in nixpkgs >= 24.05
-            env.CGO_ENABLED = "1";
+              # CGO must be set via env attribute (not top-level) in nixpkgs >= 24.05
+              env.CGO_ENABLED = "1";
 
-            meta = with pkgs.lib; {
-              description = "A terminal typing practice app with ASCII art";
-              homepage = "https://github.com/timlinux/baboon";
-              license = licenses.mit;
-              maintainers = [ ];
-              mainProgram = "baboon";
+              ldflags = [
+                "-X main.Version=${baboonVersion}"
+                "-X main.GitCommit=${builtins.substring 0 7 (self.rev or "unknown")}"
+              ];
+
+              meta = with pkgs.lib; {
+                description = "A terminal typing practice app with ASCII art";
+                homepage = "https://github.com/timlinux/baboon";
+                license = licenses.mit;
+                maintainers = [ ];
+                mainProgram = "baboon";
+              };
             };
-          };
 
           # Documentation packages
           docs = docs;
@@ -330,5 +346,6 @@
             echo ""
           '';
         };
-      });
+      }
+    );
 }

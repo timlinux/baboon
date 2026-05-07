@@ -4,9 +4,14 @@
 all: build web-build docs-build
 	@echo "Build complete: Go binary, web frontend, and Hugo docs"
 
+# Extract version from flake.nix (single source of truth)
+VERSION := $(shell grep 'baboonVersion = "' flake.nix | sed 's/.*baboonVersion = "\([^"]*\)".*/\1/')
+GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+LDFLAGS := -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)
+
 # Build only the Go binary
 build:
-	go build -o baboon .
+	go build -ldflags '$(LDFLAGS)' -o baboon .
 
 # Build with nix (reproducible)
 nix-build:
@@ -166,7 +171,7 @@ release:
 	nix run .#release
 
 version:
-	@grep -A1 'pname = "baboon";' flake.nix | grep 'version' | sed 's/.*version = "\([^"]*\)".*/Current version: \1/'
+	@echo "Current version: $(VERSION)"
 	@echo -n "Latest git tag:  " && (git describe --tags --abbrev=0 2>/dev/null || echo "none")
 
 # Help

@@ -16,6 +16,7 @@ import { BlockFontWord, GRADIENT_COLORS } from './BlockFont.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import ShareBadge from './ShareBadge.jsx';
 import AdSense from './AdSense.jsx';
+import BrandingFooter from './BrandingFooter.jsx';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -169,7 +170,7 @@ function LeaderboardRow({ entry, isCurrentUser, delay, onShare }) {
   );
 }
 
-function LeaderboardScreen({ onBack, adsenseEnabled, adsenseKey }) {
+function LeaderboardScreen({ onBack, adsenseEnabled, adsenseKey, versionInfo }) {
   const { user, isAuthenticated } = useAuth();
   const [entries, setEntries] = useState([]);
   const [months, setMonths] = useState([]);
@@ -389,22 +390,7 @@ function LeaderboardScreen({ onBack, adsenseEnabled, adsenseKey }) {
 
       {/* Kartoza branding */}
       <Flex justify="center" pb={4}>
-        <HStack spacing={2} color="gray.600" fontSize={{ base: 'sm', md: 'md' }} fontFamily="'Fira Code', monospace">
-          <Text>Made with</Text>
-          <Text color="red.400">♥</Text>
-          <Text>by</Text>
-          <Link href="https://kartoza.com" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
-            Kartoza
-          </Link>
-          <Text>|</Text>
-          <Link href="https://github.com/sponsors/kartoza" isExternal color="cyan.500" _hover={{ color: 'cyan.400' }}>
-            Donate!
-          </Link>
-          <Text>|</Text>
-          <Link href="https://github.com/timlinux/baboon" isExternal color="gray.500" _hover={{ color: 'gray.400' }}>
-            GitHub
-          </Link>
-        </HStack>
+        <BrandingFooter versionInfo={versionInfo} fontSize={{ base: 'sm', md: 'md' }} />
       </Flex>
 
       {/* AdSense ad */}

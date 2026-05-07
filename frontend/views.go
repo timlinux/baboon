@@ -14,9 +14,11 @@ import (
 
 // Renderer handles all view rendering for the application
 type Renderer struct {
-	styles Styles
-	width  int
-	height int
+	styles    Styles
+	width     int
+	height    int
+	version   string
+	gitCommit string
 }
 
 // NewRenderer creates a new renderer with the given dimensions
@@ -26,6 +28,48 @@ func NewRenderer(width, height int) *Renderer {
 		width:  width,
 		height: height,
 	}
+}
+
+// NewRendererWithVersion creates a new renderer with version info
+func NewRendererWithVersion(width, height int, version, gitCommit string) *Renderer {
+	return &Renderer{
+		styles:    NewStyles(),
+		width:     width,
+		height:    height,
+		version:   version,
+		gitCommit: gitCommit,
+	}
+}
+
+// renderBrandingFooter returns the Kartoza branding line with version info
+func (r *Renderer) renderBrandingFooter() string {
+	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
+	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
+	line := kartozaStyle.Render("Made with ") +
+		heartStyle.Render("♥") +
+		kartozaStyle.Render(" by ") +
+		linkStyle.Render("Kartoza") +
+		kartozaStyle.Render(" | ") +
+		linkStyle.Render("github.com/timlinux/baboon")
+	if r.version != "" {
+		versionStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+		versionText := "v" + r.version
+		if r.gitCommit != "" && r.gitCommit != "unknown" {
+			versionText += " (" + r.gitCommit + ")"
+		}
+		line += kartozaStyle.Render(" | ") + versionStyle.Render(versionText)
+	}
+	return line
+}
+
+// renderFooter builds a full footer with help text and branding, centered to screen width
+func (r *Renderer) renderFooter(helpText string) string {
+	footer := lipgloss.JoinVertical(lipgloss.Center,
+		r.styles.Help.Render(helpText),
+		r.renderBrandingFooter(),
+	)
+	return lipgloss.PlaceHorizontal(r.width, lipgloss.Center, footer)
 }
 
 // SetSize updates the renderer dimensions
@@ -239,22 +283,7 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 		helpText = fmt.Sprintf("Press %s to continue | Ctrl+W to clear word | Tab to restart | ESC to quit", advanceKeyHint) + perfectModeIndicator
 	}
 
-	// Kartoza branding
-	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
-	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
-	kartozaLine := kartozaStyle.Render("Made with ") +
-		heartStyle.Render("♥") +
-		kartozaStyle.Render(" by ") +
-		linkStyle.Render("Kartoza") +
-		kartozaStyle.Render(" | ") +
-		linkStyle.Render("github.com/timlinux/baboon")
-
-	footer := lipgloss.JoinVertical(lipgloss.Center,
-		r.styles.Help.Render(helpText),
-		kartozaLine,
-	)
-	footer = lipgloss.PlaceHorizontal(r.width, lipgloss.Center, footer)
+	footer := r.renderFooter(helpText)
 
 	// Calculate heights
 	headerHeight := 1
@@ -550,23 +579,7 @@ func (r *Renderer) RenderResultsScreen(
 
 	// Fixed footer at bottom (help text + Kartoza branding)
 	helpText := "Press ENTER for a new round | Ctrl+O for options | ESC to quit"
-
-	// Kartoza branding
-	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
-	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
-	kartozaLine := kartozaStyle.Render("Made with ") +
-		heartStyle.Render("♥") +
-		kartozaStyle.Render(" by ") +
-		linkStyle.Render("Kartoza") +
-		kartozaStyle.Render(" | ") +
-		linkStyle.Render("github.com/timlinux/baboon")
-
-	footer := lipgloss.JoinVertical(lipgloss.Center,
-		r.styles.Help.Render(helpText),
-		kartozaLine,
-	)
-	footer = lipgloss.PlaceHorizontal(r.width, lipgloss.Center, footer)
+	footer := r.renderFooter(helpText)
 
 	// Calculate heights
 	headerHeight := 1
@@ -1324,23 +1337,7 @@ func (r *Renderer) RenderOptionsScreen(s *settings.Settings, cursor int) string 
 
 	// Fixed footer at bottom (help text + Kartoza branding)
 	helpText := "↑/↓ to navigate | Enter/Space to select | 1-7 quick select | ESC to go back"
-
-	// Kartoza branding
-	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
-	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
-	kartozaLine := kartozaStyle.Render("Made with ") +
-		heartStyle.Render("♥") +
-		kartozaStyle.Render(" by ") +
-		linkStyle.Render("Kartoza") +
-		kartozaStyle.Render(" | ") +
-		linkStyle.Render("github.com/timlinux/baboon")
-
-	footer := lipgloss.JoinVertical(lipgloss.Center,
-		r.styles.Help.Render(helpText),
-		kartozaLine,
-	)
-	footer = lipgloss.PlaceHorizontal(r.width, lipgloss.Center, footer)
+	footer := r.renderFooter(helpText)
 
 	// Calculate heights
 	headerHeight := 1
@@ -1457,24 +1454,7 @@ func (r *Renderer) RenderAboutScreen() string {
 		headerStyle.Render("BABOON - Why We Made This"))
 
 	// Footer
-	helpText := "Press ESC or ENTER to return | Ctrl+C to quit"
-
-	// Kartoza branding
-	kartozaStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	heartStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("204"))
-	linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
-	kartozaLine := kartozaStyle.Render("Made with ") +
-		heartStyle.Render("♥") +
-		kartozaStyle.Render(" by ") +
-		linkStyle.Render("Kartoza") +
-		kartozaStyle.Render(" | ") +
-		linkStyle.Render("github.com/timlinux/baboon")
-
-	aboutFooter := lipgloss.JoinVertical(lipgloss.Center,
-		r.styles.Help.Render(helpText),
-		kartozaLine,
-	)
-	aboutFooter = lipgloss.PlaceHorizontal(r.width, lipgloss.Center, aboutFooter)
+	aboutFooter := r.renderFooter("Press ESC or ENTER to return | Ctrl+C to quit")
 
 	// Calculate heights
 	aboutHeaderHeight := 1

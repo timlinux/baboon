@@ -60,7 +60,7 @@ type Model struct {
 }
 
 // NewModel creates a new Model with the given backend API
-func NewModel(api backend.GameAPI) Model {
+func NewModel(api backend.GameAPI, version, gitCommit string) Model {
 	// Load settings (use defaults if error)
 	s, _ := settings.Load()
 
@@ -70,7 +70,7 @@ func NewModel(api backend.GameAPI) Model {
 	return Model{
 		api:              api,
 		state:            StateTyping,
-		renderer:         NewRenderer(80, 24), // Default size, will be updated
+		renderer:         NewRendererWithVersion(80, 24, version, gitCommit), // Default size, will be updated
 		carouselAnimator: NewCarouselAnimator(),
 		lastWordIdx:      0,
 		settings:         s,

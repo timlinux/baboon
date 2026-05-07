@@ -53,7 +53,7 @@ func runEmbedded(punctuationMode bool) {
 	}
 
 	// Create and run TUI with embedded engine
-	model := frontend.NewModel(engine)
+	model := frontend.NewModel(engine, Version, GitCommit)
 	p := tea.NewProgram(model, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running program: %v\n", err)
@@ -162,7 +162,7 @@ func runClientOnly(baseURL string, punctuationMode bool) {
 	defer client.DeleteSession()
 
 	// Create and run TUI
-	model := frontend.NewModel(client)
+	model := frontend.NewModel(client, Version, GitCommit)
 	p := tea.NewProgram(model, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running program: %v\n", err)
