@@ -196,7 +196,7 @@
         packages = {
           default =
             let
-              baboonVersion = "1.17.1";
+              baboonVersion = "1.18.0";
             in
             pkgs.buildGoModule {
               pname = "baboon";

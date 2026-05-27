@@ -336,4 +336,14 @@ func loadConfigFromEnv(config *backend.Config) {
 	if secret := os.Getenv("BABOON_MICROSOFT_CLIENT_SECRET"); secret != "" {
 		config.MicrosoftClientSecret = secret
 	}
+
+	// AdSense configuration
+	if adsenseKey := os.Getenv("BABOON_ADSENSE_KEY"); adsenseKey != "" {
+		config.AdsenseEnabled = true
+		if adsenseKey == "preview" {
+			config.AdsenseKey = ""
+		} else {
+			config.AdsenseKey = adsenseKey
+		}
+	}
 }

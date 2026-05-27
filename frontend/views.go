@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/timlinux/baboon/backend"
+	"github.com/timlinux/baboon/logo"
 	"github.com/timlinux/baboon/settings"
 	"github.com/timlinux/baboon/stats"
 	"github.com/timlinux/blockfont"
@@ -19,6 +21,11 @@ type Renderer struct {
 	height    int
 	version   string
 	gitCommit string
+
+	// Logo rendering (cached per width)
+	logoOnce     sync.Once
+	logoRendered string
+	logoProtocol logo.Protocol
 }
 
 // NewRenderer creates a new renderer with the given dimensions
@@ -76,6 +83,22 @@ func (r *Renderer) renderFooter(helpText string) string {
 func (r *Renderer) SetSize(width, height int) {
 	r.width = width
 	r.height = height
+}
+
+// getLogo returns the cached logo rendering for the terminal.
+func (r *Renderer) getLogo() string {
+	r.logoOnce.Do(func() {
+		r.logoProtocol = logo.DetectProtocol()
+		if r.logoProtocol != logo.ProtocolNone {
+			// Use ~40 columns for the logo (centered in screen)
+			cols := 40
+			if r.width < 80 {
+				cols = r.width / 2
+			}
+			r.logoRendered = logo.Render(cols)
+		}
+	})
+	return r.logoRendered
 }
 
 // RenderTypingScreenAnimated renders the main typing interface with smooth carousel animations
@@ -285,14 +308,25 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 
 	footer := r.renderFooter(helpText)
 
+	// Logo (show before timer starts, only if terminal supports graphics)
+	logoContent := ""
+	logoHeight := 0
+	if !state.TimerStarted {
+		logoContent = r.getLogo()
+		if logoContent != "" {
+			logoHeight = strings.Count(logoContent, "\n") + 1
+		}
+	}
+
 	// Calculate heights
 	headerHeight := 1
 	footerHeight := 2 // Now two lines
 	contentHeight := strings.Count(mainContent, "\n") + 1
+	totalContentHeight := contentHeight + logoHeight
 	availableHeight := r.height - headerHeight - footerHeight - 2 // -2 for spacing
 
 	// Calculate top padding to center main content in available space
-	topPadding := max((availableHeight-contentHeight)/2, 0)
+	topPadding := max((availableHeight-totalContentHeight)/2, 0)
 
 	// Build full screen layout
 	var fullContent strings.Builder
@@ -306,12 +340,17 @@ func (r *Renderer) RenderTypingScreenAnimated(state backend.GameState, carousel 
 		fullContent.WriteString("\n")
 	}
 
+	// Logo above main content (only before timer starts)
+	if logoContent != "" {
+		fullContent.WriteString(logoContent)
+	}
+
 	// Main content (centered horizontally)
 	centeredMain := lipgloss.PlaceHorizontal(r.width, lipgloss.Center, mainContent)
 	fullContent.WriteString(centeredMain)
 
 	// Bottom padding to push footer to the bottom
-	currentHeight := headerHeight + 1 + topPadding + contentHeight
+	currentHeight := headerHeight + 1 + topPadding + totalContentHeight
 	for i := currentHeight; i < r.height-footerHeight; i++ {
 		fullContent.WriteString("\n")
 	}

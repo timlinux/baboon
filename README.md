@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="screenshots/baboon-logo.png" alt="Baboon Logo" width="400">
+</p>
+
+<p align="center">
   <img src="demo/baboon-demo.gif" alt="Baboon Demo" width="700">
 </p>
 
