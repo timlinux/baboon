@@ -15,7 +15,6 @@ import {
   Switch,
   FormControl,
   FormLabel,
-  Image,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { LoginButtons } from './LoginButton.jsx';
@@ -47,20 +46,14 @@ function WelcomeScreen({ isConnected, onStart, onShowLeaderboard, onShowAbout, i
     <Flex minH="100vh" align="center" justify="center" p={8}>
       <Container maxW="container.lg">
         <VStack spacing={10}>
-          {/* Logo/Title */}
+          {/* Logo/Title - TUI style block font */}
           <VStack spacing={4}>
             <MotionBox
-              initial={{ scale: 0, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
               transition={{ type: 'spring', bounce: 0.5, duration: 0.8 }}
             >
-              <Image
-                src="/baboon-logo.png"
-                alt="Baboon Logo"
-                maxH={{ base: '150px', md: '200px', lg: '260px' }}
-                objectFit="contain"
-                filter="drop-shadow(0 0 20px rgba(0, 255, 0, 0.2))"
-              />
+              <BlockFontWord word="BABOON" input="" showCurrent={false} fontSize="5xl" />
             </MotionBox>
             <MotionText
               initial={{ opacity: 0, y: 20 }}
