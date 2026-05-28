@@ -20,7 +20,7 @@ COPY . .
 
 # Build the binary — CGO must be enabled for go-sqlite3
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s -X main.version=$(git describe --tags --always --dirty 2>/dev/null || echo dev)" \
+    -ldflags="-w -s -X main.Version=$(git describe --tags --always --dirty 2>/dev/null || echo dev) -X main.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)" \
     -o baboon .
 
 # =============================================================================
